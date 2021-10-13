@@ -9,8 +9,8 @@ import {
 import { press } from "./lib/press.ts";
 import { position } from "./lib/position.ts";
 import { getCharDOM, getLine, getLineId, getLineNo } from "./lib/node.ts";
-import { selection } from "./lib/selection.js";
-import { parse, set } from "./task.js";
+import { selection } from "./lib/selection.ts";
+import { parse, set } from "./task.ts";
 import { getDate, getTitle } from "./diary.ts";
 import {
   addDays,

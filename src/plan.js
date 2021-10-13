@@ -1,4 +1,4 @@
-import { toString } from "./task.js";
+import { toString } from "./task.ts";
 import { getTitle } from "./diary.ts";
 import { lightFormat, parse } from "./deps/date-fns.ts";
 import { insertText } from "./lib/edit.ts";

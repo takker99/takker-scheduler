@@ -1,5 +1,5 @@
 import { replaceEvents } from "./api/calendar.ts";
-import { parseFromString } from "./task.js";
+import { parseFromString } from "./task.ts";
 import { add } from "./deps/date-fns.ts";
 
 //declare const calendarIds:string[];

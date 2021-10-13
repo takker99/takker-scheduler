@@ -1,4 +1,4 @@
-import { selection } from "./lib/selection.js";
+import { selection } from "./lib/selection.ts";
 import { isValid, parse } from "./deps/date-fns.ts";
 
 export function getDatesFromSelection() {
