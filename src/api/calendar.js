@@ -120,16 +120,3 @@ async function searchEvents(calendarId, extendedProperties) {
   );
   return (await res.json()).items;
 }
-
-async function getEvents(calendarId, start, end) {
-  const params = new URLSearchParams();
-  params.append("timeMax", formatRFC3339(end));
-  params.append("timeMin", formatRFC3339(start));
-
-  const res = await exec(
-    `/calendar/v3/calendars/${
-      encodeURIComponent(calendarId)
-    }/events?${params.toString()}`,
-  );
-  return (await res.json()).items;
-}

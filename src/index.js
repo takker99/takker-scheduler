@@ -1,4 +1,4 @@
-import { goHead, goLine, moveRight } from "./lib/motion.ts";
+import { goHead, goLine } from "./lib/motion.ts";
 import {
   deleteLines,
   insertLine,
@@ -10,7 +10,7 @@ import { position } from "./lib/position.ts";
 import { getCharDOM, getLine, getLineId, getLineNo } from "./lib/node.ts";
 import { insertText } from "./lib/insertText.ts";
 import { selection } from "./lib/selection.js";
-import { parse, set, toString } from "./task.js";
+import { parse, set } from "./task.js";
 import { getDate, getTitle } from "./diary.ts";
 import {
   addDays,
@@ -262,7 +262,6 @@ async function insertSections() {
           //console.log(['border, previous',_ ,l(lineNo).DOM]);
           return { position: "previous", id: getLineId(lineNo) };
         }
-        continue;
       }
       // あとはどちらか一方にきれいに収まるタスクである場合しか無い
       // 前のタスクとの間にあるかどうかを調べる
@@ -335,7 +334,7 @@ export async function transport({ targetProject }) {
     });
 
   // 日付ごとにタスクをまとめる
-  let bodies = {};
+  const bodies = {};
   targetTaskLines.forEach(({ date, lineNo }) => {
     const key = lightFormat(date, "yyyy-MM-dd");
     bodies[key] = {
@@ -344,7 +343,7 @@ export async function transport({ targetProject }) {
         ...(bodies[key]?.texts ?? []),
         // indent blockで移動させる
         ...scrapbox.Page.lines
-          .slice(lineNo, lineNo + getLine(lineNo).lenghth + 1)
+          .slice(lineNo, lineNo + getLine(lineNo).text.length + 1)
           .map((line) => line.text),
       ],
     };
@@ -354,7 +353,7 @@ export async function transport({ targetProject }) {
   await deleteLines(targetTaskLines.map(({ line }) => line.id));
 
   // 新しいタブで開く
-  for (const [key, { date, texts }] of Object.entries(bodies)) {
+  for (const [, { date, texts }] of Object.entries(bodies)) {
     const body = encodeURIComponent(texts.join("\n"));
     window.open(
       `https://scrapbox.io/${targetProject}/${

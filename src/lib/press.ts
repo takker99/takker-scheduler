@@ -3,7 +3,6 @@
 /// <reference lib="dom" />
 
 import { textInput } from "./dom.ts";
-import { range } from "./range.ts";
 
 const KEYCODE_MAP = {
   Backspace: 8,

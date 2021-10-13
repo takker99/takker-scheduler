@@ -27,7 +27,7 @@ export async function generatePlan(
   }
 
   // 日付ごとにまとめる
-  let taskStrings = {};
+  const taskStrings = {};
   taskList.forEach((task) => {
     const key = lightFormat(task.baseDate, "yyyy-MM-dd");
     taskStrings[key] = [

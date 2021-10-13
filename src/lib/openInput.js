@@ -2,7 +2,6 @@ import { lightFormat, parse } from "../deps/date-fns.ts";
 
 export const getValueFromInput = ({ type, value, x, y, max, min }) =>
   new Promise((resolve, reject) => {
-    const form = document.createElement("form");
     const input = document.createElement("input");
     input.type = type ?? "text";
     if (max) input.max = max;

@@ -1,6 +1,6 @@
 import { position } from "./position.ts";
 import { getDOMFromPoint, getIndex, getLineNo } from "./node.ts";
-import { cursor, editor, selections, textInput } from "./dom.ts";
+import { cursor, editor, textInput } from "./dom.ts";
 
 class Selection {
   constructor() {
@@ -22,7 +22,7 @@ class Selection {
       }
     });
     this._selectionObserver.observe(editor(), { childList: true });
-    this._cursorObserver = new MutationObserver((mutations) => {
+    this._cursorObserver = new MutationObserver(() => {
       if (cursor().style.display === "none") return;
       const { char, line } = position();
       this._position = { index: getIndex(char), lineNo: getLineNo(line) };
