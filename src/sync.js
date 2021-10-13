@@ -1,4 +1,4 @@
-import { replaceEvents } from "./api/calendar.js";
+import { replaceEvents } from "./api/calendar.ts";
 import { parseFromString } from "./task.js";
 import { add } from "./deps/date-fns.ts";
 
