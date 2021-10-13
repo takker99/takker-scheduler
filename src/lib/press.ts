@@ -70,6 +70,8 @@ const KEYCODE_MAP = {
   X: 88,
   y: 89,
   Y: 89,
+  z: 90,
+  Z: 90,
   // number
   0: 48,
   1: 49,
