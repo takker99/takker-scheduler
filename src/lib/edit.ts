@@ -1,7 +1,9 @@
 import { goHead, goLine } from "./motion.ts";
 import { press } from "./press.ts";
+import { getLineCount } from "./node.ts";
 import { insertText } from "./insertText.ts";
 import { range } from "./range.ts";
+import { isArray, isNumber, isString } from "../deps/unknownutil.ts";
 
 export function undo(count = 1) {
   for (const _ of range(0, count)) {
@@ -20,7 +22,7 @@ export function insertTimestamp(index = 1) {
   }
 }
 
-export async function insertLine(lineNo, text) {
+export async function insertLine(lineNo: number, text: string) {
   await goLine(lineNo);
   goHead();
   press("Enter");
@@ -28,10 +30,9 @@ export async function insertLine(lineNo, text) {
   await insertText(text);
 }
 
-export async function deleteLines(value, count = 1) {
-  if (typeof value === "number") {
-    const from = value;
-    if (scrapbox.Page.lines.length === from + count) {
+export async function deleteLines(from: number | string | string[], count = 1) {
+  if (isNumber(from)) {
+    if (getLineCount() === from + count) {
       await goLine(from - 1);
       press("ArrowRight", { shiftKey: true });
     } else {
@@ -46,8 +47,8 @@ export async function deleteLines(value, count = 1) {
     press("Delete");
     return;
   }
-  if (typeof value === "string" || Array.isArray(value)) {
-    const ids = Array.isArray(value) ? value : [value];
+  if (isString(from) || isArray(from, isString)) {
+    const ids = Array.isArray(from) ? from : [from];
     for (const id of ids) {
       await goLine(id);
       press("Home", { shiftKey: true });
@@ -57,10 +58,10 @@ export async function deleteLines(value, count = 1) {
     }
     return;
   }
-  throw Error("The type of value must be number | string | string[]: ", value);
+  throw Error("The type of value must be number | string | string[]: ", from);
 }
 
-export async function replaceLine(lineNo, text) {
+export async function replaceLine(lineNo: number, text: string) {
   await goLine(lineNo);
   press("Home", { shiftKey: true });
   press("Home", { shiftKey: true });
@@ -76,7 +77,7 @@ export function deindentLines(count = 1) {
     press("ArrowLeft", { ctrlKey: true });
   }
 }
-export function moveLines(count) {
+export function moveLines(count: number) {
   if (count > 0) {
     downLines(count);
   } else {
@@ -84,8 +85,8 @@ export function moveLines(count) {
   }
 }
 // to行目の後ろに移動させる
-export function moveLinesBefore({ from: From, to }) {
-  const count = to - From;
+export function moveLinesBefore(from: number, to: number) {
+  const count = to - from;
   if (count >= 0) {
     downLines(count);
   } else {
@@ -113,7 +114,7 @@ export function deindentBlocks(count = 1) {
     press("ArrowLeft", { altKey: true });
   }
 }
-export function moveBlocks(count) {
+export function moveBlocks(count: number) {
   if (count > 0) {
     downBlocks(count);
   } else {
