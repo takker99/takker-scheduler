@@ -1,7 +1,7 @@
 import { toString } from "./task.js";
 import { getTitle } from "./diary.ts";
 import { lightFormat, parse } from "./deps/date-fns.ts";
-import { insertText } from "./lib/insertText.ts";
+import { insertText } from "./lib/edit.ts";
 import { goLastLine } from "./lib/motion.ts";
 import { press } from "./lib/press.ts";
 

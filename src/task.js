@@ -1,7 +1,6 @@
 import { goHead, goLine } from "./lib/motion.ts";
-import { insertLine } from "./lib/edit.js";
+import { insertLine, insertText } from "./lib/edit.ts";
 import { press } from "./lib/press.ts";
-import { insertText } from "./lib/insertText.ts";
 import { addDays, format, isAfter, parse } from "./deps/date-fns.ts";
 
 /** タスクの書式 */

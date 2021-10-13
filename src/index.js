@@ -2,13 +2,13 @@ import { goHead, goLine } from "./lib/motion.ts";
 import {
   deleteLines,
   insertLine,
+  insertText,
   moveLinesBefore,
   upBlocks,
-} from "./lib/edit.js";
+} from "./lib/edit.ts";
 import { press } from "./lib/press.ts";
 import { position } from "./lib/position.ts";
 import { getCharDOM, getLine, getLineId, getLineNo } from "./lib/node.ts";
-import { insertText } from "./lib/insertText.ts";
 import { selection } from "./lib/selection.js";
 import { parse, set } from "./task.js";
 import { getDate, getTitle } from "./diary.ts";

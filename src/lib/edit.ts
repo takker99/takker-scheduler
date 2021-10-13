@@ -1,8 +1,8 @@
 import { goHead, goLine } from "./motion.ts";
 import { press } from "./press.ts";
 import { getLineCount } from "./node.ts";
-import { insertText } from "./insertText.ts";
 import { range } from "./range.ts";
+import { textInput } from "./dom.ts";
 import { isArray, isNumber, isString } from "../deps/unknownutil.ts";
 
 export function undo(count = 1) {
@@ -130,4 +130,18 @@ export function downBlocks(count = 1) {
   for (const _ of range(0, count)) {
     press("ArrowDown", { altKey: true });
   }
+}
+
+export function insertText(text: string) {
+  const cursor = textInput();
+  if (!cursor) {
+    throw Error("#text-input is not ditected.");
+  }
+  cursor.focus();
+  cursor.value = text;
+
+  const uiEvent = document.createEvent("UIEvent");
+  uiEvent.initEvent("input", true, false);
+  cursor.dispatchEvent(uiEvent);
+  return Promise.resolve();
 }
