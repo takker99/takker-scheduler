@@ -6,6 +6,46 @@ import { position } from "./position.ts";
 import { getDOMFromPoint, getIndex, getLineNo, getText } from "./node.ts";
 import { cursor, editor, selections, textInput } from "./dom.ts";
 import { isNone } from "../deps/unknownutil.ts";
+import type { Scrapbox } from "../deps/scrapbox.ts";
+declare const scrapbox: Scrapbox;
+
+export interface Position {
+  char: number;
+  line: number;
+}
+export interface Range {
+  start: Position;
+  end: Position;
+}
+export function range(){
+  const selections = document.querySelector(".selections") as HTMLDivElement | null;
+  if(!selections) return;
+  
+  const reactKey = Object.keys(selections)
+    .find(key => key.startsWith("__reactInternalInstance"));
+  if (!reactKey){
+    throw Error("Failed to find React properties in `div.selections`");
+  }
+
+  const range = selections[reactKey]?.return?.memoizedProps?.range;
+  if (!range){
+    throw Error("Could not find the property `range` in `div.selections`");
+  }
+  return range as Range;
+}
+export function rangeText(){
+  const range = range();
+  if (!range) return "";
+  const {start, end} = range;
+  return [
+    scrapbox.Page.lines[start.line]?.substring?.(start.char) ?? "",
+    ...scrapbox.Page.lines.map((line) => line.text).slice(
+        start.line + 1,
+        end.line,
+      ),
+    scrapbox.Page.lines[end.line]?.substring?.(0, end.char + 1),
+  ];
+}
 
 class Selection {
   private _cursorObserver?: MutationObserver;
