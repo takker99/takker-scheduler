@@ -2,23 +2,28 @@
 /// <reference lib="esnext"/>
 /// <reference lib="dom" />
 
-import { cursor, editor } from "./dom.ts";
-import { getDOMFromPoint } from "./node.ts";
+import { cursor } from "./dom.ts";
+import type { Position } from "./types.ts";
 
-export function position() {
-  const editorDiv = editor();
-  if (!editorDiv) throw Error("#editor must exist.");
-  const { top, left } = editorDiv.getBoundingClientRect(); // 基準座標
-  const cursorDiv = cursor();
-  if (!cursorDiv) throw Error(".cursor must exist.");
-  const style = cursorDiv.style;
-  const cursorPos = {
-    top: parseInt(style.top),
-    left: parseInt(style.left),
-    height: parseInt(style.height),
+interface ReactInternalInstance {
+  return: {
+    memoizedProps: {
+      position: Position;
+    };
   };
-  return getDOMFromPoint(
-    cursorPos.left + left + 1,
-    (cursorPos.top + top) + cursorPos.height / 2,
-  );
+}
+export function position() {
+  const cursorDOM = cursor();
+  if (!cursorDOM) return;
+
+  const reactKey = Object.keys(cursorDOM)
+    .find((key) => key.startsWith("__reactInternalInstance"));
+  if (!reactKey) {
+    throw Error(
+      "div.cursor must has the property whose name starts with `__reactInternalInstance`",
+    );
+  }
+  return ((cursorDOM as unknown as Record<string, unknown>)[
+    reactKey
+  ] as ReactInternalInstance).return.memoizedProps.position;
 }
