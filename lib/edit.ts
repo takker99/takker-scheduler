@@ -1,4 +1,4 @@
-import { goHead, goLine } from "./motion.ts";
+import { goEnd, goHead, goLine } from "./motion.ts";
 import { press } from "./press.ts";
 import { getLineCount } from "./node.ts";
 import { range } from "./range.ts";
@@ -27,6 +27,16 @@ export async function insertLine(lineNo: number, text: string) {
   goHead();
   press("Enter");
   press("ArrowUp");
+  await insertText(text);
+}
+
+export async function replaceLines(start: number, end: number, text: string) {
+  await goLine(start);
+  goHead();
+  for (const _ of range(start, end)) {
+    press("ArrowDown", { shiftKey: true });
+  }
+  press("End", { shiftKey: true });
   await insertText(text);
 }
 
@@ -61,12 +71,6 @@ export async function deleteLines(from: number | string | string[], count = 1) {
   throw Error("The type of value must be number | string | string[]: ", from);
 }
 
-export async function replaceLine(lineNo: number, text: string) {
-  await goLine(lineNo);
-  press("Home", { shiftKey: true });
-  press("Home", { shiftKey: true });
-  await insertText(text);
-}
 export function indentLines(count = 1) {
   for (const _ of range(0, count)) {
     press("ArrowRight", { ctrlKey: true });
