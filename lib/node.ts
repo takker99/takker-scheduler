@@ -1,12 +1,7 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext"/>
 /// <reference lib="dom" />
-import {
-  ensureArray,
-  isNone,
-  isNumber,
-  isString,
-} from "../deps/unknownutil.ts";
+import { ensureArray, isNone, isNumber, isString } from "../utils.ts";
 import type { Scrapbox } from "../deps/scrapbox.ts";
 import { lines } from "./dom.ts";
 declare const scrapbox: Scrapbox;
@@ -17,18 +12,18 @@ declare const scrapbox: Scrapbox;
  *
  * @param value - value the line id of which you want to get
  */
-export function getLineId(value: unknown) {
+export function getLineId<T extends HTMLElement>(
+  value?: number | string | T,
+): string | undefined {
   if (isNone(value)) return undefined;
 
   // 行番号のとき
   if (isNumber(value)) {
-    ensureArray(scrapbox.Page.lines);
-    scrapbox.Page.lines[value]?.id;
+    return getLine(value)?.id;
   }
   // 行IDのとき
   if (isString(value)) return value.startsWith("L") ? value.slice(1) : value;
 
-  if (!(value instanceof HTMLElement)) return undefined;
   // 行のDOMだったとき
   if (value.classList.contains("line")) return value.id.slice(1);
   // 行の子要素だったとき
@@ -38,37 +33,29 @@ export function getLineId(value: unknown) {
   return undefined;
 }
 
-export function getLineNo(value: unknown) {
+export function getLineNo<T extends HTMLElement>(value?: number | string | T) {
   if (isNone(value)) return undefined;
 
   // 行番号のとき
   if (isNumber(value)) return value;
   // 行ID or DOMのとき
-  if (isString(value) || value instanceof HTMLElement) {
-    const id = getLineId(value);
-    ensureArray(scrapbox.Page.lines);
-    return id ? scrapbox.Page.lines.findIndex((line) => line.id === id) : -1;
-  }
-
-  return undefined;
+  const id = getLineId(value);
+  return id ? getLines().findIndex((line) => line.id === id) : -1;
 }
 
-export function getLine(value: unknown) {
+export function getLine<T extends HTMLElement>(value?: number | string | T) {
   if (isNone(value)) return undefined;
-  ensureArray(scrapbox.Page.lines);
 
   // 行番号のとき
   if (isNumber(value)) {
-    return scrapbox.Page.lines[value];
+    return getLines()[value];
   }
   // 行ID or DOMのとき
-  if (isString(value) || value instanceof HTMLElement) {
-    const id = getLineId(value);
-    return id ? scrapbox.Page.lines.find((line) => line.id === id) : undefined;
-  }
+  const id = getLineId(value);
+  return id ? getLines().find((line) => line.id === id) : undefined;
 }
 
-export function getLineDOM(value: unknown) {
+export function getLineDOM<T extends HTMLElement>(value?: number | string | T) {
   if (isLineDOM(value)) return value;
 
   const id = getLineId(value);
@@ -81,31 +68,40 @@ export function isLineDOM(dom: unknown): dom is HTMLDivElement {
   return dom instanceof HTMLDivElement && dom.classList.contains("line");
 }
 export function getLineCount() {
-  ensureArray(scrapbox.Page.lines);
-  return scrapbox.Page.lines.length;
+  return getLines().length;
 }
 
-export function getText(value: unknown) {
-  if (isNone(value)) return undefined;
+export function getLines() {
   ensureArray(scrapbox.Page.lines);
+  return scrapbox.Page.lines;
+}
+
+export function getText<T extends HTMLElement>(value?: number | string | T) {
+  if (isNone(value)) return undefined;
 
   // 数字と文字列は行として扱う
   if (isNumber(value) || isString(value)) return getLine(value)?.text;
-  if (!(value instanceof HTMLElement)) return undefined;
+  if (!(value instanceof HTMLElement)) return;
   if (isLineDOM(value)) return getLine(value)?.text;
-  // リンクのDOMだったとき
-  // []や#つきで返す
-  if (value.classList.contains("page-link")) {
-    return value.textContent?.startsWith?.("[") ||
-        value.textContent?.startsWith?.("#")
-      ? value.textContent ?? undefined
-      : `[${value.textContent}]`;
-  }
   // 文字のDOMだったとき
   if (value.classList.contains("char-index")) {
     return value.textContent ?? undefined;
   }
-  return undefined;
+  // div.linesを含む(複数のdiv.lineを含む)場合は全ての文字列を返す
+  if (
+    value.classList.contains("line") ||
+    value.getElementsByClassName("lines")?.[0]
+  ) {
+    return getLines().map(({ text }) => text).join("\n");
+  }
+  //中に含まれている文字の列番号を全て取得し、それに対応する文字列を返す
+  const chars = [] as number[];
+  const line = getLine(value);
+  if (isNone(line)) return;
+  for (const dom of getChars(value)) {
+    chars.push(getIndex(dom));
+  }
+  return line.text.slice(Math.min(...chars), Math.max(...chars) + 1);
 }
 
 export function getExternalLink(dom: HTMLElement) {
@@ -129,20 +125,22 @@ export function getFormula(dom: HTMLElement) {
   if (isNone(formula)) return undefined;
   return formula as HTMLElement;
 }
-export function getNextLine(value: unknown) {
+export function getNextLine<T extends HTMLElement>(
+  value?: number | string | T,
+) {
   const index = getLineNo(value);
   if (isNone(index)) return undefined;
-  ensureArray(scrapbox.Page.lines);
 
-  return scrapbox.Page.lines[index + 1];
+  return getLine(index + 1);
 }
 
-export function getPrevLine(value: unknown) {
+export function getPrevLine<T extends HTMLElement>(
+  value?: number | string | T,
+) {
   const index = getLineNo(value);
   if (isNone(index)) return undefined;
-  ensureArray(scrapbox.Page.lines);
 
-  return scrapbox.Page.lines[index - 1];
+  return getLine(index - 1);
 }
 
 export function getHeadLineDOM() {
@@ -155,12 +153,18 @@ export function getTailLineDOM() {
   if (isNone(line)) return undefined;
   return line as HTMLDivElement;
 }
-export function getIndentCount(value: unknown) {
+export function getIndentCount<T extends HTMLElement>(
+  value?: number | string | T,
+) {
   const text = getText(value);
   if (isNone(text)) return undefined;
   return text.match(/^(\s*)/)?.[1]?.length ?? 0;
 }
-export function getIndentLineCount(value: unknown) {
+/** 指定した行の配下にある行の数を返す
+ */
+export function getIndentLineCount<T extends HTMLElement>(
+  value?: number | string | T,
+) {
   const index = getLineNo(value);
   const base = getIndentCount(index);
   if (isNone(index) || isNone(base)) return undefined;
@@ -171,10 +175,8 @@ export function getIndentLineCount(value: unknown) {
   return count;
 }
 
-export function* charsInLine(value: unknown) {
-  const line = getLineDOM(value);
-  if (isNone(line)) return undefined;
-  const chars = line.getElementsByClassName("char-index");
+export function* getChars<T extends HTMLElement>(value: T) {
+  const chars = value.getElementsByClassName("char-index");
   for (let i = 0; i < chars.length; i++) {
     yield chars[0] as HTMLSpanElement;
   }
@@ -184,36 +186,34 @@ export function isCharDOM(dom: unknown): dom is HTMLSpanElement {
   return dom instanceof HTMLSpanElement && dom.classList.contains("char-index");
 }
 
-export function getIndex(dom: unknown) {
+export function getIndex(dom: HTMLSpanElement) {
   if (!isCharDOM(dom)) throw Error("A char DOM is required.");
 
   const index = dom.className.match(/c-(\d+)/)?.[1];
   if (isNone(index)) throw Error('.char-index must have ".c-{\\d}"');
   return parseInt(index);
 }
-export function getHeadCharDOM(dom: HTMLElement | undefined | null) {
+export function getHeadCharDOM(dom?: HTMLElement) {
   const char = dom?.getElementsByClassName?.("c-0")?.[0];
-  if (isNone(char)) return undefined;
-  return char as HTMLSpanElement;
+  return isCharDOM(char) ? char : undefined;
 }
 
-export function getTailCharDOM(dom: HTMLElement | undefined | null) {
+export function getTailCharDOM(dom?: HTMLElement) {
   const char = dom?.querySelector(".char-index:last-of-type");
-  if (isNone(char)) return undefined;
-  return char as HTMLSpanElement;
+  return isCharDOM(char) ? char : undefined;
 }
 
-export function getCharDOM(line: unknown, pos: number) {
-  const char = getLineDOM(line)?.getElementsByClassName(`c-${pos}`)?.[0];
-  if (isNone(char)) return undefined;
-  return char as HTMLSpanElement;
+export function getCharDOM<T extends HTMLElement>(
+  line: string | number | T,
+  pos: number,
+) {
+  const char = getLineDOM(line)?.getElementsByClassName?.(`c-${pos}`)?.[0];
+  return isCharDOM(char) ? char : undefined;
 }
 export function getDOMFromPoint(x: number, y: number) {
   const targets = document.elementsFromPoint(x, y);
-  const char = targets.find((target) =>
-    target.classList.contains("char-index")
-  );
-  const line = targets.find((target) => target.classList.contains("line"));
+  const char = targets.find((target) => isCharDOM(target));
+  const line = targets.find((target) => isLineDOM(target));
   return {
     char: isNone(char) ? undefined : char as HTMLSpanElement,
     line: isNone(line) ? undefined : line as HTMLDivElement,
