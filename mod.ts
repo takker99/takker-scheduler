@@ -4,13 +4,20 @@ import {
   insertLine,
   insertText,
   moveLinesBefore,
+  replaceLines,
   upBlocks,
 } from "./lib/edit.ts";
 import { press } from "./lib/press.ts";
 import { position } from "./lib/position.ts";
-import { getCharDOM, getLine, getLineId, getLineNo } from "./lib/node.ts";
-import { selection } from "./lib/selection.ts";
-import { parse, set } from "./task.ts";
+import {
+  getCharDOM,
+  getLine,
+  getLineId,
+  getLineNo,
+  getText,
+} from "./lib/node.ts";
+import { range, rangeText } from "./lib/selection.ts";
+import { parse, Task, toString } from "./task.ts";
 import { getDate, getTitle } from "./diary.ts";
 import {
   addDays,
@@ -29,19 +36,20 @@ import {
   subMinutes,
 } from "./deps/date-fns.ts";
 import { generatePlan } from "./plan.js";
-import { getDatesFromSelection } from "./utils.js";
+import { getDatesFromSelection } from "./utils.ts";
 import { syncMultiPages } from "./sync.js";
 
 //export {openLogPages} from '../takker-scheduler-3%2Flogger/script.js';
 
 const interval = 5; // 5 minutes
 export async function addTask() {
-  const lineNo = getLineNo(position().line);
-  const taskLine = parse(lineNo);
+  const text = getText(position()?.line);
+  if (!text) return;
+  const taskLine = parse(text);
 
   // 現在行がタスクなら、それと同じ日付にする
   // 違ったら今日にする
-  const baseDate = taskLine?.baseDate ?? new Date();
+  const base = taskLine?.base ?? new Date();
 
   // 予定開始時刻と見積もり時刻を計算する
   // 予定開始時刻は、その前のタスクの見積もり時間にintervalを足したものだけずらしておく
@@ -49,58 +57,61 @@ export async function addTask() {
     start: taskLine?.plan?.start
       ? addMinutes(
         taskLine.plan.start,
-        interval + (taskLine.plan.duration?.minutes ?? 0),
+        interval + (taskLine.plan.duration ?? 0),
       )
       : undefined,
     duration: taskLine?.plan?.duration,
   };
 
   // 書き込む
-  await set({ title: "", baseDate, plan, lineNo: lineNo + 1 }, {}, {
-    overwrite: false,
-  });
+  await insertLine(
+    position()?.line ?? 0,
+    toString({ title: "", base, plan, record: {} }),
+  );
 }
-export async function walkDay(count = 1) {
-  if (!selection.exist) {
-    await _walkDay(count);
-  } else {
-    const { start: { lineNo: startNo }, end: { lineNo: endNo } } =
-      selection.range;
-    for (let i = startNo; i <= endNo; i++) {
-      await goLine(i);
-      await _walkDay(count);
+
+function getModifyRange() {
+  const { start, end } = range() ?? {};
+  const line = position()?.line ?? 0;
+  const startNo = start?.line ?? line;
+  const endNo = end?.line ?? line;
+  return [startNo, endNo] as const;
+}
+async function modifyTasks(
+  start: number,
+  end: number,
+  change: (task: Task, index: number) => Task,
+) {
+  const lines = [] as string[];
+  for (let i = start; i <= end; i++) {
+    const text = getText(i) ?? "";
+    const task = parse(text);
+    if (!task) {
+      lines.push(text);
+      continue;
     }
+    lines.push(toString(change(task, i)));
   }
+  await replaceLines(start, end, lines.join("\n"));
 }
 
-async function _walkDay(count) {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
-
-  await set(taskLine, { baseDate: addDays(taskLine.baseDate, count) });
+export async function walkDay(count = 1) {
+  const [start, end] = getModifyRange();
+  await modifyTasks(start, end, (task) => {
+    task.base = addDays(task.base, count);
+    return task;
+  });
 }
 
 export async function moveToday() {
-  if (!selection.exist) {
-    await _moveToday();
-  } else {
-    const { start: { lineNo: startNo }, end: { lineNo: endNo } } =
-      selection.range;
-    for (let i = startNo; i <= endNo; i++) {
-      await goLine({ index: i });
-      await _moveToday();
-    }
-  }
-}
-
-async function _moveToday() {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
+  const [start, end] = getModifyRange();
   const now = new Date();
-  // 日付に変更がなければ何もしない
-  if (isSameDay(taskLine.baseDate, now)) return;
-
-  await set(taskLine, { baseDate: now });
+  await modifyTasks(start, end, (task) => {
+    // 日付に変更がなければ何もしない
+    if (isSameDay(task.base, now)) return task;
+    task.base = now;
+    return task;
+  });
 }
 
 export async function startTask() {

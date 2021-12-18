@@ -6,3 +6,14 @@ export { default as parse } from "https://deno.land/x/date_fns@v2.22.1/parse/ind
 export { default as isValid } from "https://deno.land/x/date_fns@v2.22.1/isValid/index.js";
 export { default as formatRFC3339 } from "https://deno.land/x/date_fns@v2.22.1/formatRFC3339/index.js";
 export { default as getUnixTime } from "https://deno.land/x/date_fns@v2.22.1/getUnixTime/index.ts";
+export { default as set } from "https://deno.land/x/date_fns@v2.22.1/set/index.ts";
+export { default as subDays } from "https://deno.land/x/date_fns@v2.22.1/subDays/index.ts";
+export { default as subMinutes } from "https://deno.land/x/date_fns@v2.22.1/subMinutes/index.ts";
+export { default as getHours } from "https://deno.land/x/date_fns@v2.22.1/getHours/index.ts";
+export { default as getMinutes } from "https://deno.land/x/date_fns@v2.22.1/getMinutes/index.ts";
+export { default as isSameDay } from "https://deno.land/x/date_fns@v2.22.1/isSameDay/index.ts";
+export { default as compareAsc } from "https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts";
+export { default as intervalToDuration } from "https://deno.land/x/date_fns@v2.22.1/intervalToDuration/index.ts";
+export { default as areIntervalsOverlapping } from "https://deno.land/x/date_fns@v2.22.1/areIntervalsOverlapping/index.ts";
+export { default as differenceInMinutes } from "https://deno.land/x/date_fns@v2.22.1/differenceInMinutes/index.js";
+export { default as eachDayOfInterval } from "https://deno.land/x/date_fns@v2.22.1/eachDayOfInterval/index.ts";
