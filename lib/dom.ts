@@ -12,7 +12,7 @@ export const textInput = () => {
 };
 export const cursor = () => {
   const cursor = document.getElementsByClassName("cursor")?.[0];
-  return cursor !== null ? cursor as HTMLTextAreaElement : null;
+  return cursor !== null ? cursor as HTMLDivElement : null;
 };
 export const selections = () =>
   document.getElementsByClassName("selections")?.[0];
