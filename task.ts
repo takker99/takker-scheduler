@@ -19,7 +19,7 @@ export interface Task {
   base: Date;
   plan: {
     start?: Date;
-    duration?: number;
+    /** 見積もり時間 単位は秒 */ duration?: number;
   };
   record: Interval;
 }
