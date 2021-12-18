@@ -42,7 +42,6 @@ export function moveUp(count = 1) {
 }
 export function moveDown(count = 1) {
   for (const _ of range(0, count)) {
-    press("ArrowUp");
     press("ArrowDown");
   }
 }
@@ -58,7 +57,7 @@ export function goHeadWithoutBlank() {
 }
 export function goEndWithoutBlank() {
   press("End");
-  moveLeft(getIndentCount(position().line));
+  moveLeft(getIndentCount(position()?.line));
 }
 export function goHead() {
   press("Home");
