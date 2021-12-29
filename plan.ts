@@ -1,33 +1,26 @@
+/// <reference lib="dom" />
 import { toString } from "./task.ts";
 import { getTitle } from "./diary.ts";
 import { lightFormat, parse } from "./deps/date-fns.ts";
-import { insertText } from "./lib/edit.ts";
-import { goLastLine } from "./lib/motion.ts";
-import { press } from "./lib/press.ts";
+import type { Scrapbox } from "./deps/scrapbox.ts";
+declare const scrapbox: Scrapbox;
 
-export function isTaskPortalPage(title) {
+export function isTaskPortalPage(title: string) {
   return /^(?:🔳|📝)/u.test(title);
 }
+export type IsTaskPortalPage = (title: string) => boolean;
+
 export async function generatePlan(
-  dates,
-  targetProject,
-  { minify = false } = {},
+  dates: Date[],
+  targetProject: string,
 ) {
   targetProject = targetProject ?? scrapbox.Project.name;
   const taskList =
     (await Promise.all(dates.map((date) => generateTaskList(date))))
       .flat();
 
-  if (minify) {
-    // 現在のページの末尾に書き込む
-    await goLastLine();
-    press("Enter");
-    await insertText(taskList.map((task) => toString(task)).join("\n"));
-    return;
-  }
-
   // 日付ごとにまとめる
-  const taskStrings = {};
+  const taskStrings = {} as Record<string, string[]>;
   taskList.forEach((task) => {
     const key = lightFormat(task.baseDate, "yyyy-MM-dd");
     taskStrings[key] = [
@@ -40,17 +33,17 @@ export async function generatePlan(
   for (const [key, tasks] of Object.entries(taskStrings)) {
     const body = encodeURIComponent(tasks.join("\n"));
     const title = encodeURIComponent(
-      getTitle(parse(key, "yyyy-MM-dd", new Date())),
+      getTitle(parse(key, "yyyy-MM-dd", new Date(), undefined)),
     );
     window.open(`https://scrapbox.io/${targetProject}/${title}?body=${body}`);
   }
 }
-async function generateTaskList(date) {
+async function generateTaskList(date: Date) {
   const generates = await getFunctions(isTaskPortalPage, "generate.js");
   return (await Promise.all(generates.map((generate) => generate(date))))
     .flat();
 }
-async function getFunctions(judge, filename) {
+async function getFunctions(judge: IsTaskPortalPage, filename: string) {
   const titles = scrapbox.Project.pages
     .flatMap(({ titleLc, exists }) =>
       (exists && judge(titleLc)) ? [titleLc] : []
@@ -60,7 +53,7 @@ async function getFunctions(judge, filename) {
   );
   return generates.filter((generate) => generate);
 }
-async function getFunction(title, filename) {
+async function getFunction(title: string, filename: string) {
   try {
     const { generate } = await import(
       `/api/code/${scrapbox.Project.name}/${title}/${filename}`
@@ -68,12 +61,8 @@ async function getFunction(title, filename) {
     return generate;
   } catch (e) {
     // 404 Not foundは無視
-    if (!(e instanceof SyntaxError)) return undefined;
-    console.error(e.message);
-    console.error(
-      `file: ${e.fileName}, line: ${e.lineNumber}, col: ${e.columnNumber}`,
-    );
-    console.error(e.stack);
-    return undefined;
+    if (!(e instanceof SyntaxError)) return;
+    console.error(e);
+    return;
   }
 }
