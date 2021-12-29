@@ -14,6 +14,7 @@ import {
   getLine,
   getLineId,
   getLineNo,
+  getLines,
   getText,
 } from "./lib/node.ts";
 import { range, rangeText } from "./lib/selection.ts";
@@ -35,26 +36,29 @@ import {
   subDays,
   subMinutes,
 } from "./deps/date-fns.ts";
-import { generatePlan } from "./plan.js";
+import { generatePlan } from "./plan.ts";
 import { getDatesFromSelection } from "./utils.ts";
 import { syncMultiPages } from "./sync.js";
 
 //export {openLogPages} from '../takker-scheduler-3%2Flogger/script.js';
 
 const interval = 5; // 5 minutes
+/** カーソル行の下にタスクを追加する
+ *
+ * カーソル行がタスクだった場合は、そのタスクの日付と予定開始時刻、見積もり時間を引き継ぐ
+ */
 export async function addTask() {
-  const text = getText(position()?.line);
-  if (!text) return;
-  const taskLine = parse(text);
+  const linePos = position()?.line;
+  const taskLine = parse(getText(linePos) ?? "");
 
   // 現在行がタスクなら、それと同じ日付にする
   // 違ったら今日にする
   const base = taskLine?.base ?? new Date();
 
-  // 予定開始時刻と見積もり時刻を計算する
-  // 予定開始時刻は、その前のタスクの見積もり時間にintervalを足したものだけずらしておく
+  // 予定開始時刻と見積もり時間を計算する
   const plan = {
     start: taskLine?.plan?.start
+      // 予定開始時刻は、その前のタスクの見積もり時間にintervalを足したものだけずらしておく
       ? addMinutes(
         taskLine.plan.start,
         interval + (taskLine.plan.duration ?? 0),
@@ -63,9 +67,9 @@ export async function addTask() {
     duration: taskLine?.plan?.duration,
   };
 
-  // 書き込む
+  // カーソル行の下に書き込む
   await insertLine(
-    position()?.line ?? 0,
+    (linePos ?? 0) + 1,
     toString({ title: "", base, plan, record: {} }),
   );
 }
@@ -77,24 +81,11 @@ function getModifyRange() {
   const endNo = end?.line ?? line;
   return [startNo, endNo] as const;
 }
-async function modifyTasks(
-  start: number,
-  end: number,
-  change: (task: Task, index: number) => Task,
-) {
-  const lines = [] as string[];
-  for (let i = start; i <= end; i++) {
-    const text = getText(i) ?? "";
-    const task = parse(text);
-    if (!task) {
-      lines.push(text);
-      continue;
-    }
-    lines.push(toString(change(task, i)));
-  }
-  await replaceLines(start, end, lines.join("\n"));
-}
 
+/** カーソル行もしくは選択範囲内の全てのタスクの日付を進める
+ *
+ * @param [count=1] 進める日数
+ */
 export async function walkDay(count = 1) {
   const [start, end] = getModifyRange();
   await modifyTasks(start, end, (task) => {
@@ -103,6 +94,7 @@ export async function walkDay(count = 1) {
   });
 }
 
+/** カーソル行もしくは選択範囲内の全てのタスクの日付を今日にする */
 export async function moveToday() {
   const [start, end] = getModifyRange();
   const now = new Date();
@@ -114,69 +106,123 @@ export async function moveToday() {
   });
 }
 
+/** カーソル行のタスクを開始する
+ *
+ * 既に開始されていたら、開始をキャンセルする
+ */
 export async function startTask() {
-  const taskLine = parse(getLineNo(position().line));
+  const linePos = position()?.line;
+  const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
-  if (taskLine.record?.end) return; // すでに終了していたら何もしない
+  const { record: { start, end }, ...rest } = taskLine;
+  if (end) return; // すでに終了していたら何もしない
 
   // 開始時刻をtoggleする
-  await set(taskLine, {
-    record: { start: !taskLine.record?.start ? new Date() : "delete" },
-  });
+  await insertLine(
+    linePos ?? 0,
+    toString({
+      record: { start: !start ? new Date() : undefined },
+      ...rest,
+    }),
+  );
 }
 
+/** カーソル行のタスクを終了する
+ *
+ * 既に終了していたら、終了をキャンセルする
+ * 開始されていないタスクには効果がない
+ */
 export async function endTask() {
-  const taskLine = parse(getLineNo(position().line));
+  const linePos = position()?.line;
+  const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
-  if (!taskLine.record?.start) return; // まだ開始していなかったら何もしない
+  const { record: { start, end }, ...rest } = taskLine;
+  if (!start) return; // まだ開始していなかったら何もしない
 
   // 終了時刻をtoggleする
-  await set(taskLine, {
-    record: { end: !taskLine.record?.end ? new Date() : "delete" },
-  });
+  await insertLine(
+    linePos ?? 0,
+    toString({
+      record: { start, end: !end ? new Date() : undefined },
+      ...rest,
+    }),
+  );
 }
 
-// 開始→終了→resetを繰り返す
+/** カーソル行のタスクを状態をcyclicに変更するmethod
+ *
+ * 以下の順に状態が変化する
+ * 1. 未開始
+ * 2. 開始
+ * 3. 終了
+ * 4. 未開始
+ * ...
+ */
 export async function toggleTask() {
-  const taskLine = parse(getLineNo(position().line));
+  const linePos = position()?.line;
+  const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
-  const { title, baseDate, plan, record, lineNo } = taskLine;
+  const { record: { start, end }, ...rest } = taskLine;
 
   // 開始していないときは開始する
-  if (!record?.start) {
+  if (!start) {
     await startTask();
     return;
   }
   // 終了していないときは終了する
-  if (!record?.end) {
+  if (!end) {
     await endTask();
     return;
   }
 
-  // すでに終了しているタスクはリセットする
-  await set({ title, baseDate, plan, lineNo });
+  // すでに終了しているタスクは未開始に戻す
+  await insertLine(
+    linePos ?? 0,
+    toString({
+      record: {},
+      ...rest,
+    }),
+  );
 }
+
+/** カーソル行のタスクを事後報告的に終了する
+ *
+ * カーソル行より前にあるタスクの終了時刻を開始時刻として記入する
+ * カーソル行より前に終了しているタスクが一つもないときは、現在時刻を開始時刻とする
+ *
+ * 既に開始しているタスクだった場合は、`endTask()`と同じ処理を行う
+ */
 export async function posterioriEndTask() {
-  const taskLine = parse(getLineNo(position().line));
+  const linePos = position()?.line;
+  const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
-  if (taskLine.record?.start || taskLine.record?.end) return; // 開始していないタスクのみが対象
+  const { record: { start, end }, ...rest } = taskLine;
+  if (start) {
+    if (end) return;
+    await endTask();
+    return;
+  }
+  if (end) return;
 
   // 直近のタスクの終了日時を取得する
-  const lineNos = [...scrapbox.Page.lines.keys()]
-    .slice(0, getLineNo(position().line) + 1)
-    .reverse();
-  let prevEnd = undefined;
-  for (const lineNo of lineNos) {
-    const taskLine_ = parse(lineNo);
-    if (taskLine_?.record?.end) {
-      prevEnd = taskLine_.record.end;
+  let prevEnd: Date | undefined = undefined;
+  for (const { text } of getLines().slice(0, (linePos ?? 0) + 1).reverse()) {
+    const { record } = parse(text) ?? {};
+    if (record?.end) {
+      prevEnd = record.end;
       break;
     }
   }
 
   // 上書きする
   const now = new Date();
-  await set(taskLine, { record: { start: prevEnd ?? now, end: now } });
+  await insertLine(
+    linePos ?? 0,
+    toString({
+      record: { start: prevEnd ?? now, end: now },
+      ...rest,
+    }),
+  );
 }
 
 export async function sort() {
@@ -511,4 +557,32 @@ export async function syncFromSelection() {
     )
       .map((date) => ({ project: "takker-memex", title: getTitle(date) })),
   );
+}
+
+/** 指定範囲内の全てのタスクを一括操作する
+ *
+ * @param start 選択範囲の先頭の行
+ * @param end 選択範囲の末尾の行
+ * @param change 各タスクに適用する操作
+ */
+async function modifyTasks(
+  start: number,
+  end: number,
+  change: (
+    /** 変更するタスク */ task: Task,
+    /** タスクを取得した行の行番号 */ index: number,
+  ) => Task,
+) {
+  const lines = [] as string[];
+  for (let i = start; i <= end; i++) {
+    const text = getText(i) ?? "";
+    const task = parse(text);
+    // タスクとみなされた行だけ変更する
+    if (!task) {
+      lines.push(text);
+      continue;
+    }
+    lines.push(toString(change(task, i)));
+  }
+  await replaceLines(start, end, lines.join("\n"));
 }
