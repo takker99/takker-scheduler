@@ -1,15 +1,13 @@
 import { goLine } from "./lib/motion.ts";
 import { deleteLines, insertLine, replaceLines } from "./lib/edit.ts";
-import { position } from "./lib/position.ts";
+import { caret } from "./lib/caret.ts";
 import {
   getCharDOM,
-  getIndentLineCount,
   getLine,
   getLineNo,
   getLines,
   getText,
 } from "./lib/node.ts";
-import { range } from "./lib/selection.ts";
 import { parse, Task, toString } from "./task.ts";
 import { format as formatPage } from "./diary.ts";
 import {
@@ -36,7 +34,7 @@ const interval = 5; // 5 minutes
  * カーソル行がタスクだった場合は、そのタスクの日付と予定開始時刻、見積もり時間を引き継ぐ
  */
 export async function addTask() {
-  const linePos = position()?.line;
+  const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
 
   // 現在行がタスクなら、それと同じ日付にする
@@ -63,11 +61,8 @@ export async function addTask() {
 }
 
 function getModifyRange() {
-  const { start, end } = range() ?? {};
-  const line = position()?.line ?? 0;
-  const startNo = start?.line ?? line;
-  const endNo = end?.line ?? line;
-  return [startNo, endNo] as const;
+  const { selectionRange: { start, end } } = caret();
+  return [start.line, end.line] as const;
 }
 
 /** カーソル行もしくは選択範囲内の全てのタスクの日付を進める
@@ -99,7 +94,7 @@ export async function moveToday() {
  * 既に開始されていたら、開始をキャンセルする
  */
 export async function startTask() {
-  const linePos = position()?.line;
+  const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
   const { record: { start, end }, ...rest } = taskLine;
@@ -121,7 +116,7 @@ export async function startTask() {
  * 開始されていないタスクには効果がない
  */
 export async function endTask() {
-  const linePos = position()?.line;
+  const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
   const { record: { start, end }, ...rest } = taskLine;
@@ -147,7 +142,7 @@ export async function endTask() {
  * ...
  */
 export async function toggleTask() {
-  const linePos = position()?.line;
+  const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
   const { record: { start, end }, ...rest } = taskLine;
@@ -181,7 +176,7 @@ export async function toggleTask() {
  * 既に開始しているタスクだった場合は、`endTask()`と同じ処理を行う
  */
 export async function posterioriEndTask() {
-  const linePos = position()?.line;
+  const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
   const { record: { start, end }, ...rest } = taskLine;

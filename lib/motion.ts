@@ -14,12 +14,12 @@ import {
   getLineNo,
   getTailLineDOM,
 } from "./node.ts";
-import { position } from "./position.ts";
+import { caret } from "./caret.ts";
 import { isHeightViewable } from "./isHeightViewable.ts";
 import { range } from "./range.ts";
 
 export async function focusEnd(holding = 1000) {
-  const target = (position().line ?? getHeadLineDOM())
+  const target = getLineDOM(caret().position.line)
     ?.getElementsByClassName(
       "text",
     )?.[0] as (HTMLDivElement | undefined);
@@ -112,7 +112,7 @@ function getVisibleLineCount() {
 }
 
 export async function scrollHalfUp(count = 1) {
-  const lineNo = getLineNo(position().line);
+  const lineNo = getLineNo(caret().position.line);
   if (lineNo === undefined) {
     throw Error("Could not detect the present cursor line No.");
   }
@@ -122,7 +122,7 @@ export async function scrollHalfUp(count = 1) {
   await goLine(Math.max(index, 0));
 }
 export async function scrollHalfDown(count = 1) {
-  const lineNo = getLineNo(position().line);
+  const lineNo = getLineNo(caret().position.line);
   if (lineNo === undefined) {
     throw Error("Could not detect the present cursor line No.");
   }
