@@ -11,12 +11,10 @@ import {
 } from "./lib/node.ts";
 import { range } from "./lib/selection.ts";
 import { parse, Task, toString } from "./task.ts";
-import { getDate, getTitle } from "./diary.ts";
+import { format as formatPage } from "./diary.ts";
 import {
   addDays,
-  addHours,
   addMinutes,
-  compareAsc,
   eachDayOfInterval,
   getHours,
   getMinutes,
@@ -25,11 +23,10 @@ import {
   isValid,
   lightFormat,
   set as setTime,
-  subDays,
   subMinutes,
 } from "./deps/date-fns.ts";
 import { generatePlan } from "./plan.ts";
-import { getDatesFromSelection, isNone } from "./utils.ts";
+import { getDatesFromSelection } from "./utils.ts";
 import { syncMultiPages } from "./sync.js";
 import { joinPageRoom } from "./deps/scrapbox.ts";
 
@@ -216,29 +213,7 @@ export async function posterioriEndTask() {
   );
 }
 
-const sections = [
-  "[** 00:00 - 03:00] 未明",
-  "[** 03:00 - 06:00] 明け方",
-  "[** 06:00 - 09:00] 朝",
-  "[** 09:00 - 12:00] 昼前",
-  "[** 12:00 - 15:00] 昼過ぎ",
-  "[** 15:00 - 18:00] 夕方",
-  "[** 18:00 - 21:00] 夜のはじめ頃",
-  "[** 21:00 - 00:00] 夜遅く",
-];
-
 /** タスクページをformatする
- *
- * 形式
- * - 1行目に`yesterday: [前日のタスクページ]`を置く
- * - 2行目以降にtask linesを並べる
- *   - 並び順の決め方
- *     - 実績開始日時の早い順に並べる
- *     - まだ開始されていないタスクは、代わりに予定開始時刻を使う
- *   - indentでtask lineにぶら下げた行はそのままの並び順を維持したままにする
- *   - 間に1日の時間細分図のラベルを挿入する
- * - ページ末尾にtask line以外の行を置く
- *   - 並べ替えはしない
  *
  * @param project formatしたいページのproject name
  * @param title formatしたいページのタイトル
@@ -248,108 +223,10 @@ export async function format(project: string, title: string) {
     project,
     title,
   );
-  await patch((lines) => {
-    const label = makeBackLabel();
-
-    // タスクとインデントのセットを取得する
-    const taskBlocks = [] as {
-      index: number;
-      task: Task;
-      range: [number, number];
-    }[];
-    const otherLineNos = [] as number[]; // タスクブロック以外の行の番号
-    for (let i = 1; i < lines.length; i++) {
-      // 先頭行のタイトルは別扱いする
-      const task = parse(lines[i].text);
-      if (!task) {
-        // 自動で挿入した行は外す
-        if (sections.includes(lines[i].text)) continue;
-        if (label !== "" && label === lines[i].text) continue;
-        otherLineNos.push(i);
-        continue;
-      }
-
-      const indentedLineNum = getIndentLineCount(i) ?? 0;
-      taskBlocks.push({
-        index: i,
-        task,
-        range: [i + 1, i + 1 + indentedLineNum],
-      });
-      i += indentedLineNum;
-    }
-
-    // task blocksを並び替える
-    const sortedTaskBlocks = taskBlocks
-      .sort((a, b) =>
-        compareAsc(
-          a.task.record?.start ?? a.task.plan?.start ?? a.task.base,
-          b.task.record?.start ?? b.task.plan?.start ?? b.task.base,
-        )
-      );
-
-    // 見出しを挿入する
-    if (sortedTaskBlocks.length === 0) {
-      return [
-        lines[0].text, // タイトル
-        label, // 前日のページへのリンク
-        ...sections, // 見出し
-        ...otherLineNos.map((i) => lines[i].text), //タスク以外の行
-      ];
-    }
-
-    // 見出しの挿入位置を決める
-    const insertPoint = [0, 0, 0, 0, 0, 0, 0, 0]; // 指定した番号のtask blockの前に挿入する
-    for (let i = 1; i < sections.length; i++) {
-      // 最初は確定しているので飛ばす
-
-      // 見出しの時間帯の始まりの時刻
-      const now = new Date();
-      const start = addHours(
-        new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-        3 * i,
-      );
-
-      // 見出しの時間帯内に開始する最初のタスク
-      const lowerTaskIndex = sortedTaskBlocks.findIndex((
-        { task: { record, plan, base } },
-      ) => isAfter(record?.start ?? plan?.start ?? base, start));
-
-      if (lowerTaskIndex < 0) {
-        insertPoint[i] = sortedTaskBlocks.length - 1;
-        continue;
-      }
-      if (lowerTaskIndex === 0) continue; // 初期値のまま
-
-      // 一つ前のタスクの長さで決める
-      const { record, plan, base } = sortedTaskBlocks[lowerTaskIndex - 1].task;
-      const s = record?.start ?? plan?.start ?? base;
-      const e = record?.end ??
-        (!isNone(plan?.duration) ? addMinutes(s, plan.duration) : base);
-      insertPoint[i] =
-        (e.getTime() - s.getTime()) / 2 < start.getTime() - s.getTime()
-          ? lowerTaskIndex
-          : lowerTaskIndex + 1;
-    }
-
-    return [
-      lines[0].text, // タイトル
-      label, // 前日のページへのリンク
-      ...sortedTaskBlocks.flatMap((block, i) => [
-        ...insertPoint.flatMap((j, k) => j === i ? [sections[k]] : []), // 見出し
-        toString(block.task), // タスク
-        ...lines.slice(block.range[0], block.range[1]).map((line) => line.text), // タスクにぶら下がった行
-      ]),
-      ...otherLineNos.map((i) => lines[i].text), // タスク以外の行
-    ];
-  });
+  await patch((lines) => formatPage(lines.map((line) => line.text)));
   cleanup();
 }
-/** 前日の日付ページへのnavigationを作る */
-function makeBackLabel() {
-  const pageDate = getDate();
-  if (isNone(pageDate)) return "";
-  return `yesterday: [${getTitle(subDays(pageDate, 1))}]`;
-}
+
 export async function transport({ targetProject }) {
   const diaryDate = getDate();
 
