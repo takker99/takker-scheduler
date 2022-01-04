@@ -13,6 +13,7 @@ import {
   getLineDOM,
   getLineNo,
   getTailLineDOM,
+  getText,
 } from "./node.ts";
 import { caret } from "./caret.ts";
 import { isHeightViewable } from "./isHeightViewable.ts";
@@ -81,7 +82,9 @@ export function goHeadWithoutBlank() {
 /** 最後の非空白文字に移動する */
 export function goEndWithoutBlank() {
   press("End");
-  moveLeft(getIndentCount(position()?.line));
+  moveLeft(
+    getText(caret().position.line)?.match?.(/(\s*)$/)?.[1]?.length ?? 0,
+  );
 }
 /** 行頭に移動する */
 export function goHead() {
