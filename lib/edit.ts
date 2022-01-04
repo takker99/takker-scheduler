@@ -1,4 +1,4 @@
-import { goEnd, goHead, goLine } from "./motion.ts";
+import { goHead, goLine } from "./motion.ts";
 import { press } from "./press.ts";
 import { getLineCount } from "./node.ts";
 import { range } from "./range.ts";

@@ -8,7 +8,6 @@ import {
   getCharDOM,
   getHeadCharDOM,
   getHeadLineDOM,
-  getIndentCount,
   getLineCount,
   getLineDOM,
   getLineNo,
@@ -115,7 +114,7 @@ export async function goLastLine() {
  *
  * @param value 移動したい行の行番号 or 行ID or 行のDOM
  */
-export async function goLine(value: unknown) {
+export async function goLine(value: string | number | HTMLElement | undefined) {
   await _goLine(getLineDOM(value));
 }
 async function _goLine(target: HTMLDivElement | undefined) {
@@ -134,7 +133,7 @@ async function _goLine(target: HTMLDivElement | undefined) {
  * @param line 移動したい文字がある行
  * @param pos 移動したい文字の列
  */
-export async function goChar(line: unknown, pos: number) {
+export async function goChar(line: string | number | HTMLElement, pos: number) {
   const charDOM = getCharDOM(line, pos);
   if (!charDOM) {
     throw Error(

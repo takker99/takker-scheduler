@@ -1,11 +1,4 @@
-import {
-  addDays,
-  addMinutes,
-  getUnixTime,
-  isAfter,
-  lightFormat,
-  parse,
-} from "./deps/date-fns.ts";
+import { addDays, isAfter, lightFormat, parse } from "./deps/date-fns.ts";
 
 export type Interval = {
   start?: Date;
