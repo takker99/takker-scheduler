@@ -2,7 +2,7 @@
 /// <reference lib="esnext" />
 /// <reference lib="dom" />
 
-import { isString } from "../deps/unknownutil.ts";
+import { isString } from "../utils.ts";
 import { sleep } from "../lib/sleep.ts";
 
 export interface OpenAuthWindowProps {

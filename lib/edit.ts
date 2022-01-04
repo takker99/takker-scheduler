@@ -3,7 +3,7 @@ import { press } from "./press.ts";
 import { getLineCount } from "./node.ts";
 import { range } from "./range.ts";
 import { textInput } from "./dom.ts";
-import { isArray, isNumber, isString } from "../deps/unknownutil.ts";
+import { isArray, isNumber, isString } from "../utils.ts";
 
 export function undo(count = 1) {
   for (const _ of range(0, count)) {
