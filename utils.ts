@@ -1,5 +1,5 @@
 // The most of this code is ported from https://deno.land/x/unknownutil@v1.1.0/mod.ts
-import { rangeText } from "./lib/selection.ts";
+import { caret } from "./lib/caret.ts";
 import { isValid, parse } from "./deps/date-fns.ts";
 
 export type Predicate<T> = (value: unknown) => value is T;
@@ -29,7 +29,9 @@ export function ensureArray<T>(
 
 export function* getDatesFromSelection() {
   const now = new Date();
-  for (const [dateString] of rangeText().matchAll(/\d{4}-\d{2}-\d{2}/g)) {
+  for (
+    const [dateString] of caret().selectedText.matchAll(/\d{4}-\d{2}-\d{2}/g)
+  ) {
     const date = parse(dateString, "yyyy-MM-dd", now, undefined);
     if (!isValid(date)) continue;
     yield date;
