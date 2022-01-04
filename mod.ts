@@ -1,29 +1,21 @@
-import { goHead, goLine } from "./lib/motion.ts";
-import {
-  deleteLines,
-  insertLine,
-  insertText,
-  moveLinesBefore,
-  replaceLines,
-  upBlocks,
-} from "./lib/edit.ts";
-import { press } from "./lib/press.ts";
+import { goLine } from "./lib/motion.ts";
+import { deleteLines, insertLine, replaceLines } from "./lib/edit.ts";
 import { position } from "./lib/position.ts";
 import {
   getCharDOM,
+  getIndentLineCount,
   getLine,
-  getLineId,
   getLineNo,
   getLines,
   getText,
 } from "./lib/node.ts";
-import { range, rangeText } from "./lib/selection.ts";
+import { range } from "./lib/selection.ts";
 import { parse, Task, toString } from "./task.ts";
 import { getDate, getTitle } from "./diary.ts";
 import {
   addDays,
+  addHours,
   addMinutes,
-  areIntervalsOverlapping,
   compareAsc,
   eachDayOfInterval,
   getHours,
@@ -37,10 +29,9 @@ import {
   subMinutes,
 } from "./deps/date-fns.ts";
 import { generatePlan } from "./plan.ts";
-import { getDatesFromSelection } from "./utils.ts";
+import { getDatesFromSelection, isNone } from "./utils.ts";
 import { syncMultiPages } from "./sync.js";
-
-//export {openLogPages} from '../takker-scheduler-3%2Flogger/script.js';
+import { joinPageRoom } from "./deps/scrapbox.ts";
 
 const interval = 5; // 5 minutes
 /** カーソル行の下にタスクを追加する
@@ -225,143 +216,139 @@ export async function posterioriEndTask() {
   );
 }
 
-export async function sort() {
-  if (scrapbox.Page.lines.length < 3) return;
-  const startNo = 2;
-  const endNo = scrapbox.Page.lines.length - 1;
-  const sortedTasks = scrapbox.Page.lines
-    .slice(startNo, 1 + endNo)
-    .flatMap((line, i) => {
-      const task = parse(i + startNo);
-      return task ? [{ id: `L${line.id}`, task }] : [];
-    })
-    .sort((a, b) =>
-      compareAsc(
-        a.task.record?.start ?? a.task.plan?.start ?? a.task.date,
-        b.task.record?.start ?? b.task.plan?.start ?? b.task.date,
-      )
-    );
-  // 一番上から順に入れ替え作業をする
-  for (let i = 0; i < sortedTasks.length; i++) {
-    // taskの順番を計算する
-    const presentPosition = scrapbox.Page.lines
-      .slice(startNo, 1 + endNo)
-      .filter((line) => !/^\s+/.test(line.text)) // top level indent lineのみ数える
-      .findIndex((line) => `L${line.id}` === sortedTasks[i].id);
-    //console.log({presentPosition});
-    if (presentPosition === i) continue;
-    await goLine(sortedTasks[i].id);
-    upBlocks(presentPosition - i);
-  }
+const sections = [
+  "[** 00:00 - 03:00] 未明",
+  "[** 03:00 - 06:00] 明け方",
+  "[** 06:00 - 09:00] 朝",
+  "[** 09:00 - 12:00] 昼前",
+  "[** 12:00 - 15:00] 昼過ぎ",
+  "[** 15:00 - 18:00] 夕方",
+  "[** 18:00 - 21:00] 夜のはじめ頃",
+  "[** 21:00 - 00:00] 夜遅く",
+];
 
-  // 見出しもきれいにする
-  insertSections();
-}
-async function insertSections() {
-  const sections = [
-    "[** 00:00 - 03:00] 未明",
-    "[** 03:00 - 06:00] 明け方",
-    "[** 06:00 - 09:00] 朝",
-    "[** 09:00 - 12:00] 昼前",
-    "[** 12:00 - 15:00] 昼過ぎ",
-    "[** 15:00 - 18:00] 夕方",
-    "[** 18:00 - 21:00] 夜のはじめ頃",
-    "[** 21:00 - 00:00] 夜遅く",
-  ];
+/** タスクページをformatする
+ *
+ * 形式
+ * - 1行目に`yesterday: [前日のタスクページ]`を置く
+ * - 2行目以降にtask linesを並べる
+ *   - 並び順の決め方
+ *     - 実績開始日時の早い順に並べる
+ *     - まだ開始されていないタスクは、代わりに予定開始時刻を使う
+ *   - indentでtask lineにぶら下げた行はそのままの並び順を維持したままにする
+ *   - 間に1日の時間細分図のラベルを挿入する
+ * - ページ末尾にtask line以外の行を置く
+ *   - 並べ替えはしない
+ *
+ * @param project formatしたいページのproject name
+ * @param title formatしたいページのタイトル
+ */
+export async function format(project: string, title: string) {
+  const { patch, cleanup } = await joinPageRoom(
+    project,
+    title,
+  );
+  await patch((lines) => {
+    const label = makeBackLabel();
 
-  const pageDate = getDate();
-  if (!isValid(pageDate)) return;
-
-  // 前の日付ページへのリンクを挿入する
-  const indexLine = `yesterday: [${getTitle(subDays(pageDate, 1))}]`;
-  if (scrapbox.Page.lines.findIndex((line) => line.text === indexLine) !== -1) {
-    const index = scrapbox.Page.lines.findIndex((line) =>
-      line.text === indexLine
-    );
-    await goLine(index);
-    moveLinesBefore({ from: index, to: 0 });
-  } else {
-    await insertLine(1, indexLine);
-  }
-
-  // 見出しを挿入する
-  // 挿入位置を計算する
-  const tasks = scrapbox.Page.lines
-    .flatMap((_, lineNo) => {
-      const task = parse(lineNo);
-      return task ? [task] : [];
-    });
-  const insertIds = sections.map((_, i) => {
-    // 最初と最後のsectionの挿入位置はわかっている
-    if (i === 0) return { position: "previous", id: getLineId(tasks[0]) };
-
-    // sectionの開始・終了時刻
-    const sectionDates = {
-      start: setTime(new Date(pageDate), { hours: i * 3, minutes: 0 }),
-      end: setTime(new Date(pageDate), { hours: (i + 1) * 3, minutes: 0 }),
-    };
-
-    // 挿入位置を探す
-    for (const task of tasks) {
-      const { record, plan, baseDate, lineNo } = task;
-      const start = record.start ?? plan.start ?? baseDate;
-      const end = record.end ?? plan.start ?? baseDate;
-      // sectionを跨いでいるタスクの場合
-      if (areIntervalsOverlapping(sectionDates, { start, end })) {
-        const forward = sectionDates.start.getTime() - start.getTime();
-        const backward = end.getTime() - sectionDates.start.getTime();
-        if (forward > backward && isAfter(sectionDates.end, end)) {
-          // sectionのすぐ後ろに入るタスクと判断する
-          //console.log(['border, next',_, l(lineNo).DOM]);
-          return { id: getLineId(lineNo) };
-        } else {
-          // sectionのすぐ前に入るタスクと判断する
-          //console.log(['border, previous',_ ,l(lineNo).DOM]);
-          return { position: "previous", id: getLineId(lineNo) };
-        }
+    // タスクとインデントのセットを取得する
+    const taskBlocks = [] as {
+      index: number;
+      task: Task;
+      range: [number, number];
+    }[];
+    const otherLineNos = [] as number[]; // タスクブロック以外の行の番号
+    for (let i = 1; i < lines.length; i++) {
+      // 先頭行のタイトルは別扱いする
+      const task = parse(lines[i].text);
+      if (!task) {
+        // 自動で挿入した行は外す
+        if (sections.includes(lines[i].text)) continue;
+        if (label !== "" && label === lines[i].text) continue;
+        otherLineNos.push(i);
+        continue;
       }
-      // あとはどちらか一方にきれいに収まるタスクである場合しか無い
-      // 前のタスクとの間にあるかどうかを調べる
-      if (isAfter(sectionDates.start, start)) continue;
 
-      const i = tasks.indexOf(task);
-      const prev = tasks[i - 1];
-      // sectionのすぐ後ろに入るタスクと判断する
-      if (!prev) return { position: "previous", id: getLineId(lineNo) };
-      const prevEnd = prev.record.end ?? prev.plan.start ?? prev.date;
-      // sectionのすぐ後ろに入るタスクと判断する
-      if (isAfter(sectionDates.start, prevEnd)) {
-        return { position: "previous", id: getLineId(lineNo) };
-      }
+      const indentedLineNum = getIndentLineCount(i) ?? 0;
+      taskBlocks.push({
+        index: i,
+        task,
+        range: [i + 1, i + 1 + indentedLineNum],
+      });
+      i += indentedLineNum;
     }
-    // 見つからなかったら末尾に入れる
-    //console.log(['not found',_]);
-    return { id: l(tasks[tasks.length - 1].lineNo).id };
+
+    // task blocksを並び替える
+    const sortedTaskBlocks = taskBlocks
+      .sort((a, b) =>
+        compareAsc(
+          a.task.record?.start ?? a.task.plan?.start ?? a.task.base,
+          b.task.record?.start ?? b.task.plan?.start ?? b.task.base,
+        )
+      );
+
+    // 見出しを挿入する
+    if (sortedTaskBlocks.length === 0) {
+      return [
+        lines[0].text, // タイトル
+        label, // 前日のページへのリンク
+        ...sections, // 見出し
+        ...otherLineNos.map((i) => lines[i].text), //タスク以外の行
+      ];
+    }
+
+    // 見出しの挿入位置を決める
+    const insertPoint = [0, 0, 0, 0, 0, 0, 0, 0]; // 指定した番号のtask blockの前に挿入する
+    for (let i = 1; i < sections.length; i++) {
+      // 最初は確定しているので飛ばす
+
+      // 見出しの時間帯の始まりの時刻
+      const now = new Date();
+      const start = addHours(
+        new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+        3 * i,
+      );
+
+      // 見出しの時間帯内に開始する最初のタスク
+      const lowerTaskIndex = sortedTaskBlocks.findIndex((
+        { task: { record, plan, base } },
+      ) => isAfter(record?.start ?? plan?.start ?? base, start));
+
+      if (lowerTaskIndex < 0) {
+        insertPoint[i] = sortedTaskBlocks.length - 1;
+        continue;
+      }
+      if (lowerTaskIndex === 0) continue; // 初期値のまま
+
+      // 一つ前のタスクの長さで決める
+      const { record, plan, base } = sortedTaskBlocks[lowerTaskIndex - 1].task;
+      const s = record?.start ?? plan?.start ?? base;
+      const e = record?.end ??
+        (!isNone(plan?.duration) ? addMinutes(s, plan.duration) : base);
+      insertPoint[i] =
+        (e.getTime() - s.getTime()) / 2 < start.getTime() - s.getTime()
+          ? lowerTaskIndex
+          : lowerTaskIndex + 1;
+    }
+
+    return [
+      lines[0].text, // タイトル
+      label, // 前日のページへのリンク
+      ...sortedTaskBlocks.flatMap((block, i) => [
+        ...insertPoint.flatMap((j, k) => j === i ? [sections[k]] : []), // 見出し
+        toString(block.task), // タスク
+        ...lines.slice(block.range[0], block.range[1]).map((line) => line.text), // タスクにぶら下がった行
+      ]),
+      ...otherLineNos.map((i) => lines[i].text), // タスク以外の行
+    ];
   });
-  //console.log(insertIds.map((id, i) => [sections[i], id.position, l(id.id).text, l(id.id).DOM]));
-
-  // 見出しを挿入する
-  for (const section of sections) {
-    const id = scrapbox.Page.lines.find((line) => line.text === section)?.id;
-    const { position, id: insertId } = insertIds[sections.indexOf(section)];
-    if (id) {
-      const insertNo = getLineNo(insertId) + (position === "previous" ? -1 : 0);
-      await goLine(id);
-      moveLinesBefore({ from: getLineNo(id), to: insertNo });
-    } else {
-      await goLine(insertId);
-      if (position === "previous") {
-        goHead();
-        press("Enter");
-        press("ArrowUp");
-      } else {
-        press("Enter");
-        goHead();
-        press("End", { shiftKey: true });
-      }
-      await insertText(section);
-    }
-  }
+  cleanup();
+}
+/** 前日の日付ページへのnavigationを作る */
+function makeBackLabel() {
+  const pageDate = getDate();
+  if (isNone(pageDate)) return "";
+  return `yesterday: [${getTitle(subDays(pageDate, 1))}]`;
 }
 export async function transport({ targetProject }) {
   const diaryDate = getDate();
