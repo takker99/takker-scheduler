@@ -33,6 +33,12 @@ export function getLineId<T extends HTMLElement>(
   return undefined;
 }
 
+/** Get the line number from value
+ *
+ * If the line number can't be found, return `undefined`
+ *
+ * @param value - value the line number of which you want to get
+ */
 export function getLineNo<T extends HTMLElement>(value?: number | string | T) {
   if (isNone(value)) return undefined;
 
@@ -161,6 +167,8 @@ export function getIndentCount<T extends HTMLElement>(
   return text.match(/^(\s*)/)?.[1]?.length ?? 0;
 }
 /** 指定した行の配下にある行の数を返す
+ *
+ * @param value 指定したい行の行番号か行IDかDOM
  */
 export function getIndentLineCount<T extends HTMLElement>(
   value?: number | string | T,
