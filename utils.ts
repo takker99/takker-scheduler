@@ -32,7 +32,7 @@ export function* getDatesFromSelection() {
   for (
     const [dateString] of caret().selectedText.matchAll(/\d{4}-\d{2}-\d{2}/g)
   ) {
-    const date = parse(dateString, "yyyy-MM-dd", now, undefined);
+    const date = parse(dateString, "yyyy-MM-dd", now);
     if (!isValid(date)) continue;
     yield date;
   }

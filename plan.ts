@@ -33,7 +33,7 @@ export async function generatePlan(
   for (const [key, tasks] of Object.entries(taskStrings)) {
     const body = encodeURIComponent(tasks.join("\n"));
     const title = encodeURIComponent(
-      getTitle(parse(key, "yyyy-MM-dd", new Date(), undefined)),
+      getTitle(parse(key, "yyyy-MM-dd", new Date())),
     );
     window.open(`https://scrapbox.io/${targetProject}/${title}?body=${body}`);
   }

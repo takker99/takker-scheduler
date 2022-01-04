@@ -40,7 +40,7 @@ export function isDiaryPage(title: string) {
  * @param title 変換したいタイトル
  */
 export function toDate(title: string) {
-  const date = parse(title, `'${baseTitle}' yyyy-MM-dd`, new Date(), {});
+  const date = parse(title, `'${baseTitle}' yyyy-MM-dd`, new Date());
   return isValid(date) ? date : undefined;
 }
 

@@ -34,7 +34,7 @@ function parseTask(text: string): Task | undefined {
   };
 
   if (plan.trim() !== "") {
-    task.plan.start = parse(plan, "HH:mm", task.base, undefined);
+    task.plan.start = parse(plan, "HH:mm", task.base);
   }
   if (duration.trim() !== "") {
     task.plan.duration = parseInt(duration) * 60;
@@ -42,10 +42,10 @@ function parseTask(text: string): Task | undefined {
   // 実績時刻を解析する
   // 開始時刻より終了時刻の方が前だったら、日付を越えているとみなす
   if (start.trim() !== "") {
-    task.record.start = parse(start, "HH:mm:ss", task.base, undefined);
+    task.record.start = parse(start, "HH:mm:ss", task.base);
   }
   if (end.trim() !== "") {
-    let rEnd = parse(end, "HH:mm:ss", task.base, undefined);
+    let rEnd = parse(end, "HH:mm:ss", task.base);
     if (task.record?.start && rEnd && isAfter(task.record.start, rEnd)) {
       rEnd = addDays(rEnd, 1);
     }
