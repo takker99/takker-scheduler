@@ -1,6 +1,6 @@
 import {
   addHours,
-  addMinutes,
+  addSeconds,
   compareAsc,
   isAfter,
   isValid,
@@ -147,7 +147,7 @@ export function format(lines: string[]) {
     const { record, plan, base } = sortedTaskBlocks[lowerTaskIndex - 1].task;
     const s = record?.start ?? plan?.start ?? base;
     const e = record?.end ??
-      (!isNone(plan?.duration) ? addMinutes(s, plan.duration) : base);
+      (!isNone(plan?.duration) ? addSeconds(s, plan.duration) : base);
     insertPoint[i] =
       (e.getTime() - s.getTime()) / 2 < start.getTime() - s.getTime()
         ? lowerTaskIndex
