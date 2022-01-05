@@ -8,55 +8,94 @@ export function initialize(props: Omit<InitProps, "scopes">) {
   });
 }
 
+/** 置換するcalendar eventsの範囲を決めるためのparameters */
+export interface ReplaceEventsInit {
+  /** eventの取得先project */ project: string;
+  /** eventの取得先ページタイトル */ title: string;
+}
+/** 特定の条件に一致したcalendar eventsを置換する
+ *
+ * @param calendarId - calendar eventsの登録先calendarのID
+ * @param events - 置換したいcalendar events
+ */
 export async function replaceEvents(
   calendarId: string,
-  events,
-  { project, title },
+  events: EventOptions[],
+  init: ReplaceEventsInit,
 ) {
   // projectとtitleが一致する予定を検索する
   const existEvents = await searchEvents(calendarId, {
-    private: { project, title },
+    private: { ...init },
   });
 
-  // 既存の予定も新規作成する予定もなければ何もしない
+  // 既存のeventも新規作成するeventもなければ何もしない
   if (events.length === 0 && existEvents.length === 0) return;
 
-  // 新しい予定を書き込む
-  await Promise.all(events.map((event) => {
+  // 以前登録したeventsを更新する
+  const newEvents = [] as typeof events;
+  await Promise.all(events.map(async (event) => {
     const index = existEvents.findIndex(({ extendedProperties }) =>
-      event.extendedProperties.private.project ===
-        extendedProperties.private.project &&
-      event.extendedProperties.private.title ===
-        extendedProperties.private.title &&
-      event.extendedProperties.private.id === extendedProperties.private.id
+      event.id === extendedProperties.private?.id
     );
-    if (index > -1) {
-      const oldEvent = existEvents[index];
-      // 紐付けられているとわかったeventはどんどん削っていく
-      existEvents.splice(index, 1);
-      // 変更がなければ何もしない
-      if (
-        oldEvent.summary === event.summary &&
-        oldEvent.start.dateTime === formatRFC3339(event.start) &&
-        oldEvent.end.dateTime === formatRFC3339(event.end)
-      ) {
-        return;
-      }
-      return updateEvent(calendarId, oldEvent.id, event);
+    if (index < 0) {
+      // 新規作成するevent
+      newEvents.push(event);
+      return;
     }
-    return createEvent(calendarId, event);
+
+    const oldEvent = existEvents[index];
+    // 紐付けられているとわかったeventはどんどん削っていく
+    existEvents.splice(index, 1);
+    // 変更がなければ何もしない
+    if (
+      oldEvent.summary === event.summary &&
+      oldEvent.start.dateTime === formatRFC3339(event.start) &&
+      oldEvent.end.dateTime === formatRFC3339(event.end)
+    ) {
+      return;
+    }
+    await updateEvent(calendarId, oldEvent.id, { ...event, ...init });
   }));
 
-  // 紐付けられていない予定をすべて消す
-  console.log("Delete ", existEvents);
-  for (const { id } of existEvents) {
-    await deleteEvent(calendarId, id);
+  // 紐付けられていないeventは、新しいeventと紐付ける
+  if (existEvents.length >= newEvents.length) {
+    await Promise.all(
+      newEvents.map((event, i) =>
+        updateEvent(calendarId, existEvents[i].id, { ...event, ...init })
+      ),
+    );
+    // 不要なeventを削除する
+    // DELETEは叩きすぎるとエラーになるので、一つづつ叩く
+    for (let i = newEvents.length; i < existEvents.length; i++) {
+      await deleteEvent(calendarId, existEvents[i].id);
+    }
+  } else {
+    await Promise.all(
+      newEvents.map((event, i) =>
+        i < existEvents.length
+          ? updateEvent(calendarId, existEvents[i].id, { ...event, ...init })
+          : createEvent(calendarId, { ...event, ...init }) // 足りない分は新規作成する
+      ),
+    );
   }
 }
 
+/** 登録したいcalendar eventの設定値 */
+export interface EventOptions {
+  /** calendar eventの名前 */ summary: Event["summary"];
+  /** calendar eventの開始日時 */ start: Date;
+  /** calendar eventの終了日時 */ end: Date;
+  /** calendar eventの取得先URL */ source: Event["source"];
+  /** 同値比較用ID */ id: string;
+}
+
+/** 新しいcalendar eventを登録する
+ *
+ * @param calendarId 登録先calendarのID
+ */
 async function createEvent(
   calendarId: string,
-  { summary, start, end }: EventOptions,
+  { start, end, id, project, title, ...rest }: EventOptions & ReplaceEventsInit,
 ) {
   const res = await exec(
     `/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
@@ -66,23 +105,26 @@ async function createEvent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        summary,
         start: { dateTime: formatRFC3339(start, {}) },
         end: { dateTime: formatRFC3339(end, {}) },
+        extendedProperties: {
+          private: {
+            project,
+            title,
+            id,
+          },
+        },
+        ...rest,
       }),
     },
   );
   return (await res.json()) as Event;
 }
-export interface EventOptions {
-  summary: string;
-  start: Date;
-  end: Date;
-}
+
 async function updateEvent(
   calendarId: string,
   eventId: string,
-  { summary, start, end }: EventOptions,
+  { start, end, id, project, title, ...rest }: EventOptions & ReplaceEventsInit,
 ) {
   const res = await exec(
     `/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${
@@ -94,15 +136,27 @@ async function updateEvent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        summary,
         start: { dateTime: formatRFC3339(start, {}) },
         end: { dateTime: formatRFC3339(end, {}) },
+        extendedProperties: {
+          private: {
+            project,
+            title,
+            id,
+          },
+        },
+        ...rest,
       }),
     },
   );
   return (await res.json()) as Event;
 }
 
+/** calendar eventを削除する
+ *
+ * @param calendarId 削除したいeventの登録先calendarのID
+ * @param eventId 削除したいeventのID
+ */
 async function deleteEvent(calendarId: string, eventId: string) {
   await exec(
     `/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${
@@ -114,6 +168,7 @@ async function deleteEvent(calendarId: string, eventId: string) {
   );
 }
 
+/** calendar eventに登録できる拡張properties */
 export interface ExtendedProperties {
   private?: Record<string, string>;
   shared?: Record<string, string>;
@@ -250,9 +305,15 @@ export interface SearchEventsResponse {
   accessRule: "none" | "freeBuzyReader" | "reader" | "writer" | "owner";
   defaultReminders: Reminder[];
   nextPageToken?: string;
-  items: Event[];
+  /** 見つかったcalendar events */ items: Event[];
   nextSyncToken?: string;
 }
+
+/** 指定した拡張propertiesを持つcalendar eventsを検索する
+ *
+ * @param calendarId このIDが指定するcalendarの中を検索する
+ * @param extendedProperties 検索に使う拡張properties
+ */
 async function searchEvents(
   calendarId: string,
   extendedProperties: ExtendedProperties,

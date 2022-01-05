@@ -15,6 +15,11 @@ export function init(auth: InitProps) {
   _auth = auth;
 }
 
+/** Google APIを叩く
+ *
+ * @param pathname 叩きたいGoogle APIのURLの`https://www.googleapis.com`以降の部分
+ * @param options `fetch()`に渡すrequest option
+ */
 export async function exec(pathname: string, options?: RequestInit) {
   const { headers, ...rest } = options ?? {};
   return await fetch(`https://www.googleapis.com${pathname}`, {
@@ -26,6 +31,10 @@ export async function exec(pathname: string, options?: RequestInit) {
   });
 }
 
+/** Google APIのAccess Tokenを取得する
+ *
+ * 有効期限が1分前になったら新しいAccess Tokenを発行する
+ */
 async function accessToken() {
   // 有効期限の1分前になったら更新する
   if (
