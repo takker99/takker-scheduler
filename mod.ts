@@ -91,7 +91,8 @@ export async function startTask() {
   if (end) return; // すでに終了していたら何もしない
 
   // 開始時刻をtoggleする
-  await insertLine(
+  await replaceLines(
+    linePos ?? 0,
     linePos ?? 0,
     toString({
       record: { start: !start ? new Date() : undefined },
@@ -113,7 +114,8 @@ export async function endTask() {
   if (!start) return; // まだ開始していなかったら何もしない
 
   // 終了時刻をtoggleする
-  await insertLine(
+  await replaceLines(
+    linePos ?? 0,
     linePos ?? 0,
     toString({
       record: { start, end: !end ? new Date() : undefined },
@@ -149,7 +151,8 @@ export async function toggleTask() {
   }
 
   // すでに終了しているタスクは未開始に戻す
-  await insertLine(
+  await replaceLines(
+    linePos ?? 0,
     linePos ?? 0,
     toString({
       record: {},
@@ -189,7 +192,8 @@ export async function posterioriEndTask() {
 
   // 上書きする
   const now = new Date();
-  await insertLine(
+  await replaceLines(
+    linePos ?? 0,
     linePos ?? 0,
     toString({
       record: { start: prevEnd ?? now, end: now },
