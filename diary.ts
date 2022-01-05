@@ -124,9 +124,8 @@ export function format(lines: string[]) {
     // 最初は確定しているので飛ばす
 
     // 見出しの時間帯の始まりの時刻
-    const now = new Date();
     const start = addHours(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()),
       3 * i,
     );
 
@@ -137,7 +136,7 @@ export function format(lines: string[]) {
 
     // 見出し以降にタスクが一つもないとき
     if (lowerTaskIndex < 0) {
-      insertPoint[i] = sortedTaskBlocks.length - 1;
+      insertPoint[i] = -1; // 末尾に挿入する
       continue;
     }
     // 一番最初のタスクから見出しに含まれるとき
@@ -162,6 +161,7 @@ export function format(lines: string[]) {
       toString(block.task), // タスク
       ...lines.slice(block.range[0], block.range[1]).map((line) => line), // タスクにぶら下がった行
     ]),
+    ...insertPoint.flatMap((i, k) => i === -1 ? [sections[k]] : []),
     ...otherLineNos.map((i) => lines[i]), // タスク以外の行
   ];
 }
