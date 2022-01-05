@@ -9,7 +9,7 @@ import {
   getText,
 } from "./lib/node.ts";
 import { parse, Task, toString } from "./task.ts";
-import { format as formatPage } from "./diary.ts";
+import { format as formatPage, toTitle } from "./diary.ts";
 import {
   addDays,
   addSeconds,
@@ -25,8 +25,10 @@ import {
 } from "./deps/date-fns.ts";
 import { generatePlan } from "./plan.ts";
 import { getDatesFromSelection } from "./utils.ts";
-import { syncMultiPages } from "./sync.js";
+import { SyncInit, syncPages } from "./sync.ts";
 import { joinPageRoom } from "./deps/scrapbox.ts";
+import type { Scrapbox } from "./deps/scrapbox.ts";
+declare const scrapbox: Scrapbox;
 
 const interval = 5 * 60; // 5 minutes
 /** カーソル行の下にタスクを追加する
@@ -398,23 +400,40 @@ export async function makePlanFromSelection({ minify = false } = {}) {
   return;
 }
 
-export async function syncFromSelection() {
-  const dates = getDatesFromSelection();
+/** 指定した日付ページに含まれる全てのタスクをcalendarに登録する
+ *
+ * @param init 登録先calendar IDを入れるobject
+ */
+export async function sync(project: string, title: string, init: SyncInit) {
+  await syncPages(
+    [{ project, title }],
+    init,
+  );
+}
+
+/** 選択範囲に含まれる日付の日付ページにある全てのタスクをcalendarに登録する
+ *
+ * ２つ以上の日付が含まれていたら、最初と最後の日付の期間中の全ての日付を対象とする
+ * @param init 登録先calendar IDを入れるobject
+ */
+export async function syncFromSelection(init: SyncInit) {
+  const dates = [...getDatesFromSelection()];
   if (dates.length === 0) return;
   if (dates.length === 1) {
-    await syncMultiPages([{
-      project: "takker-memex",
-      title: getTitle(dates[0]),
-    }]);
+    await syncPages(
+      [{ project: scrapbox.Project.name, title: toTitle(dates[0]) }],
+      init,
+    );
     return;
   }
+
   const start = dates[0];
-  const end = dates.pop();
-  await syncMultiPages(
+  const end = dates[dates.length - 1];
+  await syncPages(
     eachDayOfInterval(
       isAfter(end, start) ? { start, end } : { start: end, end: start },
-    )
-      .map((date) => ({ project: "takker-memex", title: getTitle(date) })),
+    ).map((date) => ({ project: scrapbox.Project.name, title: toTitle(date) })),
+    init,
   );
 }
 
