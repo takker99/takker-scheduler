@@ -13,7 +13,7 @@ import { getIndentLineCount } from "./lib/node.ts";
 import { isNone } from "./utils.ts";
 
 const baseTitle = "日刊記録sheet";
-const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{4}/;
+const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{2}/;
 const sections = [
   "[** 00:00 - 03:00] 未明",
   "[** 03:00 - 06:00] 明け方",
