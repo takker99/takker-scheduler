@@ -151,7 +151,7 @@ export function format(lines: string[]) {
     insertPoint[i] =
       (e.getTime() - s.getTime()) / 2 < start.getTime() - s.getTime()
         ? lowerTaskIndex
-        : lowerTaskIndex + 1;
+        : lowerTaskIndex - 1;
   }
 
   return [
