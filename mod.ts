@@ -235,7 +235,7 @@ export async function* makePlan(dates: Iterable<Date>, project: string) {
       continue;
     }
     const { insert, cleanup } = await joinPageRoom(project, lines[0]);
-    await insert(lines.join("\n"), "_end");
+    await insert(lines.slice(1).join("\n"), "_end");
     cleanup();
     yield { message: `Created "/${project}/${lines[0]}"`, lines };
   }
