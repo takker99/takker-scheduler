@@ -8,7 +8,7 @@ import {
   parse,
   subDays,
 } from "./deps/date-fns.ts";
-import { parse as parseTask, Task, toString } from "./task.ts";
+import { parse as parseTask, startDate, Task, toString } from "./task.ts";
 import { getIndentLineCount } from "./lib/text.ts";
 import { isNone } from "./utils.ts";
 
@@ -102,8 +102,8 @@ export function format(lines: string[]) {
   const sortedTaskBlocks = taskBlocks
     .sort((a, b) =>
       compareAsc(
-        a.task.record?.start ?? a.task.plan?.start ?? a.task.base,
-        b.task.record?.start ?? b.task.plan?.start ?? b.task.base,
+        startDate(a.task),
+        startDate(b.task),
       )
     );
 
@@ -131,8 +131,8 @@ export function format(lines: string[]) {
 
     // 見出しの時間帯内に開始する最初のタスク
     const lowerTaskIndex = sortedTaskBlocks.findIndex((
-      { task: { record, plan, base } },
-    ) => isAfter(record?.start ?? plan?.start ?? base, start));
+      { task },
+    ) => isAfter(startDate(task), start));
 
     // 見出し以降にタスクが一つもないとき
     if (lowerTaskIndex < 0) {

@@ -58,6 +58,10 @@ export { parseTask as parse };
 export function isTask(text: string) {
   return taskReg.test(text);
 }
+/** 比較用の開始日時を取得する */
+export function startDate(task: Task) {
+  return task.record?.start ?? task.plan?.start ?? task.base;
+}
 
 /** Taskを文字列に直す */
 export function toString({ title, base, plan, record }: Task) {
