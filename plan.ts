@@ -15,7 +15,7 @@ export type IsTaskPortalPage = (title: string) => boolean;
  *
  * @param date 実行日
  */
-export type TaskGenerator = (date: Date) => Task[];
+export type TaskGenerator = (date: Date) => Task[] | Promise<Task[]>;
 
 export async function* makeDiaryPages(
   dates: Iterable<Date>,
@@ -27,7 +27,10 @@ export async function* makeDiaryPages(
       for await (
         const generate of getFunctions(isTaskPortalPage, "generate.js")
       ) {
-        for (const task of generate(date)) {
+        const pending = generate(date);
+        for (
+          const task of pending instanceof Promise ? await pending : pending
+        ) {
           lines.push(toString(task));
         }
       }
