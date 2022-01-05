@@ -64,9 +64,9 @@ async function getFunction(title: string, filename: string) {
     );
     return generate as TaskGenerator;
   } catch (e) {
-    // 404 Not foundは無視
-    if (!(e instanceof SyntaxError)) return;
-    console.error(e);
-    return;
+    // 構文エラーと読み込みエラーは無視
+    if (e instanceof SyntaxError) return;
+    if (e instanceof TypeError) return;
+    throw e;
   }
 }
