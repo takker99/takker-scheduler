@@ -9,7 +9,7 @@ import {
   subDays,
 } from "./deps/date-fns.ts";
 import { parse as parseTask, Task, toString } from "./task.ts";
-import { getIndentLineCount } from "./lib/node.ts";
+import { getIndentLineCount } from "./lib/text.ts";
 import { isNone } from "./utils.ts";
 
 const baseTitle = "日刊記録sheet";
@@ -90,7 +90,7 @@ export function format(lines: string[]) {
       continue;
     }
 
-    const indentedLineNum = getIndentLineCount(i) ?? 0;
+    const indentedLineNum = getIndentLineCount(i, lines) ?? 0;
     taskBlocks.push({
       task,
       range: [i + 1, i + 1 + indentedLineNum],

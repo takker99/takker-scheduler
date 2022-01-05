@@ -4,6 +4,7 @@
 import { ensureArray, isNone, isNumber, isString } from "../utils.ts";
 import type { Scrapbox } from "../deps/scrapbox.ts";
 import { lines } from "./dom.ts";
+import * as Text from "./text.ts";
 declare const scrapbox: Scrapbox;
 
 /** Get the line id from value
@@ -164,7 +165,7 @@ export function getIndentCount<T extends HTMLElement>(
 ) {
   const text = getText(value);
   if (isNone(text)) return undefined;
-  return text.match(/^(\s*)/)?.[1]?.length ?? 0;
+  return Text.getIndentCount(text);
 }
 /** 指定した行の配下にある行の数を返す
  *
@@ -174,13 +175,8 @@ export function getIndentLineCount<T extends HTMLElement>(
   value?: number | string | T,
 ) {
   const index = getLineNo(value);
-  const base = getIndentCount(index);
-  if (isNone(index) || isNone(base)) return undefined;
-  let count = 0;
-  while ((getIndentCount(index + count + 1) ?? -1) > base) {
-    count++;
-  }
-  return count;
+  if (isNone(index)) return;
+  return Text.getIndentLineCount(index, getLines());
 }
 
 export function* getChars<T extends HTMLElement>(value: T) {
