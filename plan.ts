@@ -1,7 +1,9 @@
 /// <reference lib="dom" />
-import { toString } from "./task.ts";
-import { getTitle } from "./diary.ts";
-import { lightFormat, parse } from "./deps/date-fns.ts";
+import { Task, toString } from "./task.ts";
+import { format, toTitle } from "./diary.ts";
+import { lightFormat } from "./deps/date-fns.ts";
+import { encodeTitle } from "./lib/utils.ts";
+import { oneByOne } from "./utils.ts";
 import type { Scrapbox } from "./deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
 
@@ -9,56 +11,58 @@ export function isTaskPortalPage(title: string) {
   return /^(?:🔳|📝)/u.test(title);
 }
 export type IsTaskPortalPage = (title: string) => boolean;
+/** 指定された日付に実行するタスクを出力する函数
+ *
+ * @param date 実行日
+ */
+export type TaskGenerator = (date: Date) => Task[];
 
-export async function generatePlan(
-  dates: Date[],
-  targetProject: string,
+export async function* makeDiaryPages(
+  dates: Iterable<Date>,
 ) {
-  targetProject = targetProject ?? scrapbox.Project.name;
-  const taskList =
-    (await Promise.all(dates.map((date) => generateTaskList(date))))
-      .flat();
+  const pendings = [] as Promise<{ date: Date; lines: string[] }>[];
+  for (const date of dates) {
+    pendings.push((async () => {
+      const lines = [toTitle(date)];
+      for await (
+        const generate of getFunctions(isTaskPortalPage, "generate.js")
+      ) {
+        for (const task of generate(date)) {
+          lines.push(toString(task));
+        }
+      }
 
-  // 日付ごとにまとめる
-  const taskStrings = {} as Record<string, string[]>;
-  taskList.forEach((task) => {
-    const key = lightFormat(task.baseDate, "yyyy-MM-dd");
-    taskStrings[key] = [
-      ...(taskStrings[key] ?? []),
-      toString(task),
-    ];
-  });
+      return {
+        date,
+        lines: [...format(lines), lightFormat(date, "#yyyy-MM-dd HH:mm:ss")],
+      };
+    })());
+  }
 
-  // 新しいタブで開く
-  for (const [key, tasks] of Object.entries(taskStrings)) {
-    const body = encodeURIComponent(tasks.join("\n"));
-    const title = encodeURIComponent(
-      getTitle(parse(key, "yyyy-MM-dd", new Date())),
-    );
-    window.open(`https://scrapbox.io/${targetProject}/${title}?body=${body}`);
+  for await (const result of oneByOne(pendings)) {
+    if (result.state === "rejected") continue;
+    yield result.value;
   }
 }
-async function generateTaskList(date: Date) {
-  const generates = await getFunctions(isTaskPortalPage, "generate.js");
-  return (await Promise.all(generates.map((generate) => generate(date))))
-    .flat();
-}
-async function getFunctions(judge: IsTaskPortalPage, filename: string) {
-  const titles = scrapbox.Project.pages
-    .flatMap(({ titleLc, exists }) =>
-      (exists && judge(titleLc)) ? [titleLc] : []
+async function* getFunctions(judge: IsTaskPortalPage, filename: string) {
+  const pendings = scrapbox.Project.pages
+    .flatMap(({ title, exists }) =>
+      (exists && judge(title)) ? [getFunction(title, filename)] : []
     );
-  const generates = await Promise.all(
-    titles.map((title) => getFunction(title, filename)),
-  );
-  return generates.filter((generate) => generate);
+  for await (
+    const result of oneByOne(pendings)
+  ) {
+    if (result.state === "rejected") continue;
+    if (!result.value) continue;
+    yield result.value;
+  }
 }
 async function getFunction(title: string, filename: string) {
   try {
     const { generate } = await import(
-      `/api/code/${scrapbox.Project.name}/${title}/${filename}`
+      `/api/code/${scrapbox.Project.name}/${encodeTitle(title)}/${filename}`
     );
-    return generate;
+    return generate as TaskGenerator;
   } catch (e) {
     // 404 Not foundは無視
     if (!(e instanceof SyntaxError)) return;

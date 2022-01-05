@@ -1,30 +1,18 @@
-import { goLine } from "./lib/motion.ts";
-import { deleteLines, insertLine, replaceLines } from "./lib/edit.ts";
+import { insertLine, replaceLines } from "./lib/edit.ts";
 import { caret } from "./lib/caret.ts";
-import {
-  getCharDOM,
-  getLine,
-  getLineNo,
-  getLines,
-  getText,
-} from "./lib/node.ts";
+import { getLines, getText } from "./lib/node.ts";
 import { parse, Task, toString } from "./task.ts";
-import { format as formatPage, toTitle } from "./diary.ts";
+import { format as formatPage, toDate, toTitle } from "./diary.ts";
 import {
   addDays,
   addSeconds,
   eachDayOfInterval,
-  getHours,
-  getMinutes,
   isAfter,
   isSameDay,
-  isValid,
-  lightFormat,
-  set as setTime,
-  subMinutes,
 } from "./deps/date-fns.ts";
-import { generatePlan } from "./plan.ts";
+import { makeDiaryPages } from "./plan.ts";
 import { getDatesFromSelection } from "./utils.ts";
+import { encodeTitle } from "./lib/utils.ts";
 import { SyncInit, syncPages } from "./sync.ts";
 import { joinPageRoom } from "./deps/scrapbox.ts";
 import type { Scrapbox } from "./deps/scrapbox.ts";
@@ -224,181 +212,73 @@ export async function format(project: string, title: string) {
   cleanup();
 }
 
-export async function transport({ targetProject }) {
-  const diaryDate = getDate();
+/** 指定した日付の日付ページを作成する
+ *
+ * 複数作成可能。
+ *
+ * @param dates 作成したい日付のリスト
+ * @param project 日付ページを作成するproject
+ */
+export async function* makePlan(dates: Iterable<Date>, project: string) {
+  const thisDate = toDate(scrapbox.Page.title ?? "");
+  let temp: string[] | undefined;
 
-  // 検索する範囲
-  const { startNo, endNo } = selection.exist
-    ? (() => {
-      const { start, end } = selection.range;
-      //console.log({start,end});
-      return { startNo: start.lineNo, endNo: end.lineNo };
-    })()
-    : // 選択範囲がなかったらタイトル行以外を選択する
-      { startNo: 1, endNo: scrapbox.Page.lines.length - 1 };
-
-  // 移動するタスクを取得する
-  // 違う日付のタスクをすべて移動する
-  const targetTaskLines = scrapbox.Page.lines
-    .slice(startNo, endNo + 1)
-    .flatMap((_, i) => {
-      const taskLine = parse(i + startNo);
-      if (!taskLine) return [];
-      const { baseDate, lineNo } = taskLine;
-      return isValid(diaryDate) && // 日付ページでなければ、全てのタスクを転送する
-          isSameDay(baseDate, diaryDate)
-        ? []
-        : [{ date: baseDate, lineNo }];
-    });
-
-  // 日付ごとにタスクをまとめる
-  const bodies = {};
-  targetTaskLines.forEach(({ date, lineNo }) => {
-    const key = lightFormat(date, "yyyy-MM-dd");
-    bodies[key] = {
-      date,
-      texts: [
-        ...(bodies[key]?.texts ?? []),
-        // indent blockで移動させる
-        ...scrapbox.Page.lines
-          .slice(lineNo, lineNo + getLine(lineNo).text.length + 1)
-          .map((line) => line.text),
-      ],
-    };
-  });
-
-  // 対象の行を削除する
-  await deleteLines(targetTaskLines.map(({ line }) => line.id));
-
-  // 新しいタブで開く
-  for (const [, { date, texts }] of Object.entries(bodies)) {
-    const body = encodeURIComponent(texts.join("\n"));
-    window.open(
-      `https://scrapbox.io/${targetProject}/${
-        encodeURIComponent(getTitle(date))
-      }?body=${body}`,
-    );
-  }
-}
-
-export async function makePlan(count) {
-  await generatePlan([addDays(new Date(), count)], "takker-memex");
-}
-export async function makeWeekPlan(count) {
-  const now = new Date();
-  await generatePlan(
-    [...array(7).keys()].map((i) => addDays(now, i + count)),
-    "takker-memex",
-  );
-}
-
-export async function walkPlanStart(minutes) {
-  if (!selection.exist) {
-    await _walkPlanStart(minutes);
-  } else {
-    const { start: { lineNo: startNo }, end: { lineNo: endNo } } =
-      selection.range;
-    for (let i = startNo; i <= endNo; i++) {
-      await goLine(i);
-      await _walkPlanStart(minutes);
+  for await (const { date, lines } of makeDiaryPages(dates)) {
+    if (
+      thisDate && isSameDay(thisDate, date) && project === scrapbox.Project.name
+    ) {
+      temp = lines;
+      continue;
     }
+    const { insert, cleanup } = await joinPageRoom(project, lines[0]);
+    await insert(lines.join("\n"), "_end");
+    cleanup();
+    yield { message: `Created "/${project}/${lines[0]}"`, lines };
   }
+
+  if (!temp) return;
+  const a = document.createElement("a");
+  a.href = `./${encodeTitle(temp[0])}?body=${
+    encodeURIComponent(temp.slice(1).join("\n"))
+  }`;
+  document.body.append(a);
+  a.remove();
+  yield { message: `Created "/${project}/${temp[0]}"`, lines: temp };
 }
 
-async function _walkPlanStart(minutes) {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
-  const date = (taskLine.plan?.start ??
-    setTime(taskLine.baseDate, { hours: 0, minutes: 0 }));
-  const newStart = minutes > 0
-    ? addMinutes(date, minutes)
-    : subMinutes(date, -minutes);
-  await set(taskLine, {
-    plan: { start: newStart, duration: taskLine.plan.duration ?? 0 },
-  });
-}
-
-export async function walkPlanDuration(minutes) {
-  if (!selection.exist) {
-    await _walkPlanDuration(minutes);
-  } else {
-    const { start: { lineNo: startNo }, end: { lineNo: endNo } } =
-      selection.range;
-    for (let i = startNo; i <= endNo; i++) {
-      await goLine(i);
-      await _walkPlanDuration(minutes);
-    }
-  }
-}
-
-async function _walkPlanDuration(minutes) {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
-  const newDuration = {
-    minutes: (taskLine.plan.duration?.minutes ?? 0) + minutes,
-  };
-  await set(taskLine, {
-    plan: { start: taskLine.plan.start, duration: newDuration },
-  });
-}
-import { getValueFromInput } from "./lib/openInput.js";
-
-export async function setPlan() {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
-  const now = new Date();
-  const date = (taskLine.plan?.start ??
-    setTime(taskLine.baseDate, {
-      hours: getHours(now),
-      minutes: getMinutes(now),
-    }));
-  const { top, left } = getChar(postion().line, " yyyy-MM-dd h".length - 1)
-    .getBoundingClientRect();
-  const newStart = await getValueFromInput({
-    type: "time",
-    value: date,
-    x: left,
-    y: top,
-  });
-  scrapboxDOM.textInput.focus();
-  await set(taskLine, {
-    plan: { start: newStart, duration: taskLine.plan.duration ?? 0 },
-  });
-}
-export async function setDuration() {
-  const taskLine = parse(getLineNo(position().line));
-  if (!taskLine) return; // タスクでなければ何もしない
-  const { top, left } = getCharDOM(position().line, " yyyy-MM-dd h".length - 1)
-    .getBoundingClientRect();
-  const minutes = await getValueFromInput({
-    type: "number",
-    value: taskLine.plan.duration?.minutes ?? 0,
-    x: left,
-    y: top,
-    max: 9999,
-    min: 0,
-  });
-  await set(taskLine, {
-    plan: { start: taskLine.plan.start, duration: { minutes } },
-  });
-}
-export async function makePlanFromSelection({ minify = false } = {}) {
-  const dates = getDatesFromSelection();
+/** 選択範囲に含まれる日付の日付ページを全て作成する
+ *
+ * ２つ以上の日付が含まれていたら、最初と最後の日付の期間中の全ての日付を対象とする
+ *
+ * @param project 日付ページを作成するproject
+ */
+export async function* makePlanFromSelection(project: string) {
+  const dates = [...getDatesFromSelection()];
   if (dates.length === 0) return;
   if (dates.length === 1) {
-    await generatePlan([dates[0]], "takker-memex", { minify });
+    yield* makePlan(
+      dates,
+      project,
+    );
     return;
   }
-  const [start, end] = dates;
-  await generatePlan(
+
+  const start = dates[0];
+  const end = dates[dates.length - 1];
+  yield* makePlan(
     eachDayOfInterval(
       isAfter(end, start) ? { start, end } : { start: end, end: start },
     ),
-    "takker-memex",
-    { minify },
+    project,
   );
-  return;
 }
+
+// TODO: implement blow
+// - transport()
+// - walkPlanStart()
+// - walkPlanDuration()
+// - setPlan()
+// - setDuration()
 
 /** 指定した日付ページに含まれる全てのタスクをcalendarに登録する
  *
