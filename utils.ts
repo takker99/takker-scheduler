@@ -23,7 +23,7 @@ export function ensureArray<T>(
   value: unknown,
   predicate?: Predicate<T>,
 ): asserts value is Array<T> {
-  if (!isArray(value, predicate)) return;
+  if (isArray(value, predicate)) return;
   throw TypeError("value must be an Array");
 }
 
