@@ -1,7 +1,7 @@
 import type {
   Page,
   Scrapbox,
-} from "https://pax.deno.dev/scrapbox-jp/types@0.0.8";
-export { joinPageRoom } from "https://pax.deno.dev/takker99/scrapbox-headless-script@0.2.0";
+} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.0.8/mod.ts";
+export { joinPageRoom } from "https://raw.githubusercontent.com/takker99/scrapbox-headless-script/0.2.0/mod.ts";
 export type Line = Page["lines"][0];
 export type { Scrapbox };
