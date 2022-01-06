@@ -4,7 +4,7 @@ import { isValid, parse } from "./deps/date-fns.ts";
 
 export type Predicate<T> = (value: unknown) => value is T;
 export function isNone(value: unknown): value is undefined | null {
-  return value === null;
+  return value === null || value === undefined;
 }
 export function isString(value: unknown): value is string {
   return typeof value === "string";
