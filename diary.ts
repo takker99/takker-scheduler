@@ -1,6 +1,5 @@
 import {
   addHours,
-  addSeconds,
   compareAsc,
   isAfter,
   isValid,
@@ -8,9 +7,14 @@ import {
   parse,
   subDays,
 } from "./deps/date-fns.ts";
-import { parse as parseTask, startDate, Task, toString } from "./task.ts";
+import {
+  endDate,
+  parse as parseTask,
+  startDate,
+  Task,
+  toString,
+} from "./task.ts";
 import { getIndentLineCount } from "./lib/text.ts";
-import { isNone } from "./utils.ts";
 
 const baseTitle = "日刊記録sheet";
 const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{2}/;
@@ -143,10 +147,9 @@ export function format(lines: string[]) {
     if (lowerTaskIndex === 0) continue; // 初期値のまま
 
     // 一つ前のタスクの長さで決める
-    const { record, plan, base } = sortedTaskBlocks[lowerTaskIndex - 1].task;
-    const s = record?.start ?? plan?.start ?? base;
-    const e = record?.end ??
-      (!isNone(plan?.duration) ? addSeconds(s, plan.duration) : base);
+    const task = sortedTaskBlocks[lowerTaskIndex - 1].task;
+    const s = startDate(task);
+    const e = endDate(task);
     insertPoint[i] =
       (e.getTime() - s.getTime()) / 2 < start.getTime() - s.getTime()
         ? lowerTaskIndex

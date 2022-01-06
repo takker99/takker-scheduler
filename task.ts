@@ -1,4 +1,11 @@
-import { addDays, isAfter, lightFormat, parse } from "./deps/date-fns.ts";
+import {
+  addDays,
+  addSeconds,
+  isAfter,
+  lightFormat,
+  parse,
+} from "./deps/date-fns.ts";
+import { isNone } from "./utils.ts";
 
 export type Interval = {
   start?: Date;
@@ -61,6 +68,13 @@ export function isTask(text: string) {
 /** 比較用の開始日時を取得する */
 export function startDate(task: Task) {
   return task.record?.start ?? task.plan?.start ?? task.base;
+}
+/** 比較用の終了を取得する */
+export function endDate(task: Task) {
+  return task.record?.end ??
+    (!isNone(task.plan?.duration)
+      ? addSeconds(startDate(task), task.plan.duration)
+      : task.base);
 }
 
 /** Taskを文字列に直す */
