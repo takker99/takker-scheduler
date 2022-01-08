@@ -45,14 +45,16 @@ export async function addTask() {
 
   // カーソル行の下に書き込む
   await insertLine(
-    (linePos ?? 0) + 1,
+    linePos + 1,
     toString({ title: "", base, plan, record: {} }),
   );
 }
 
 function getModifyRange() {
-  const { selectionRange: { start, end } } = caret();
-  return [start.line, end.line] as const;
+  const { selectionRange: { start, end }, selectedText, position } = caret();
+  return selectedText === ""
+    ? [position.line, position.line]
+    : [start.line, end.line] as const;
 }
 
 /** カーソル行もしくは選択範囲内の全てのタスクの日付を進める
@@ -92,8 +94,8 @@ export async function startTask() {
 
   // 開始時刻をtoggleする
   await replaceLines(
-    linePos ?? 0,
-    linePos ?? 0,
+    linePos,
+    linePos,
     toString({
       record: { start: !start ? new Date() : undefined },
       ...rest,
@@ -115,8 +117,8 @@ export async function endTask() {
 
   // 終了時刻をtoggleする
   await replaceLines(
-    linePos ?? 0,
-    linePos ?? 0,
+    linePos,
+    linePos,
     toString({
       record: { start, end: !end ? new Date() : undefined },
       ...rest,
@@ -152,8 +154,8 @@ export async function toggleTask() {
 
   // すでに終了しているタスクは未開始に戻す
   await replaceLines(
-    linePos ?? 0,
-    linePos ?? 0,
+    linePos,
+    linePos,
     toString({
       record: {},
       ...rest,
@@ -193,8 +195,8 @@ export async function posterioriEndTask() {
   // 上書きする
   const now = new Date();
   await replaceLines(
-    linePos ?? 0,
-    linePos ?? 0,
+    linePos,
+    linePos,
     toString({
       record: { start: prevEnd ?? now, end: now },
       ...rest,

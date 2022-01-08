@@ -4,6 +4,7 @@ import { getLineCount } from "./node.ts";
 import { range } from "./range.ts";
 import { textInput } from "./dom.ts";
 import { isArray, isNumber, isString } from "../utils.ts";
+import { sleep } from "./sleep.ts";
 
 export function undo(count = 1) {
   for (const _ of range(0, count)) {
@@ -136,7 +137,7 @@ export function downBlocks(count = 1) {
   }
 }
 
-export function insertText(text: string) {
+export async function insertText(text: string) {
   const cursor = textInput();
   if (!cursor) {
     throw Error("#text-input is not ditected.");
@@ -147,5 +148,5 @@ export function insertText(text: string) {
   const uiEvent = document.createEvent("UIEvent");
   uiEvent.initEvent("input", true, false);
   cursor.dispatchEvent(uiEvent);
-  return Promise.resolve();
+  await sleep(1); // 待ち時間は感覚で決めた
 }
