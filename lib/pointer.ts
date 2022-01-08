@@ -69,5 +69,5 @@ export async function mimicHoldDown(
   element.dispatchEvent(new TouchEvent("touchend", mouseOptions));
   element.dispatchEvent(new MouseEvent("click", mouseOptions));
 
-  await Promise.resolve();
+  await sleep(10); // 待ち時間は感覚で決めた
 }
