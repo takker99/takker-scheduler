@@ -51,8 +51,10 @@ export async function addTask() {
 }
 
 function getModifyRange() {
-  const { selectionRange: { start, end } } = caret();
-  return [start.line, end.line] as const;
+  const { selectionRange: { start, end }, selectedText, position } = caret();
+  return selectedText === ""
+    ? [position.line, position.line]
+    : [start.line, end.line] as const;
 }
 
 /** カーソル行もしくは選択範囲内の全てのタスクの日付を進める
