@@ -31,7 +31,7 @@ export async function mimicClick(
   element.dispatchEvent(new MouseEvent("mouseup", mouseOptions));
   element.dispatchEvent(new MouseEvent("click", mouseOptions));
 
-  await Promise.resolve();
+  await sleep(10); // 待ち時間は感覚で決めた
 }
 
 export interface MimicHoldDownOptions extends MimicClickOptions {
