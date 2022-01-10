@@ -13,6 +13,7 @@ import {
 import { makeDiaryPages } from "./plan.ts";
 import { getDatesFromSelection } from "./utils.ts";
 import { encodeTitle } from "./lib/utils.ts";
+import { openInTheSameTab } from "./lib/open.ts";
 import { SyncInit, syncPages } from "./sync.ts";
 import { joinPageRoom } from "./deps/scrapbox.ts";
 import type { Scrapbox } from "./deps/scrapbox.ts";
@@ -243,12 +244,7 @@ export async function* makePlan(dates: Iterable<Date>, project: string) {
   }
 
   if (!temp) return;
-  const a = document.createElement("a");
-  a.href = `./${encodeTitle(temp[0])}?body=${
-    encodeURIComponent(temp.slice(1).join("\n"))
-  }`;
-  document.body.append(a);
-  a.remove();
+  openInTheSameTab(scrapbox.Project.name, temp[0], temp.slice(1).join("\n"));
   yield { message: `Created "/${project}/${temp[0]}"`, lines: temp };
 }
 
