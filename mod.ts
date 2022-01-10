@@ -219,7 +219,7 @@ export async function format(project: string, title: string) {
   cleanup();
 }
 
-/** 指定した日付の日付ページを作成する
+/** 指定した日付の日付ページを作成する。もしその中に今日の日付ページが含まれていたら、そのページを開く
  *
  * 複数作成可能。
  *
@@ -227,25 +227,19 @@ export async function format(project: string, title: string) {
  * @param project 日付ページを作成するproject
  */
 export async function* makePlan(dates: Iterable<Date>, project: string) {
-  const thisDate = toDate(scrapbox.Page.title ?? "");
-  let temp: string[] | undefined;
-
-  for await (const { date, lines } of makeDiaryPages(dates)) {
-    if (
-      thisDate && isSameDay(thisDate, date) && project === scrapbox.Project.name
-    ) {
-      temp = lines;
-      continue;
-    }
+  // backgroundでページを作成する
+  for await (const { lines } of makeDiaryPages(dates)) {
     const { insert, cleanup } = await joinPageRoom(project, lines[0]);
     await insert(lines.slice(1).join("\n"), "_end");
     cleanup();
     yield { message: `Created "/${project}/${lines[0]}"`, lines };
   }
 
-  if (!temp) return;
-  openInTheSameTab(scrapbox.Project.name, temp[0], temp.slice(1).join("\n"));
-  yield { message: `Created "/${project}/${temp[0]}"`, lines: temp };
+  // 今日の日付ページがあったら現在のタブで開く
+  const now = new Date();
+  if (![...dates].some((date) => isSameDay(date, now))) return;
+  if (project !== scrapbox.Project.name) return;
+  openInTheSameTab(scrapbox.Project.name, toTitle(now));
 }
 
 /** 選択範囲に含まれる日付の日付ページを全て作成する
