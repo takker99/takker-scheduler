@@ -2,7 +2,7 @@ import { insertLine, replaceLines } from "./lib/edit.ts";
 import { caret } from "./lib/caret.ts";
 import { getLines, getText } from "./lib/node.ts";
 import { parse, Task, toString } from "./task.ts";
-import { format as formatPage, toDate, toTitle } from "./diary.ts";
+import { format as formatPage, toTitle } from "./diary.ts";
 import {
   addDays,
   addSeconds,
@@ -12,7 +12,6 @@ import {
 } from "./deps/date-fns.ts";
 import { makeDiaryPages } from "./plan.ts";
 import { getDatesFromSelection } from "./utils.ts";
-import { encodeTitle } from "./lib/utils.ts";
 import { openInTheSameTab } from "./lib/open.ts";
 import { SyncInit, syncPages } from "./sync.ts";
 import { joinPageRoom } from "./deps/scrapbox.ts";
