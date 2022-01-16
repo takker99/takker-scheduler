@@ -1,6 +1,6 @@
 import { pushTasks } from "../pushTasks.ts";
 import { toDate } from "../diary.ts";
-import { isTask, parse } from "../task.ts";
+import { parse } from "../task.ts";
 import { sleep } from "../lib/sleep.ts";
 import {
   makeCheckCircle,
