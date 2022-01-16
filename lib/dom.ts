@@ -30,3 +30,4 @@ export const randomJumpButton = () =>
   document.getElementsByClassName("random-jump-button")?.[0];
 export const pageCustomButtons = () =>
   document.getElementsByClassName("page-menu-extension")?.[0];
+export const statusBar = () => document.getElementsByClassName("status-bar")[0];
