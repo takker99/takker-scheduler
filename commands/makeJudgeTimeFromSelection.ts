@@ -3,16 +3,14 @@ import type { Task } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
 import { sleep } from "../lib/sleep.ts";
 import { getLines } from "../lib/node.ts";
+import { deleteLines, insertLine } from "../lib/edit.ts";
 import {
   makeCheckCircle,
   makeExclamationTriangle,
   makeSpinner,
   useStatusBar,
 } from "../lib/statusBar.ts";
-import { differenceInMinutes, isAfter, isSameDay } from "../deps/date-fns.ts";
-import { joinPageRoom } from "../deps/scrapbox.ts";
-import type { Scrapbox } from "../deps/scrapbox.ts";
-declare const scrapbox: Scrapbox;
+import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
 
 /** 開始日時を計算する
  *
@@ -32,6 +30,9 @@ const toStart = (happen: number, duration = 7): Date =>
 export async function makeJudgeTimeFromSelection(project: string) {
   // 選択範囲から判断する項目と開始日時を取得する
   const [start, end] = getLineRange();
+  const selectedLines = getLines().slice(start, end + 1).map((line) =>
+    line.text
+  );
   const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
       const name = line.text.trim();
@@ -78,6 +79,11 @@ export async function makeJudgeTimeFromSelection(project: string) {
     tasks.push(task);
   }
 
+  // 先に選択範囲を消す
+  // 後から消そうとすると、同じページで判断timeを作った場合に行数がずれて違う箇所を削除してしまう
+  deleteLines(start, end - start + 1);
+
+  // 書き込む
   const { render, dispose } = useStatusBar();
   const spinner = makeSpinner();
   render(spinner, `writing ${tasks.length} tasks...`);
@@ -97,21 +103,14 @@ export async function makeJudgeTimeFromSelection(project: string) {
 
   if (failed) {
     render(makeExclamationTriangle(), `Some tasks failed to be written`);
+    // 削除した選択範囲を復元する
+    insertLine(start, selectedLines.join("\n"));
+
     await sleep(1000);
     dispose();
     return;
   }
   render(makeCheckCircle(), "wrote");
-
-  // 書き込みに成功したら、選択した行を全部消す
-  const { patch, cleanup } = await joinPageRoom(
-    scrapbox.Project.name,
-    scrapbox.Page.title ?? "",
-  );
-  count = 0;
-  await patch((lines) =>
-    lines.flatMap((line, i) => start <= i && i <= end ? [] : [line.text])
-  );
-  cleanup();
+  await sleep(1000);
   dispose();
 }
