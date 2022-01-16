@@ -81,7 +81,7 @@ export async function makeJudgeTimeFromSelection(project: string) {
 
   // 先に選択範囲を消す
   // 後から消そうとすると、同じページで判断timeを作った場合に行数がずれて違う箇所を削除してしまう
-  deleteLines(start, end - start + 1);
+  await deleteLines(start, end - start + 1);
 
   // 書き込む
   const { render, dispose } = useStatusBar();
@@ -104,7 +104,7 @@ export async function makeJudgeTimeFromSelection(project: string) {
   if (failed) {
     render(makeExclamationTriangle(), `Some tasks failed to be written`);
     // 削除した選択範囲を復元する
-    insertLine(start, selectedLines.join("\n"));
+    await insertLine(start, selectedLines.join("\n"));
 
     await sleep(1000);
     dispose();
