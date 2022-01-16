@@ -53,7 +53,6 @@ export async function transport(project: string, title: string) {
     render(spinner, `copying ${tasks.length - count} tasks...`);
   }
 
-  setTimeout(dispose, 1000);
   if (failed) {
     render(makeExclamationTriangle(), `Some tasks failed to be written`);
     await sleep(1000);
