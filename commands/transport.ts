@@ -1,6 +1,7 @@
 import { pushTasks } from "../pushTasks.ts";
 import { toDate } from "../diary.ts";
-import { parse } from "../task.ts";
+import { isTask, parse } from "../task.ts";
+import { sleep } from "../lib/sleep.ts";
 import {
   makeCheckCircle,
   makeExclamationTriangle,
@@ -9,7 +10,7 @@ import {
 } from "../lib/statusBar.ts";
 import { getIndentLineCount } from "../lib/text.ts";
 import { isSameDay } from "../deps/date-fns.ts";
-import { getPage } from "../deps/scrapbox.ts";
+import { getPage, joinPageRoom } from "../deps/scrapbox.ts";
 
 export async function transport(project: string, title: string) {
   const result = await getPage(project, title);
@@ -52,11 +53,32 @@ export async function transport(project: string, title: string) {
     render(spinner, `writing ${tasks.length - count} tasks...`);
   }
 
-  // 一秒間完了メッセージを出す
+  setTimeout(dispose, 1000);
   if (failed) {
     render(makeExclamationTriangle(), `Some tasks failed to be written`);
-  } else {
-    render(makeCheckCircle(), "wrote");
+    await sleep(1000);
+    dispose();
+    return;
   }
-  setTimeout(dispose, 1000);
+  render(makeCheckCircle(), "wrote");
+  await sleep(1000);
+
+  // 書き込みに成功したときのみ、元ページからタスクを消す
+  const { patch, cleanup } = await joinPageRoom(project, title);
+  count = 0;
+  await patch((lines) =>
+    lines.flatMap((line, i) => {
+      if (count > 0) {
+        count--;
+        return [];
+      }
+      const task = parse(line.text);
+      if (!task || (task && date && isSameDay(task.base, date))) {
+        return [line.text];
+      }
+      count = getIndentLineCount(i, lines);
+      return [];
+    })
+  );
+  cleanup();
 }
