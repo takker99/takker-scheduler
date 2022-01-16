@@ -145,8 +145,7 @@ export async function insertText(text: string) {
   cursor.focus();
   cursor.value = text;
 
-  const uiEvent = document.createEvent("UIEvent");
-  uiEvent.initEvent("input", true, false);
-  cursor.dispatchEvent(uiEvent);
+  const event = new InputEvent("input", { bubbles: true });
+  cursor.dispatchEvent(event);
   await sleep(1); // 待ち時間は感覚で決めた
 }
