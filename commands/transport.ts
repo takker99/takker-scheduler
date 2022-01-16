@@ -38,7 +38,7 @@ export async function transport(project: string, title: string) {
   // タスクを書き込む
   const { render, dispose } = useStatusBar();
   const spinner = makeSpinner();
-  render(spinner, `writing ${tasks.length} tasks...`);
+  render(spinner, `copying ${tasks.length} tasks...`);
 
   let count = 0;
   let failed = false;
@@ -50,7 +50,7 @@ export async function transport(project: string, title: string) {
     }
     count += result.value.size;
     // 書き込み状況を.status-barに表示する
-    render(spinner, `writing ${tasks.length - count} tasks...`);
+    render(spinner, `copying ${tasks.length - count} tasks...`);
   }
 
   setTimeout(dispose, 1000);
@@ -60,10 +60,11 @@ export async function transport(project: string, title: string) {
     dispose();
     return;
   }
-  render(makeCheckCircle(), "wrote");
+  render(makeCheckCircle(), "copied");
   await sleep(1000);
 
   // 書き込みに成功したときのみ、元ページからタスクを消す
+  render(spinner, `removing ${tasks.length} original tasks...`);
   const { patch, cleanup } = await joinPageRoom(project, title);
   count = 0;
   await patch((lines) =>
@@ -81,4 +82,7 @@ export async function transport(project: string, title: string) {
     })
   );
   cleanup();
+  render(makeCheckCircle(), "Moved");
+  await sleep(1000);
+  dispose();
 }
