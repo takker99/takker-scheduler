@@ -1,14 +1,15 @@
 import { pushTasks } from "../pushTasks.ts";
 import { toDate } from "../diary.ts";
 import { parse } from "../task.ts";
-import { isSameDay } from "../deps/date-fns.ts";
-import { getPage } from "../deps/scrapbox.ts";
 import {
   makeCheckCircle,
   makeExclamationTriangle,
   makeSpinner,
   useStatusBar,
 } from "../lib/statusBar.ts";
+import { getIndentLineCount } from "../lib/text.ts";
+import { isSameDay } from "../deps/date-fns.ts";
+import { getPage } from "../deps/scrapbox.ts";
 
 export async function transport(project: string, title: string) {
   const result = await getPage(project, title);
@@ -20,9 +21,17 @@ export async function transport(project: string, title: string) {
 
   // 日付ページの場合は、その日付と一致しないタスクを転送する
   // 日付ベージでなければ、全てのタスクを転送する
-  const tasks = lines.flatMap((line) => {
-    const task = parse(line.text);
-    return task && date && isSameDay(task.base, date) ? [] : task ? [task] : [];
+  const tasks = lines.flatMap((line, i) => {
+    const count = getIndentLineCount(i, lines);
+    const task_ = parse(line.text);
+    if (!task_) return [];
+    const task = {
+      ...task_,
+      lines: lines.slice(i + 1, i + 1 + count).map((line) => line.text),
+    };
+    if (date && isSameDay(task.base, date)) return [];
+
+    return [task];
   });
 
   // タスクを書き込む

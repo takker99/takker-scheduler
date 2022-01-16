@@ -11,12 +11,12 @@ export interface PushTasksResult {
 /** 任意個のタスクを特定プロジェクトの日付ページに書き込む
  *
  * @param project 書き込み先プロジェクト
- * @param tasks 書き込むタスク
+ * @param tasks 書き込むタスク (インデントでぶら下げた行をlinesに入れられる)
  * @return 書き込みの成否が入ったasync iterator
  */
 export async function* pushTasks(
   project: string,
-  ...tasks: readonly Task[]
+  ...tasks: readonly (Task & { lines?: string[] })[]
 ): AsyncGenerator<OneByOneResult<PushTasksResult>, void, void> {
   const stacks = [...tasks];
   const promises = [] as Promise<PushTasksResult>[];
@@ -40,7 +40,7 @@ export async function* pushTasks(
       await patch((lines) =>
         format([
           ...lines.map((line) => line.text),
-          ...tasks_.map((task) => toString(task)),
+          ...tasks_.flatMap((task) => [toString(task), ...task.lines ?? []]),
         ])
       );
       cleanup();
