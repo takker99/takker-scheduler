@@ -35,7 +35,7 @@ export async function makeJudgeTimeFromSelection(project: string) {
   );
   const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
-      const name = line.text.trim();
+      const name = line.text.trimEnd(); // インデントは維持する
       const start = toStart(line.updated);
       if (name === "") return [];
       return { name, start };
