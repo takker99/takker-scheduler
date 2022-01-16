@@ -9,7 +9,7 @@ import {
   makeSpinner,
   useStatusBar,
 } from "../lib/statusBar.ts";
-import { differenceInMinutes, isSameDay } from "../deps/date-fns.ts";
+import { differenceInMinutes, isAfter, isSameDay } from "../deps/date-fns.ts";
 import { joinPageRoom } from "../deps/scrapbox.ts";
 import type { Scrapbox } from "../deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
@@ -61,7 +61,13 @@ export async function makeJudgeTimeFromSelection(project: string) {
     // stack.startから3時間以内に収まるタスクをまとめる
     const date = task.base;
     for (let i = 0; i < stacks.length; i++) {
-      if (differenceInMinutes(stacks[i].start, date) < 180) continue;
+      if (
+        (isAfter(stacks[i].start, date)
+          ? differenceInMinutes(stacks[i].start, date)
+          : differenceInMinutes(date, stacks[i].start)) >= 180
+      ) {
+        continue;
+      }
       // stacksからtaskに移動する
       const [{ name }] = stacks.splice(i, 1);
       task.lines.push(`  ${name}`);
