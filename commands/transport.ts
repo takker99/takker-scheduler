@@ -60,7 +60,7 @@ export async function transport(project: string, title: string) {
     return;
   }
   render(makeCheckCircle(), "copied");
-  await sleep(1000);
+  await sleep(500);
 
   // 書き込みに成功したときのみ、元ページからタスクを消す
   render(spinner, `removing ${tasks.length} original tasks...`);
