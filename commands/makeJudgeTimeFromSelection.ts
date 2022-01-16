@@ -32,7 +32,7 @@ const toStart = (happen: number, duration = 7): Date =>
 export async function makeJudgeTimeFromSelection(project: string) {
   // 選択範囲から判断する項目と開始日時を取得する
   const [start, end] = getLineRange();
-  const stacks = getLines().slice(start, end)
+  const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
       const name = line.text.trim();
       const start = toStart(line.updated);
