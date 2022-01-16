@@ -70,7 +70,7 @@ export const toTitle = (date: Date) =>
  *
  * タスクページでなければ何もしないで返す
  *
- * @param lines formatしたいタスクページの全文
+ * @param lines formatしたいタスクページの全文(タイトル行も含む)
  */
 export function format(lines: string[]) {
   const today = toDate(lines[0]);
