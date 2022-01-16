@@ -17,3 +17,5 @@ export { syncFromSelection } from "./commands/syncFromSelection.ts";
 // - walkPlanDuration()
 // - setPlan()
 // - setDuration()
+
+export { pushTasks } from "./pushTasks.ts";
