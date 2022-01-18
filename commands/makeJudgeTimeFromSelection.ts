@@ -1,6 +1,7 @@
 import { pushTasks } from "../pushTasks.ts";
 import type { Task } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
+import { calcStart } from "./calcStart.ts";
 import { sleep } from "../lib/sleep.ts";
 import { getLines } from "../lib/node.ts";
 import { deleteLines, insertLine } from "../lib/edit.ts";
@@ -11,20 +12,6 @@ import {
   useStatusBar,
 } from "../lib/statusBar.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
-
-/** 開始日時を計算する
- *
- * @param happen タスクが発生した日時のUNIX時刻
- * @param duration 発生から何日目までを締め切りとするか
- * @return 開始日時
- */
-const calcStart = (happen: number, duration = 7): Date =>
-  new Date(
-    (
-      happen +
-      (24 * 60 * 60 * 30 * ((duration + 1) ** 1.5 - 1)) / ((300 + 1) ** 1.5 - 1)
-    ) * 1000,
-  );
 
 /** 選択範囲中の項目を判断する時間を設ける */
 export async function makeJudgeTimeFromSelection(project: string) {
