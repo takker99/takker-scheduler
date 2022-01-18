@@ -59,11 +59,9 @@ export async function transport(project: string, title: string) {
     dispose();
     return;
   }
-  render(makeCheckCircle(), "copied");
-  await sleep(500);
 
   // 書き込みに成功したときのみ、元ページからタスクを消す
-  render(spinner, `removing ${tasks.length} original tasks...`);
+  render(spinner, `Copied. removing ${tasks.length} original tasks...`);
   const { patch, cleanup } = await joinPageRoom(project, title);
   count = 0;
   await patch((lines) =>
