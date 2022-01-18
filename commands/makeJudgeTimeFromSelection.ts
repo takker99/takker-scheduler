@@ -18,7 +18,7 @@ import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
  * @param duration 発生から何日目までを締め切りとするか
  * @return 開始日時
  */
-const toStart = (happen: number, duration = 7): Date =>
+const calcStart = (happen: number, duration = 7): Date =>
   new Date(
     (
       happen +
@@ -36,7 +36,7 @@ export async function makeJudgeTimeFromSelection(project: string) {
   const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
       const name = line.text.trimEnd(); // インデントは維持する
-      const start = toStart(line.updated);
+      const start = calcStart(line.updated);
       if (name === "") return [];
       return { name, start };
     });
