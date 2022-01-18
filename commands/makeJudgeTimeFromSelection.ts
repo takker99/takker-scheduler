@@ -1,25 +1,15 @@
-import { pushTasks } from "../pushTasks.ts";
+import { toString } from "../task.ts";
 import type { Task } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
 import { calcStart } from "./calcStart.ts";
-import { sleep } from "../lib/sleep.ts";
-import { getLines } from "../lib/node.ts";
-import { deleteLines, insertLine } from "../lib/edit.ts";
-import {
-  makeCheckCircle,
-  makeExclamationTriangle,
-  makeSpinner,
-  useStatusBar,
-} from "../lib/statusBar.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
+import { replaceLines } from "../lib/edit.ts";
+import { getLines } from "../lib/node.ts";
 
 /** 選択範囲中の項目を判断する時間を設ける */
-export async function makeJudgeTimeFromSelection(project: string) {
+export async function makeJudgeTimeFromSelection() {
   // 選択範囲から判断する項目と開始日時を取得する
   const [start, end] = getLineRange();
-  const selectedLines = getLines().slice(start, end + 1).map((line) =>
-    line.text
-  );
   const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
       const name = line.text.trimEnd(); // インデントは維持する
@@ -28,6 +18,7 @@ export async function makeJudgeTimeFromSelection(project: string) {
       return { name, start };
     });
 
+  // インデント付きタスクを作る
   const tasks: (Task & { lines: string[] })[] = [];
   while (stacks.length > 0) {
     const stack = stacks.shift();
@@ -66,38 +57,11 @@ export async function makeJudgeTimeFromSelection(project: string) {
     tasks.push(task);
   }
 
-  // 先に選択範囲を消す
-  // 後から消そうとすると、同じページで判断timeを作った場合に行数がずれて違う箇所を削除してしまう
-  await deleteLines(start, end - start + 1);
+  // テキストに変換する
+  const text = tasks.flatMap((task) => [toString(task), ...task.lines]).join(
+    "\n",
+  );
 
   // 書き込む
-  const { render, dispose } = useStatusBar();
-  const spinner = makeSpinner();
-  render(spinner, `writing ${tasks.length} tasks...`);
-
-  let count = 0;
-  let failed = false;
-  for await (const result of pushTasks(project, ...tasks)) {
-    if (result.state !== "fulfilled") {
-      console.error(result.reason);
-      failed = true;
-      continue;
-    }
-    count += result.value.size;
-    // 書き込み状況を.status-barに表示する
-    render(spinner, `writing ${tasks.length - count} tasks...`);
-  }
-
-  if (failed) {
-    render(makeExclamationTriangle(), `Some tasks failed to be written`);
-    // 削除した選択範囲を復元する
-    await insertLine(start, selectedLines.join("\n"));
-
-    await sleep(1000);
-    dispose();
-    return;
-  }
-  render(makeCheckCircle(), "wrote");
-  await sleep(1000);
-  dispose();
+  await replaceLines(start, end, text);
 }
