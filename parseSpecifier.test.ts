@@ -1,11 +1,11 @@
 /// <reference lib="deno.unstable" />
 
-import { parseSpecifier } from "./parseSpecifier.ts";
+import { parseSpecifier, SpecifierResult } from "./parseSpecifier.ts";
 import { assertEquals } from "./deps/testing.ts";
 
 Deno.test("parseSpecifier()", async (t) => {
-  await t.step("no option - > undefined", () => {
-    assertEquals<[string, Date] | undefined>(
+  await t.step("no option -> undefined", () => {
+    assertEquals<SpecifierResult | undefined>(
       parseSpecifier("テストテスト", new Date()),
       undefined,
     );
@@ -13,7 +13,7 @@ Deno.test("parseSpecifier()", async (t) => {
 
   await t.step("absolute option", () => {
     const base = new Date(2022, 0, 1, 12, 17);
-    const testData: [string, Date][] = [
+    const testData: [string, Date, number?][] = [
       [
         "タスクの名前 s:2022-01-13T09:34",
         new Date(2022, 0, 13, 9, 34),
@@ -47,6 +47,16 @@ Deno.test("parseSpecifier()", async (t) => {
         new Date(2022, 0, 1, 9, 37),
       ],
       [
+        "タスクの名前 s:09:37 d:45",
+        new Date(2022, 0, 1, 9, 37),
+        45,
+      ],
+      [
+        "タスクの名前 d:40 s:09:37",
+        new Date(2022, 0, 1, 9, 37),
+        40,
+      ],
+      [
         "タスクの名前 s:T23",
         new Date(2022, 0, 1, 23, 17),
       ],
@@ -55,11 +65,11 @@ Deno.test("parseSpecifier()", async (t) => {
         new Date(2022, 0, 1, 11, 17),
       ],
     ];
-    for (const [text, start] of testData) {
-      assertEquals<[string, Date] | undefined>(parseSpecifier(text, base), [
-        "タスクの名前",
-        start,
-      ]);
+    for (const [text, start, duration] of testData) {
+      assertEquals<SpecifierResult | undefined>(
+        parseSpecifier(text, base),
+        { name: "タスクの名前", start, ...(duration ? { duration } : {}) },
+      );
     }
   });
 
@@ -88,10 +98,17 @@ Deno.test("parseSpecifier()", async (t) => {
       ],
     ];
     for (const [text, start] of testData) {
-      assertEquals<[string, Date] | undefined>(
+      assertEquals<SpecifierResult | undefined>(
         parseSpecifier(text, base),
-        ["タスクの名前", start],
+        { name: "タスクの名前", start },
       );
     }
+  });
+
+  await t.step("only duration", () => {
+    assertEquals<SpecifierResult | undefined>(
+      parseSpecifier("  タスクの名前 d:753", new Date()),
+      { name: "  タスクの名前", duration: 753 },
+    );
   });
 });
