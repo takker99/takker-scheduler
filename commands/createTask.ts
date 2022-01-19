@@ -12,13 +12,14 @@ export async function createTask() {
   const base = toDate(scrapbox.Page.title ?? "") ?? new Date();
   const [start, end] = getLineRange();
 
-  const text = getLines().slice(start, end + 1)
+  const lines = getLines().slice(start, end + 1).map((line) => line.text);
+  const text = lines
     .flatMap((line) => {
       // 選択範囲から判断する項目と開始日時を取得する
-      const text = line.text.trimEnd(); // インデントは維持する
-      if (text === "") return [];
+      const text = line.trimEnd(); // インデントは維持する
+      if (text === "") return line;
       const { name, start, duration } = parseSpecifier(text, base) ?? {};
-      if (!name || (!start && !duration)) return [];
+      if (!name || (!start && !duration)) return line;
 
       // タスクの文字列を作る
       return [
@@ -30,6 +31,9 @@ export async function createTask() {
         }),
       ];
     }).join("\n");
+
+  // 何も変化しなければ書き込まない
+  if (lines.join("\n") === text) return;
 
   // 書き込む
   await replaceLines(start, end, text);

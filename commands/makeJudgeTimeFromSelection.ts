@@ -60,6 +60,8 @@ export async function makeJudgeTimeFromSelection() {
     tasks.push(task);
   }
 
+  if (task.length === 0) return;
+
   // テキストに変換する
   const text = tasks.flatMap((task) => [toString(task), ...task.lines]).join(
     "\n",
