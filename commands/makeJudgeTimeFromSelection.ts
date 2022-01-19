@@ -2,6 +2,7 @@ import { toString } from "../task.ts";
 import type { TaskBlock } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
 import { calcStart } from "../calcStart.ts";
+import { parseSpecifier } from "../parseSpecifier.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
 import { replaceLines } from "../lib/edit.ts";
 import { getLines } from "../lib/node.ts";
@@ -12,8 +13,10 @@ export async function makeJudgeTimeFromSelection() {
   const [start, end] = getLineRange();
   const stacks = getLines().slice(start, end + 1)
     .flatMap((line) => {
-      const name = line.text.trimEnd(); // インデントは維持する
-      const start = calcStart(line.updated);
+      const text = line.text.trimEnd(); // インデントは維持する
+      if (text === "") return [];
+      const { name = text, start = calcStart(line.updated) } =
+        parseSpecifier(text, new Date(line.updated * 1000)) ?? {};
       if (name === "") return [];
       return { name, start };
     });
