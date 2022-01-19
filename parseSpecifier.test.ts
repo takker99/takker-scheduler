@@ -5,7 +5,7 @@ import { assertEquals } from "./deps/testing.ts";
 
 Deno.test("parseSpecifier()", async (t) => {
   await t.step("no option - > undefined", () => {
-    assertEquals<Date | undefined>(
+    assertEquals<[string, Date] | undefined>(
       parseSpecifier("テストテスト", new Date()),
       undefined,
     );
@@ -56,7 +56,10 @@ Deno.test("parseSpecifier()", async (t) => {
       ],
     ];
     for (const [text, start] of testData) {
-      assertEquals<Date | undefined>(parseSpecifier(text, base), start);
+      assertEquals<[string, Date] | undefined>(parseSpecifier(text, base), [
+        "タスクの名前",
+        start,
+      ]);
     }
   });
 
@@ -64,12 +67,16 @@ Deno.test("parseSpecifier()", async (t) => {
     const base = new Date(2022, 2, 1, 12, 17);
     const testData: [string, Date][] = [
       [
+        "タスクの名前 s:p18m",
+        new Date(2022, 2, 1, 12, 35),
+      ],
+      [
         "タスクの名前 s:p180m",
         new Date(2022, 2, 1, 15, 17),
       ],
       [
-        "タスクの名前 s:p3h",
-        new Date(2022, 2, 1, 15, 17),
+        "タスクの名前 s:p4h",
+        new Date(2022, 2, 1, 16, 17),
       ],
       [
         "タスクの名前 s:p2w",
@@ -81,7 +88,10 @@ Deno.test("parseSpecifier()", async (t) => {
       ],
     ];
     for (const [text, start] of testData) {
-      assertEquals<Date | undefined>(parseSpecifier(text, base), start);
+      assertEquals<[string, Date] | undefined>(
+        parseSpecifier(text, base),
+        ["タスクの名前", start],
+      );
     }
   });
 });
