@@ -1,7 +1,7 @@
 import { toString } from "../task.ts";
 import type { TaskBlock } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
-import { calcStart } from "./calcStart.ts";
+import { calcStart } from "../calcStart.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
 import { replaceLines } from "../lib/edit.ts";
 import { getLines } from "../lib/node.ts";

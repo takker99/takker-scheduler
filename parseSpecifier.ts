@@ -1,6 +1,6 @@
 import type { DateValues, Duration } from "./deps/date-fns.ts";
 import { add, set } from "./deps/date-fns.ts";
-import { calcStart } from "./commands/calcStart.ts";
+import { calcStart } from "./calcStart.ts";
 
 export function parseSpecifier(
   text: string,
