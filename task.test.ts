@@ -1,3 +1,5 @@
+/// <reference lib="deno.ns" />
+
 import { isTask, parse, Task, toString } from "./task.ts";
 import { assert, assertEquals } from "./deps/testing.ts";
 
