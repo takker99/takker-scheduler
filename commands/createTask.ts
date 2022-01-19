@@ -3,13 +3,10 @@ import { getLineRange } from "./getLineRange.ts";
 import { parseSpecifier } from "../parseSpecifier.ts";
 import { replaceLines } from "../lib/edit.ts";
 import { getLines } from "../lib/node.ts";
-import { toDate } from "../diary.ts";
-import type { Scrapbox } from "../deps/scrapbox.ts";
-declare const scrapbox: Scrapbox;
 
 /** 選択範囲中の行から、一行ごとに新しいタスクを作る */
 export async function createTask() {
-  const base = toDate(scrapbox.Page.title ?? "") ?? new Date();
+  const base = new Date();
   const [start, end] = getLineRange();
 
   const lines = getLines().slice(start, end + 1).map((line) => line.text);
