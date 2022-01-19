@@ -49,7 +49,7 @@ export function parseSpecifier(
       name: name.trimEnd(),
       start: calcStart(
         base.getTime() / 1000,
-        date.getTime() / (24 * 60 * 60 * 1000),
+        (date.getTime() - base.getTime()) / (24 * 60 * 60 * 1000),
       ),
       ...(duration !== undefined ? { duration: parseInt(duration) } : {}),
     };
