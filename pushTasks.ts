@@ -1,4 +1,4 @@
-import { Task, toString } from "./task.ts";
+import { TaskBlock, toString } from "./task.ts";
 import { format, toTitle } from "./diary.ts";
 import { oneByOne, OneByOneResult } from "./utils.ts";
 import { isSameDay } from "./deps/date-fns.ts";
@@ -16,7 +16,7 @@ export interface PushTasksResult {
  */
 export async function* pushTasks(
   project: string,
-  ...tasks: readonly (Task & { lines?: string[] })[]
+  ...tasks: readonly TaskBlock[]
 ): AsyncGenerator<OneByOneResult<PushTasksResult>, void, void> {
   const stacks = [...tasks];
   const promises = [] as Promise<PushTasksResult>[];

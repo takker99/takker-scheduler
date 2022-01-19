@@ -5,7 +5,8 @@ import {
   lightFormat,
   parse,
 } from "./deps/date-fns.ts";
-import { isNone } from "./utils.ts";
+import { isNone, isString } from "./utils.ts";
+import { getIndentLineCount } from "./lib/text.ts";
 
 export type Interval = {
   start?: Date;
@@ -96,4 +97,40 @@ export function toString({ title, base, plan, record }: Task) {
     "`",
     title,
   ].join("");
+}
+
+/** Taskに、インデントでぶら下がっている行のテキストデータを加えたもの*/
+export interface TaskBlock extends Task {
+  /**ぶら下がっているテキストデータ */ lines: string[];
+}
+/** 本文データから、タスクとそこにぶら下がった行をまとめて返す */
+export function* parseBlock(
+  lines: { text: string }[] | string[],
+): Generator<TaskBlock, void, void> {
+  for (const data of parseLines(lines)) {
+    if (isString(data)) continue;
+    yield data;
+  }
+}
+/** 本文データを解析して結果を返す */
+export function* parseLines(
+  lines: { text: string }[] | string[],
+): Generator<TaskBlock | string, void, void> {
+  for (let i = 0; i < lines.length; i++) {
+    const line_ = lines[i];
+    const line = isString(line_) ? line_ : line_.text;
+    const count = getIndentLineCount(i, lines);
+    const task = parseTask(line);
+    if (!task) {
+      yield line;
+      continue;
+    }
+    yield {
+      ...task,
+      lines: lines.slice(i + 1, i + 1 + count).map((line_) =>
+        isString(line_) ? line_ : line_.text
+      ),
+    };
+    i += count;
+  }
 }

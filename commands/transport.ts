@@ -1,14 +1,14 @@
 import { pushTasks } from "../pushTasks.ts";
 import { toDate } from "../diary.ts";
-import { parse } from "../task.ts";
+import { parseBlock, parseLines, TaskBlock, toString } from "../task.ts";
 import { sleep } from "../lib/sleep.ts";
+import { isString } from "../utils.ts";
 import {
   makeCheckCircle,
   makeExclamationTriangle,
   makeSpinner,
   useStatusBar,
 } from "../lib/statusBar.ts";
-import { getIndentLineCount } from "../lib/text.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { getPage, joinPageRoom } from "../deps/scrapbox.ts";
 
@@ -22,18 +22,11 @@ export async function transport(project: string, title: string) {
 
   // 日付ページの場合は、その日付と一致しないタスクを転送する
   // 日付ベージでなければ、全てのタスクを転送する
-  const tasks = lines.flatMap((line, i) => {
-    const count = getIndentLineCount(i, lines);
-    const task_ = parse(line.text);
-    if (!task_) return [];
-    const task = {
-      ...task_,
-      lines: lines.slice(i + 1, i + 1 + count).map((line) => line.text),
-    };
-    if (date && isSameDay(task.base, date)) return [];
-
-    return [task];
-  });
+  const tasks = [] as TaskBlock[];
+  for (const task of parseBlock(lines)) {
+    if (date && isSameDay(task.base, date)) continue;
+    tasks.push(task);
+  }
 
   // タスクを書き込む
   const { render, dispose } = useStatusBar();
@@ -64,20 +57,19 @@ export async function transport(project: string, title: string) {
   render(spinner, `Copied. removing ${tasks.length} original tasks...`);
   const { patch, cleanup } = await joinPageRoom(project, title);
   count = 0;
-  await patch((lines) =>
-    lines.flatMap((line, i) => {
-      if (count > 0) {
-        count--;
-        return [];
+  await patch((lines) => {
+    const newLines = [] as string[];
+    for (const line of parseLines(lines)) {
+      if (isString(line)) {
+        newLines.push(line);
+        continue;
       }
-      const task = parse(line.text);
-      if (!task || (task && date && isSameDay(task.base, date))) {
-        return [line.text];
+      if ((date && isSameDay(line.base, date))) {
+        newLines.push(toString(line), ...line.lines);
       }
-      count = getIndentLineCount(i, lines);
-      return [];
-    })
-  );
+    }
+    return newLines;
+  });
   cleanup();
   render(makeCheckCircle(), "Moved");
   await sleep(1000);
