@@ -1,5 +1,5 @@
 import { toString } from "../task.ts";
-import type { Task } from "../task.ts";
+import type { TaskBlock } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
 import { calcStart } from "./calcStart.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
@@ -19,11 +19,11 @@ export async function makeJudgeTimeFromSelection() {
     });
 
   // インデント付きタスクを作る
-  const tasks: (Task & { lines: string[] })[] = [];
+  const tasks: TaskBlock[] = [];
   while (stacks.length > 0) {
     const stack = stacks.shift();
     if (!stack) break;
-    const task: Task & { lines: string[] } = {
+    const task: TaskBlock = {
       title: "判断time",
       base: stack.start,
       plan: {
