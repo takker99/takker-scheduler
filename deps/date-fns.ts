@@ -1,4 +1,5 @@
 export { default as lightFormat } from "https://deno.land/x/date_fns@v2.22.1/lightFormat/index.ts";
+export { default as add } from "https://deno.land/x/date_fns@v2.22.1/add/index.ts";
 export { default as addDays } from "https://deno.land/x/date_fns@v2.22.1/addDays/index.ts";
 // export { default as addMinutes } from "https://deno.land/x/date_fns@v2.22.1/addMinutes/index.ts";
 export { default as addSeconds } from "https://deno.land/x/date_fns@v2.22.1/addSeconds/index.ts";
@@ -22,3 +23,7 @@ export { default as intervalToDuration } from "./patch/intervalToDuration.ts";
 export { default as areIntervalsOverlapping } from "./patch/areIntervalsOverlapping.ts";
 export { default as differenceInMinutes } from "https://deno.land/x/date_fns@v2.22.1/differenceInMinutes/index.js";
 export { default as eachDayOfInterval } from "./patch/eachDayOfInterval.ts";
+export type {
+  DateValues,
+  Duration,
+} from "https://deno.land/x/date_fns@v2.22.1/types.ts";
