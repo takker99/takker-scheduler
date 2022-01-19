@@ -186,7 +186,6 @@ Deno.test("parseBlock()", () => {
     "",
     "no indent line",
   ];
-  let i = 0;
   const tasks = [...parseBlock(lines)];
   assertEquals(tasks[0], { ...testData[0][1], lines: [] });
   assertEquals(tasks[1], {
