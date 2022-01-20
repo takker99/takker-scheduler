@@ -12,7 +12,19 @@ import {
 import { isSameDay } from "../deps/date-fns.ts";
 import { getPage, joinPageRoom } from "../deps/scrapbox.ts";
 
-export async function transport(project: string, title: string) {
+export interface TransportProps {
+  /** ここで指定したページからタスクを転送する */
+  from: {
+    project: string;
+    title: string;
+  };
+  /** 転送先プロジェクト */
+  to: string;
+}
+/** 指定したページからタスクを日付ページに転送する */
+export async function transport(
+  { from: { project, title }, to }: TransportProps,
+) {
   const result = await getPage(project, title);
   if (!result.ok) {
     throw result;
@@ -35,7 +47,7 @@ export async function transport(project: string, title: string) {
 
   let count = 0;
   let failed = false;
-  for await (const result of pushTasks(project, ...tasks)) {
+  for await (const result of pushTasks(to, ...tasks)) {
     if (result.state !== "fulfilled") {
       console.error(result.reason);
       failed = true;
