@@ -4,44 +4,78 @@ import { statusBar } from "./dom.ts";
 export function useStatusBar() {
   const bar = statusBar();
 
-  const item = document.createElement("div");
-  bar.append(item);
+  const status = document.createElement("span");
+  bar.append(status);
 
   return {
-    render: (...children: (string | Node)[]) => {
-      item.textContent = "";
-      item.append(...children);
+    render: (...items: Item[]) => {
+      status.textContent = "";
+      const child = makeGroup(...items);
+      if (child) status.append(child);
     },
-    dispose: () => item.remove(),
+    dispose: () => status.remove(),
   };
 }
 
-/** スピナーを作る */
-export function makeSpinner() {
+export interface ItemGroup {
+  type: "group";
+  items: Item[];
+}
+export type Item =
+  | {
+    type: "spinner" | "check-circle" | "exclamation-triangle";
+  }
+  | { type: "text"; text: string }
+  | ItemGroup;
+
+function makeGroup(...items: Item[]): HTMLSpanElement | undefined {
+  const nodes = items.flatMap((item) => {
+    switch (item.type) {
+      case "spinner":
+        return [makeSpinner()];
+      case "check-circle":
+        return [makeCheckCircle()];
+      case "exclamation-triangle":
+        return [makeExclamationTriangle()];
+      case "text":
+        return [makeItem(item.text)];
+      case "group": {
+        const group = makeGroup(...item.items);
+        return group ? [group] : [];
+      }
+    }
+  });
+  if (nodes.length === 0) return;
+  if (nodes.length === 1) return nodes[0];
+  const span = document.createElement("span");
+  span.classList.add("item-group");
+  span.append(...nodes);
+  return span;
+}
+function makeItem(child: string | Node) {
   const span = document.createElement("span");
   span.classList.add("item");
+  span.append(child);
+  return span;
+}
+
+/** スピナーを作る */
+function makeSpinner() {
   const i = document.createElement("i");
   i.classList.add("fa", "fa-spinner");
-  span.append(i);
-  return span;
+  return makeItem(i);
 }
 
 /** チェックマークを作る */
-export function makeCheckCircle() {
-  const span = document.createElement("span");
-  span.classList.add("item");
+function makeCheckCircle() {
   const i = document.createElement("i");
   i.classList.add("kamon", "kamon-check-circle");
-  span.append(i);
-  return span;
+  return makeItem(i);
 }
 
 /** 警告アイコンを作る */
-export function makeExclamationTriangle() {
-  const span = document.createElement("span");
-  span.classList.add("item");
+function makeExclamationTriangle() {
   const i = document.createElement("i");
   i.classList.add("fas", "fa-exclamation-triangle");
-  span.append(i);
-  return span;
+  return makeItem(i);
 }

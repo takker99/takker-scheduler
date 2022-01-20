@@ -1,6 +1,6 @@
 import { format as formatPage } from "../diary.ts";
 import { joinPageRoom } from "../deps/scrapbox.ts";
-import { makeSpinner, useStatusBar } from "../lib/statusBar.ts";
+import { useStatusBar } from "../lib/statusBar.ts";
 
 /** タスクページをformatする
  *
@@ -13,7 +13,7 @@ export async function format(project: string, title: string) {
   const timer = setTimeout(() => {
     const { render, dispose } = useStatusBar();
     remove = dispose;
-    render(makeSpinner(), "formatting...");
+    render({ type: "spinner" }, { type: "text", text: "formatting..." });
   }, 500);
   const { patch, cleanup } = await joinPageRoom(
     project,
