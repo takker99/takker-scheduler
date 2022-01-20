@@ -4,7 +4,7 @@ import { statusBar } from "./dom.ts";
 export function useStatusBar() {
   const bar = statusBar();
 
-  const status = document.createElement("span");
+  const status = document.createElement("div");
   bar.append(status);
 
   return {
