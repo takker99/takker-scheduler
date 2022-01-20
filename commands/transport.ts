@@ -3,12 +3,7 @@ import { toDate } from "../diary.ts";
 import { parseBlock, parseLines, TaskBlock, toString } from "../task.ts";
 import { sleep } from "../lib/sleep.ts";
 import { isString } from "../utils.ts";
-import {
-  makeCheckCircle,
-  makeExclamationTriangle,
-  makeSpinner,
-  useStatusBar,
-} from "../lib/statusBar.ts";
+import { useStatusBar } from "../lib/statusBar.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { getPage, joinPageRoom } from "../deps/scrapbox.ts";
 
@@ -42,8 +37,10 @@ export async function transport(
 
   // タスクを書き込む
   const { render, dispose } = useStatusBar();
-  const spinner = makeSpinner();
-  render(spinner, `copying ${tasks.length} tasks...`);
+  render({ type: "spinner" }, {
+    type: "text",
+    text: `copying ${tasks.length} tasks...`,
+  });
 
   let count = 0;
   let failed = false;
@@ -55,18 +52,27 @@ export async function transport(
     }
     count += result.value.size;
     // 書き込み状況を.status-barに表示する
-    render(spinner, `copying ${tasks.length - count} tasks...`);
+    render({ type: "spinner" }, {
+      type: "text",
+      text: `copying ${tasks.length - count} tasks...`,
+    });
   }
 
   if (failed) {
-    render(makeExclamationTriangle(), `Some tasks failed to be written`);
+    render({ type: "exclamation-triangle" }, {
+      type: "text",
+      text: "Some tasks failed to be written",
+    });
     await sleep(1000);
     dispose();
     return;
   }
 
   // 書き込みに成功したときのみ、元ページからタスクを消す
-  render(spinner, `Copied. removing ${tasks.length} original tasks...`);
+  render({ type: "spinner" }, {
+    type: "text",
+    text: `Copied. removing ${tasks.length} original tasks...`,
+  });
   const { patch, cleanup } = await joinPageRoom(project, title);
   count = 0;
   await patch((lines) => {
@@ -83,7 +89,7 @@ export async function transport(
     return newLines;
   });
   cleanup();
-  render(makeCheckCircle(), "Moved");
+  render({ type: "check-circle" }, { type: "text", text: "Moved" });
   await sleep(1000);
   dispose();
 }
