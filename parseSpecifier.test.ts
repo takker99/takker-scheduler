@@ -49,12 +49,12 @@ Deno.test("parseSpecifier()", async (t) => {
       [
         "タスクの名前 s:09:37 d:45",
         new Date(2022, 0, 1, 9, 37),
-        45,
+        45 * 60,
       ],
       [
         "タスクの名前 d:40 s:09:37",
         new Date(2022, 0, 1, 9, 37),
-        40,
+        40 * 60,
       ],
       [
         "タスクの名前 s:T23",
@@ -108,7 +108,7 @@ Deno.test("parseSpecifier()", async (t) => {
   await t.step("only duration", () => {
     assertEquals<SpecifierResult | undefined>(
       parseSpecifier("  タスクの名前 d:753", new Date()),
-      { name: "  タスクの名前", duration: 753 },
+      { name: "  タスクの名前", duration: 753 * 60 },
     );
   });
 });
