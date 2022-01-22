@@ -26,7 +26,7 @@ export function parseSpecifier(
     [, name, duration] = parts;
     return {
       name: name.trimEnd(),
-      duration: parseInt(duration),
+      duration: parseInt(duration) * 60,
     };
   } else {
     return;
@@ -42,7 +42,9 @@ export function parseSpecifier(
       return {
         name: name.trimEnd(),
         start: date,
-        ...(duration !== undefined ? { duration: parseInt(duration) } : {}),
+        ...(duration !== undefined
+          ? { duration: parseInt(duration) * 60 }
+          : {}),
       };
     }
     return {
@@ -51,7 +53,7 @@ export function parseSpecifier(
         base.getTime() / 1000,
         (date.getTime() - base.getTime()) / (24 * 60 * 60 * 1000),
       ),
-      ...(duration !== undefined ? { duration: parseInt(duration) } : {}),
+      ...(duration !== undefined ? { duration: parseInt(duration) * 60 } : {}),
     };
   }
 }
