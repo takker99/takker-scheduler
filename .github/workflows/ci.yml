@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: denoland/setup-deno@main
         with:
-          deno-version: "1.17.3"
+          deno-version: "1.18.0"
       - name: Check fmt
         run: deno fmt --check
       - name: Run lint
@@ -17,5 +17,5 @@ jobs:
       - name: Run type check
         run: deno cache *.ts
       - name: Run test
-        run: deno test --unstable
+        run: deno test
 
