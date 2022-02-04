@@ -71,34 +71,24 @@ export function replace(
   }
 
   // 紐付けられていないeventは、新しいeventと紐付ける
+  for (let i = 0; i < Math.min(existEvents.length, newEvents.length); i++) {
+    const event = newEvents[i];
+    updateEvent(event, {
+      calendarId,
+      project,
+      title,
+      eventId: existEvents[i].id ?? "",
+    });
+  }
   if (existEvents.length >= newEvents.length) {
-    for (let i = 0; i < newEvents.length; i++) {
-      const event = newEvents[i];
-      updateEvent(event, {
-        calendarId,
-        project,
-        title,
-        eventId: existEvents[i].id ?? "",
-      });
-    }
     // 不要なeventを削除する
     for (let i = newEvents.length; i < existEvents.length; i++) {
       deleteEvent(calendarId, existEvents[i].id ?? "");
     }
   } else {
-    for (let i = 0; i < newEvents.length; i++) {
-      const event = newEvents[i];
-      if (i < existEvents.length) {
-        updateEvent(event, {
-          calendarId,
-          project,
-          title,
-          eventId: existEvents[i].id ?? "",
-        });
-      } else {
-        // 足りない分は新規作成する
-        createEvent(event, { calendarId, project, title });
-      }
+    for (let i = existEvents.length; i < newEvents.length; i++) {
+      // 足りない分は新規作成する
+      createEvent(newEvents[i], { calendarId, project, title });
     }
   }
 }
