@@ -62,15 +62,25 @@ function sync(
       `[sync] /${init.project}/${init.title} has ${plans.length} events of plan and ${records.length} events of record.`,
     );
     console.log(
-      `[sync] Writing ${plans.length} events to the plan calendar...`,
+      `[sync] Synchronizing ${plans.length} events to the plan calendar...`,
     );
-    replace(planId, plans, init);
+    const stat1 = replace(planId, plans, init);
     console.log(
-      `[sync] Writing ${records.length} events to the record calendar...`,
+      `[sync] Synchronizing ${records.length} events to the record calendar...`,
     );
-    replace(recordId, records, init);
+    const stat2 = replace(recordId, records, init);
     console.log(
-      `[sync] Finish Synchronization of /${init.project}/${init.title}.`,
+      `[sync] Finish Synchronization of /${init.project}/${init.title}: `,
+    );
+    console.log(
+      `Plans: ${stat1.created} created, ${stat1.updated} updated, ${stat1.removed} removed, ${
+        stat1.total - stat1.created - stat1.updated - stat1.removed
+      } not modified`,
+    );
+    console.log(
+      `Records: ${stat2.created} created, ${stat2.updated} updated, ${stat2.removed} removed, ${
+        stat2.total - stat2.created - stat2.updated - stat2.removed
+      } not modified`,
     );
   }
 }
