@@ -20,6 +20,7 @@ export interface ReplaceInit {
  *
  * @param calendarId - calendar eventsの登録先calendarのID
  * @param events - 置換したいcalendar events
+ * @return 作成・更新・削除したeventsの数
  */
 export function replace(
   calendarId: string,
@@ -32,7 +33,20 @@ export function replace(
   });
 
   // 既存のeventも新規作成するeventもなければ何もしない
-  if (events.length === 0 && existEvents.length === 0) return;
+  if (events.length === 0 && existEvents.length === 0) {
+    return {
+      total: 0,
+      created: 0,
+      removed: 0,
+      updated: 0,
+    };
+  }
+  const stat = {
+    total: events.length,
+    created: 0,
+    removed: 0,
+    updated: 0,
+  };
 
   // 以前登録したeventsを更新する
   const newEvents = [] as Event[];
@@ -68,6 +82,7 @@ export function replace(
       title,
       eventId: oldEvent.id ?? "",
     });
+    stat.updated++;
   }
 
   // 紐付けられていないeventは、新しいeventと紐付ける
@@ -80,15 +95,21 @@ export function replace(
       eventId: existEvents[i].id ?? "",
     });
   }
+  stat.updated += Math.min(existEvents.length, newEvents.length);
+
   if (existEvents.length >= newEvents.length) {
     // 不要なeventを削除する
     for (let i = newEvents.length; i < existEvents.length; i++) {
       deleteEvent(calendarId, existEvents[i].id ?? "");
     }
+    stat.removed = existEvents.length - newEvents.length;
   } else {
     for (let i = existEvents.length; i < newEvents.length; i++) {
       // 足りない分は新規作成する
       createEvent(newEvents[i], { calendarId, project, title });
     }
+    stat.created = newEvents.length - existEvents.length;
   }
+
+  return stat;
 }
