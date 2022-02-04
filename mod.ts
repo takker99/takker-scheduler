@@ -9,8 +9,6 @@ export { format } from "./commands/format.ts";
 export { transport } from "./commands/transport.ts";
 export { makePlan } from "./commands/makePlan.ts";
 export { makePlanFromSelection } from "./commands/makePlanFromSelection.ts";
-export { sync } from "./commands/sync.ts";
-export { syncFromSelection } from "./commands/syncFromSelection.ts";
 
 // TODO: implement blow
 // - transport()
