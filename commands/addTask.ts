@@ -1,8 +1,6 @@
-import { insertLine } from "../lib/edit.ts";
-import { caret } from "../lib/caret.ts";
-import { getText } from "../lib/node.ts";
 import { parse, toString } from "../task.ts";
 import { addSeconds } from "../deps/date-fns.ts";
+import { caret, getText, insertLine } from "../deps/scrapbox-std.ts";
 
 const interval = 5 * 60; // 5 minutes
 /** カーソル行の下にタスクを追加する

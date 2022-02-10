@@ -1,7 +1,5 @@
-import { replaceLines } from "../lib/edit.ts";
-import { caret } from "../lib/caret.ts";
-import { getText } from "../lib/node.ts";
 import { parse, toString } from "../task.ts";
+import { caret, getText, replaceLines } from "../deps/scrapbox-std.ts";
 
 /** カーソル行のタスクを終了する
  *

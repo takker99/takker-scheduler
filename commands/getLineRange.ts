@@ -1,4 +1,4 @@
-import { caret } from "../lib/caret.ts";
+import { caret } from "../deps/scrapbox-std.ts";
 
 /** 選択範囲に含まれる行かカーソルがいる行を返す */
 export function getLineRange() {

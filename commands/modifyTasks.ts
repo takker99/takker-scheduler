@@ -1,5 +1,4 @@
-import { replaceLines } from "../lib/edit.ts";
-import { getText } from "../lib/node.ts";
+import { getText, replaceLines } from "../deps/scrapbox-std.ts";
 import { parse, Task, toString } from "../task.ts";
 
 /** 指定範囲内の全てのタスクを一括操作する

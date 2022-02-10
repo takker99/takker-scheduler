@@ -14,7 +14,7 @@ import {
   Task,
   toString,
 } from "./task.ts";
-import { getIndentLineCount } from "./lib/text.ts";
+import { getIndentLineCount } from "./deps/scrapbox-std.ts";
 
 const baseTitle = "日刊記録sheet";
 const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{2}/;

@@ -1,7 +1,7 @@
 import type { Event } from "./events.ts";
 import { parse as parseTask } from "../task.ts";
 import { addSeconds } from "../deps/date-fns.ts";
-import { encodeTitle } from "../lib/utils.ts";
+import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 
 interface ParseInit {
   /** 取得先project */ project: string;
@@ -24,7 +24,7 @@ export function parse(
   const source = {
     title: init.title,
     url: `https://scrapbox.io/${init.project}/${
-      encodeTitle(init.title)
+      encodeTitleURI(init.title)
     }#${init.id}`,
   };
 
