@@ -1,9 +1,9 @@
 /// <reference lib="dom" />
 import { Task, toString } from "./task.ts";
 import { format, toTitle } from "./diary.ts";
-import { lightFormat } from "./deps/date-fns.ts";
-import { encodeTitle } from "./lib/utils.ts";
 import { oneByOne } from "./utils.ts";
+import { lightFormat } from "./deps/date-fns.ts";
+import { encodeTitleURI } from "./deps/scrapbox-std.ts";
 import type { Scrapbox } from "./deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
 
@@ -63,7 +63,7 @@ async function* getFunctions(judge: IsTaskPortalPage, filename: string) {
 async function getFunction(title: string, filename: string) {
   try {
     const { generate } = await import(
-      `/api/code/${scrapbox.Project.name}/${encodeTitle(title)}/${filename}`
+      `/api/code/${scrapbox.Project.name}/${encodeTitleURI(title)}/${filename}`
     );
     return generate as TaskGenerator;
   } catch (e) {

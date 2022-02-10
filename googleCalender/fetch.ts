@@ -2,9 +2,9 @@
 /// <reference lib="esnext" />
 /// <reference types="https://raw.githubusercontent.com/takker99/deno-gas-types/main/mod.d.ts" />
 
-import type { Line, PageList } from "../deps/scrapbox.ts";
-import { encodeTitle } from "../lib/utils.ts";
 import { isDiaryPage } from "../diary.ts";
+import { encodeTitleURI } from "../deps/scrapbox-std.ts";
+import type { Line, PageList } from "../deps/scrapbox.ts";
 
 export interface GetPagesInit {
   sid: string;
@@ -25,7 +25,7 @@ export function getPages(
 ): PageResult[] {
   const responses = fetchAll(
     pages.map(({ project, title }) => ({
-      url: `https://scrapbox.io/api/pages/${project}/${encodeTitle(title)}`,
+      url: `https://scrapbox.io/api/pages/${project}/${encodeTitleURI(title)}`,
       headers: { Cookie: `connect.sid=${init.sid}` },
       muteHttpExceptions: true,
     })),

@@ -6,7 +6,7 @@ import {
   parse,
 } from "./deps/date-fns.ts";
 import { isNone, isString } from "./utils.ts";
-import { getIndentLineCount } from "./lib/text.ts";
+import { getIndentLineCount } from "./deps/scrapbox-std.ts";
 
 export type Interval = {
   start?: Date;

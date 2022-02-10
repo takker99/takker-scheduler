@@ -4,8 +4,7 @@ import { getLineRange } from "./getLineRange.ts";
 import { calcStart } from "../calcStart.ts";
 import { parseSpecifier } from "../parseSpecifier.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
-import { replaceLines } from "../lib/edit.ts";
-import { getLines } from "../lib/node.ts";
+import { getLines, replaceLines } from "../deps/scrapbox-std.ts";
 
 /** 選択範囲中の項目を判断する時間を設ける */
 export async function makeJudgeTimeFromSelection() {
