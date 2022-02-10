@@ -1,7 +1,7 @@
 /// <reference lib="deno.unstable" />
-import { isString, oneByOne } from "./utils.ts";
+import { oneByOne } from "./utils.ts";
 import { sleep } from "./deps/scrapbox-std.ts";
-import { assertEquals, assertThrows } from "./deps/testing.ts";
+import { assertEquals } from "./deps/testing.ts";
 
 Deno.test("oneByOne()", async () => {
   const delay = async (i: number, j: number) => {
