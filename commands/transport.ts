@@ -3,8 +3,9 @@ import { toDate } from "../diary.ts";
 import { parseBlock, parseLines, TaskBlock, toString } from "../task.ts";
 import { isString } from "../utils.ts";
 import { isSameDay } from "../deps/date-fns.ts";
-import { getPage, joinPageRoom } from "../deps/scrapbox.ts";
+import { getPage } from "../deps/scrapbox.ts";
 import { sleep, useStatusBar } from "../deps/scrapbox-std.ts";
+import { joinPageRoom } from "../deps/scrapbox-websocket.ts";
 
 export interface TransportProps {
   /** ここで指定したページからタスクを転送する */
@@ -21,10 +22,10 @@ export async function transport(
 ) {
   const result = await getPage(project, title);
   if (!result.ok) {
-    throw result;
+    throw result.value;
   }
   const date = toDate(title);
-  const { lines } = result;
+  const { lines } = result.value;
 
   // 日付ページの場合は、その日付と一致しないタスクを転送する
   // 日付ベージでなければ、全てのタスクを転送する

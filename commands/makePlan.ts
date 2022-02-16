@@ -1,8 +1,8 @@
 import { toTitle } from "../diary.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { makeDiaryPages } from "../plan.ts";
-import { joinPageRoom } from "../deps/scrapbox.ts";
 import { openInTheSameTab } from "../deps/scrapbox-std.ts";
+import { patch } from "../deps/scrapbox-websocket.ts";
 import type { Scrapbox } from "../deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
 
@@ -14,11 +14,13 @@ declare const scrapbox: Scrapbox;
  * @param project 日付ページを作成するproject
  */
 export async function* makePlan(dates: Iterable<Date>, project: string) {
-  // backgroundでページを作成する
+  // backgroundでページを追記作成する
   for await (const { lines } of makeDiaryPages(dates)) {
-    const { insert, cleanup } = await joinPageRoom(project, lines[0]);
-    await insert(lines.slice(1).join("\n"), "_end");
-    cleanup();
+    await patch(
+      project,
+      lines[0],
+      (oldLines) => [...oldLines.map((line) => line.text), ...lines.slice(1)],
+    );
     yield { message: `Created "/${project}/${lines[0]}"`, lines };
   }
 
