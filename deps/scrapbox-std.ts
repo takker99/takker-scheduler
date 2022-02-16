@@ -7,10 +7,10 @@ export {
   openInTheSameTab,
   replaceLines,
   useStatusBar,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.4.1/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.8.4/mod.ts";
 export {
   getIndentLineCount,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.4.1/text.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.8.4/text.ts";
 export {
   sleep,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.4.1/sleep.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.8.4/sleep.ts";
