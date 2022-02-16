@@ -21,10 +21,10 @@ export async function transport(
 ) {
   const result = await getPage(project, title);
   if (!result.ok) {
-    throw result;
+    throw result.value;
   }
   const date = toDate(title);
-  const { lines } = result;
+  const { lines } = result.value;
 
   // 日付ページの場合は、その日付と一致しないタスクを転送する
   // 日付ベージでなければ、全てのタスクを転送する
