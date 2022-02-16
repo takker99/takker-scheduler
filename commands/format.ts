@@ -1,6 +1,5 @@
 import { format as formatPage } from "../diary.ts";
-import { joinPageRoom } from "../deps/scrapbox.ts";
-import { useStatusBar } from "../deps/scrapbox-std.ts";
+import { joinPageRoom, useStatusBar } from "../deps/scrapbox-std.ts";
 
 /** タスクページをformatする
  *

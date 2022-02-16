@@ -4,7 +4,9 @@ export {
   getLines,
   getText,
   insertLine,
+  joinPageRoom,
   openInTheSameTab,
+  patch,
   replaceLines,
   useStatusBar,
 } from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.8.4/mod.ts";
