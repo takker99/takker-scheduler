@@ -1,7 +1,8 @@
 import { toTitle } from "../diary.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { makeDiaryPages } from "../plan.ts";
-import { openInTheSameTab, patch } from "../deps/scrapbox-std.ts";
+import { openInTheSameTab } from "../deps/scrapbox-std.ts";
+import { patch } from "../deps/scrapbox-websocket.ts";
 import type { Scrapbox } from "../deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
 

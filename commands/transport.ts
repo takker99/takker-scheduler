@@ -4,7 +4,8 @@ import { parseBlock, parseLines, TaskBlock, toString } from "../task.ts";
 import { isString } from "../utils.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { getPage } from "../deps/scrapbox.ts";
-import { joinPageRoom, sleep, useStatusBar } from "../deps/scrapbox-std.ts";
+import { sleep, useStatusBar } from "../deps/scrapbox-std.ts";
+import { joinPageRoom } from "../deps/scrapbox-websocket.ts";
 
 export interface TransportProps {
   /** ここで指定したページからタスクを転送する */

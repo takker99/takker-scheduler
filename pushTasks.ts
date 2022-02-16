@@ -2,7 +2,7 @@ import { TaskBlock, toString } from "./task.ts";
 import { format, toTitle } from "./diary.ts";
 import { oneByOne, OneByOneResult } from "./utils.ts";
 import { isSameDay } from "./deps/date-fns.ts";
-import { joinPageRoom } from "./deps/scrapbox-std.ts";
+import { joinPageRoom } from "./deps/scrapbox-websocket.ts";
 
 export interface PushTasksResult {
   /** 書き込み先の日付ページの日付 */ date: Date;
