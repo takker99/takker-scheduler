@@ -1,4 +1,8 @@
 export {
-  joinPageRoom,
+  disconnect,
+  makeSocket,
   patch,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.9.1/browser/websocket/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.10.1/browser/websocket/mod.ts";
+export type {
+  Socket,
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.10.1/browser/websocket/mod.ts";

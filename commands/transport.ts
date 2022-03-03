@@ -5,7 +5,7 @@ import { isString } from "../utils.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { getPage } from "../deps/scrapbox.ts";
 import { sleep, useStatusBar } from "../deps/scrapbox-std.ts";
-import { joinPageRoom } from "../deps/scrapbox-websocket.ts";
+import { disconnect, makeSocket, patch } from "../deps/scrapbox-websocket.ts";
 
 export interface TransportProps {
   /** ここで指定したページからタスクを転送する */
@@ -42,54 +42,55 @@ export async function transport(
     text: `copying ${tasks.length} tasks...`,
   });
 
-  let count = 0;
-  let failed = false;
-  for await (const result of pushTasks(to, ...tasks)) {
-    if (result.state !== "fulfilled") {
-      console.error(result.reason);
-      failed = true;
-      continue;
-    }
-    count += result.value.size;
-    // 書き込み状況を.status-barに表示する
-    render({ type: "spinner" }, {
-      type: "text",
-      text: `copying ${tasks.length - count} tasks...`,
-    });
-  }
-
-  if (failed) {
-    render({ type: "exclamation-triangle" }, {
-      type: "text",
-      text: "Some tasks failed to be written",
-    });
-    await sleep(1000);
-    dispose();
-    return;
-  }
-
-  // 書き込みに成功したときのみ、元ページからタスクを消す
-  render({ type: "spinner" }, {
-    type: "text",
-    text: `Copied. removing ${tasks.length} original tasks...`,
-  });
-  const { patch, cleanup } = await joinPageRoom(project, title);
-  count = 0;
-  await patch((lines) => {
-    const newLines = [] as string[];
-    for (const line of parseLines(lines)) {
-      if (isString(line)) {
-        newLines.push(line);
+  const socket = await makeSocket();
+  try {
+    let count = 0;
+    let failed = false;
+    for await (const result of pushTasks(to, tasks, { socket })) {
+      if (result.state !== "fulfilled") {
+        console.error(result.reason);
+        failed = true;
         continue;
       }
-      if ((date && isSameDay(line.base, date))) {
-        newLines.push(toString(line), ...line.lines);
-      }
+      count += result.value.size;
+      // 書き込み状況を.status-barに表示する
+      render({ type: "spinner" }, {
+        type: "text",
+        text: `copying ${tasks.length - count} tasks...`,
+      });
     }
-    return newLines;
-  });
-  cleanup();
-  render({ type: "check-circle" }, { type: "text", text: "Moved" });
-  await sleep(1000);
-  dispose();
+
+    if (failed) {
+      render({ type: "exclamation-triangle" }, {
+        type: "text",
+        text: "Some tasks failed to be written",
+      });
+      return;
+    }
+
+    // 書き込みに成功したときのみ、元ページからタスクを消す
+    render({ type: "spinner" }, {
+      type: "text",
+      text: `Copied. removing ${tasks.length} original tasks...`,
+    });
+    await patch(project, title, (lines) => {
+      const newLines = [] as string[];
+      for (const line of parseLines(lines)) {
+        if (isString(line)) {
+          newLines.push(line);
+          continue;
+        }
+        if ((date && isSameDay(line.base, date))) {
+          newLines.push(toString(line), ...line.lines);
+        }
+      }
+      return newLines;
+    }, { socket });
+
+    render({ type: "check-circle" }, { type: "text", text: "Moved" });
+  } finally {
+    await disconnect(socket);
+    await sleep(1000);
+    dispose();
+  }
 }

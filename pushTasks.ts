@@ -2,8 +2,11 @@ import { TaskBlock, toString } from "./task.ts";
 import { format, toTitle } from "./diary.ts";
 import { oneByOne, OneByOneResult } from "./utils.ts";
 import { isSameDay } from "./deps/date-fns.ts";
-import { joinPageRoom } from "./deps/scrapbox-websocket.ts";
+import { patch, Socket } from "./deps/scrapbox-websocket.ts";
 
+export interface PushTasksOptions {
+  socket: Socket;
+}
 export interface PushTasksResult {
   /** 書き込み先の日付ページの日付 */ date: Date;
   /** 書き込んだタスクの数 */ size: number;
@@ -12,11 +15,13 @@ export interface PushTasksResult {
  *
  * @param project 書き込み先プロジェクト
  * @param tasks 書き込むタスク (インデントでぶら下げた行をlinesに入れられる)
+ * @param socket 書き込みに使うSocket
  * @return 書き込みの成否が入ったasync iterator
  */
 export async function* pushTasks(
   project: string,
-  ...tasks: readonly TaskBlock[]
+  tasks: readonly TaskBlock[],
+  init: PushTasksOptions,
 ): AsyncGenerator<OneByOneResult<PushTasksResult>, void, void> {
   const stacks = [...tasks];
   const promises = [] as Promise<PushTasksResult>[];
@@ -35,15 +40,13 @@ export async function* pushTasks(
     }
 
     // 非同期に書き込む
+
     promises.push((async () => {
-      const { patch, cleanup } = await joinPageRoom(project, toTitle(date));
-      await patch((lines) =>
+      await patch(project, toTitle(date), (lines) =>
         format([
           ...lines.map((line) => line.text),
           ...tasks_.flatMap((task) => [toString(task), ...task.lines ?? []]),
-        ])
-      );
-      cleanup();
+        ]), init);
       return { date, size: tasks_.length };
     })());
   }
