@@ -4,7 +4,7 @@ import { format, toTitle } from "./diary.ts";
 import { oneByOne } from "./utils.ts";
 import { lightFormat } from "./deps/date-fns.ts";
 import { encodeTitleURI } from "./deps/scrapbox-std.ts";
-import type { Scrapbox } from "./deps/scrapbox.ts";
+import type { Scrapbox } from "./deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
 
 export function isTaskPortalPage(title: string) {

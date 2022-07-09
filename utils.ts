@@ -1,5 +1,5 @@
 // The most of this code is ported from https://deno.land/x/unknownutil@v1.1.0/mod.ts
-import { caret } from "./deps/scrapbox-std.ts";
+import { caret } from "./deps/scrapbox-std-dom.ts";
 import { isValid, parse } from "./deps/date-fns.ts";
 
 // export type Predicate<T> = (value: unknown) => value is T;

@@ -1,4 +1,4 @@
-import { caret, getText, replaceLines } from "../deps/scrapbox-std.ts";
+import { caret, getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
 import { parse, toString } from "../task.ts";
 import { startTask } from "./startTask.ts";
 import { endTask } from "./endTask.ts";

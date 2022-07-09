@@ -1,5 +1,5 @@
 import { format as formatPage } from "../diary.ts";
-import { useStatusBar } from "../deps/scrapbox-std.ts";
+import { useStatusBar } from "../deps/scrapbox-std-dom.ts";
 import { patch } from "../deps/scrapbox-websocket.ts";
 
 /** タスクページをformatする

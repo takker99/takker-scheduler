@@ -1,7 +1,7 @@
 import { toString } from "../task.ts";
 import { getLineRange } from "./getLineRange.ts";
 import { parseSpecifier } from "../parseSpecifier.ts";
-import { getLines, replaceLines } from "../deps/scrapbox-std.ts";
+import { getLines, replaceLines } from "../deps/scrapbox-std-dom.ts";
 
 /** 選択範囲中の行から、一行ごとに新しいタスクを作る */
 export async function createTask() {

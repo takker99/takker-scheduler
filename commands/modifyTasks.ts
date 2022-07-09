@@ -1,4 +1,4 @@
-import { getText, replaceLines } from "../deps/scrapbox-std.ts";
+import { getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
 import { parse, Task, toString } from "../task.ts";
 
 /** 指定範囲内の全てのタスクを一括操作する
