@@ -3,8 +3,8 @@ import { toDate } from "../diary.ts";
 import { parseBlock, parseLines, TaskBlock, toString } from "../task.ts";
 import { isString } from "../utils.ts";
 import { isSameDay } from "../deps/date-fns.ts";
-import { getPage } from "../deps/scrapbox.ts";
-import { sleep, useStatusBar } from "../deps/scrapbox-std.ts";
+import { getPage, sleep } from "../deps/scrapbox-std.ts";
+import { useStatusBar } from "../deps/scrapbox-std-dom.ts";
 import { disconnect, makeSocket, patch } from "../deps/scrapbox-websocket.ts";
 
 export interface TransportProps {

@@ -1,4 +1,4 @@
-import { caret, getText, replaceLines } from "../deps/scrapbox-std.ts";
+import { caret, getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
 import { parse, toString } from "../task.ts";
 
 /** カーソル行のタスクを開始する

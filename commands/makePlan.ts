@@ -1,9 +1,8 @@
 import { toTitle } from "../diary.ts";
 import { isSameDay } from "../deps/date-fns.ts";
 import { makeDiaryPages } from "../plan.ts";
-import { openInTheSameTab } from "../deps/scrapbox-std.ts";
+import { openInTheSameTab, Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { disconnect, makeSocket, patch } from "../deps/scrapbox-websocket.ts";
-import type { Scrapbox } from "../deps/scrapbox.ts";
 declare const scrapbox: Scrapbox;
 
 /** 指定した日付の日付ページを作成する。もしその中に今日の日付ページが含まれていたら、そのページを開く

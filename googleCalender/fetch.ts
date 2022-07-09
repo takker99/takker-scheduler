@@ -4,7 +4,7 @@
 
 import { isDiaryPage } from "../diary.ts";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
-import type { Line, PageList } from "../deps/scrapbox.ts";
+import type { Line, PageList } from "../deps/scrapbox-std.ts";
 
 export interface GetPagesInit {
   sid: string;

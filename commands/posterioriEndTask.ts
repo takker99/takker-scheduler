@@ -5,7 +5,7 @@ import {
   getLines,
   getText,
   replaceLines,
-} from "../deps/scrapbox-std.ts";
+} from "../deps/scrapbox-std-dom.ts";
 
 /** カーソル行のタスクを事後報告的に終了する
  *
