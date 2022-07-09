@@ -62,10 +62,9 @@ interface Parser {
   test: RegExp;
   parse: (
     match: RegExpMatchArray,
-  ) => (
+  ) =>
     | ({ isDuration: false } & DateValues)
-    | ({ isDuration: true } & Duration)
-  );
+    | ({ isDuration: true } & Duration);
 }
 const parsers: Parser[] = [
   {
