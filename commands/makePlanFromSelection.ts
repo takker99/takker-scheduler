@@ -1,5 +1,5 @@
 import { eachDayOfInterval, isAfter } from "../deps/date-fns.ts";
-import { getDatesFromSelection } from "../utils.ts";
+import { getDatesFromSelection } from "../getDatesFromSelection.ts";
 import { makePlan } from "./makePlan.ts";
 
 /** 選択範囲に含まれる日付の日付ページを全て作成する
