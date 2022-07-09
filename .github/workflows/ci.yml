@@ -15,7 +15,7 @@ jobs:
       - name: Run lint
         run: deno lint
       - name: Run type check
-        run: deno cache *.ts
+        run: deno check --remote mod.ts googleCalendar/main.ts
       - name: Run test
         run: deno test
 
