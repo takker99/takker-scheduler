@@ -45,8 +45,8 @@ export function parse(
         source,
         id: init.id,
       }
-      : // 名無しの予定は飛ばす
-        undefined,
+      // 名無しの予定は飛ばす
+      : undefined,
     record.start && record.end
       ? {
         summary,

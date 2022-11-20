@@ -7,10 +7,10 @@ import { patch } from "../deps/scrapbox-websocket.ts";
  * @param project formatしたいページのproject name
  * @param title formatしたいページのタイトル
  */
-export async function format(
+export const format = async (
   project: string,
   title: string,
-) {
+): Promise<void> => {
   // 500ms以内に処理が終わらなければ、処理中メッセージを出す
   let remove: () => void = () => {};
   const timer = setTimeout(() => {
@@ -25,4 +25,4 @@ export async function format(
   );
   clearTimeout(timer);
   remove();
-}
+};

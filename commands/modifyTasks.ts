@@ -7,14 +7,14 @@ import { parse, Task, toString } from "../task.ts";
  * @param end 選択範囲の末尾の行
  * @param change 各タスクに適用する操作
  */
-export async function modifyTasks(
+export const modifyTasks = async (
   start: number,
   end: number,
   change: (
     /** 変更するタスク */ task: Task,
     /** タスクを取得した行の行番号 */ index: number,
   ) => Task,
-) {
+): Promise<void> => {
   const lines = [] as string[];
   for (let i = start; i <= end; i++) {
     const text = getText(i) ?? "";
@@ -27,4 +27,4 @@ export async function modifyTasks(
     lines.push(toString(change(task, i)));
   }
   await replaceLines(start, end, lines.join("\n"));
-}
+};

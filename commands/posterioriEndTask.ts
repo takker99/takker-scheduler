@@ -14,7 +14,7 @@ import {
  *
  * 既に開始しているタスクだった場合は、`endTask()`と同じ処理を行う
  */
-export async function posterioriEndTask() {
+export const posterioriEndTask = async (): Promise<void> => {
   const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
@@ -46,4 +46,4 @@ export async function posterioriEndTask() {
       ...rest,
     }),
   );
-}
+};

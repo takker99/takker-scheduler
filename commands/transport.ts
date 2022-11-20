@@ -17,9 +17,9 @@ export interface TransportProps {
   to: string;
 }
 /** 指定したページからタスクを日付ページに転送する */
-export async function transport(
+export const transport = async (
   { from: { project, title }, to }: TransportProps,
-) {
+): Promise<void> => {
   const result = await getPage(project, title);
   if (!result.ok) {
     throw result.value;
@@ -93,4 +93,4 @@ export async function transport(
     await sleep(1000);
     dispose();
   }
-}
+};

@@ -33,9 +33,7 @@ const sections = [
  *
  * @param title 判定したいタイトル
  */
-export function isDiaryPage(title: string) {
-  return diaryRegExp.test(title);
-}
+export const isDiaryPage = (title: string): boolean => diaryRegExp.test(title);
 
 /** 日付ページのタイトルを日付に変換する
  *
@@ -43,16 +41,16 @@ export function isDiaryPage(title: string) {
  *
  * @param title 変換したいタイトル
  */
-export function toDate(title: string) {
+export const toDate = (title: string): Date | undefined => {
   const date = parse(title, `'${baseTitle}' yyyy-MM-dd`, new Date());
   return isValid(date) ? date : undefined;
-}
+};
 
 /** 日付から日付ページのタイトルを作る
  *
- * @param 日付ページにしたい日付
+ * @param date 日付ページにしたい日付
  */
-export const toTitle = (date: Date) =>
+export const toTitle = (date: Date): string =>
   lightFormat(date, `'${baseTitle}' yyyy-MM-dd`);
 
 /** タスクページをformatする
@@ -72,7 +70,7 @@ export const toTitle = (date: Date) =>
  *
  * @param lines formatしたいタスクページの全文(タイトル行も含む)
  */
-export function format(lines: string[]) {
+export const format = (lines: string[]): string[] => {
   const today = toDate(lines[0]);
   if (!today) return lines;
   const label = makeBackLabel(today);
@@ -167,9 +165,8 @@ export function format(lines: string[]) {
     ...insertPoint.flatMap((i, k) => i === -1 ? [sections[k]] : []),
     ...otherLineNos.map((i) => lines[i]), // タスク以外の行
   ];
-}
+};
 
 /** 前日の日付ページへのnavigationを作る */
-function makeBackLabel(today: Date) {
-  return `yesterday: [${toTitle(subDays(today, 1))}]`;
-}
+const makeBackLabel = (today: Date) =>
+  `yesterday: [${toTitle(subDays(today, 1))}]`;

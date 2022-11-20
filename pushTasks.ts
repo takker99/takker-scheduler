@@ -5,6 +5,7 @@ import { isSameDay } from "./deps/date-fns.ts";
 import { patch, Socket } from "./deps/scrapbox-websocket.ts";
 
 export interface PushTasksOptions {
+  /** 書き込みに使うSocket */
   socket: Socket;
 }
 export interface PushTasksResult {
@@ -15,7 +16,7 @@ export interface PushTasksResult {
  *
  * @param project 書き込み先プロジェクト
  * @param tasks 書き込むタスク (インデントでぶら下げた行をlinesに入れられる)
- * @param socket 書き込みに使うSocket
+ * @param init
  * @return 書き込みの成否が入ったasync iterator
  */
 export async function* pushTasks(

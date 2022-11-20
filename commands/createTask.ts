@@ -4,7 +4,7 @@ import { parseSpecifier } from "../parseSpecifier.ts";
 import { getLines, replaceLines } from "../deps/scrapbox-std-dom.ts";
 
 /** 選択範囲中の行から、一行ごとに新しいタスクを作る */
-export async function createTask() {
+export const createTask = async (): Promise<void> => {
   const base = new Date();
   const [start, end] = getLineRange();
 
@@ -33,4 +33,4 @@ export async function createTask() {
 
   // 書き込む
   await replaceLines(start, end, text);
-}
+};

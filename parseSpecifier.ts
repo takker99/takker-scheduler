@@ -7,10 +7,10 @@ export interface SpecifierResult {
   start?: Date;
   /** 単位は秒 */ duration?: number;
 }
-export function parseSpecifier(
+export const parseSpecifier = (
   text: string,
   base: Date,
-): SpecifierResult | undefined {
+): SpecifierResult | undefined => {
   let duration: string | undefined;
   let name: string;
   let param: string | undefined;
@@ -56,7 +56,7 @@ export function parseSpecifier(
       ...(duration !== undefined ? { duration: parseInt(duration) * 60 } : {}),
     };
   }
-}
+};
 
 interface Parser {
   test: RegExp;

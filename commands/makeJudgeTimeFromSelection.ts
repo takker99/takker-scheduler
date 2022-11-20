@@ -7,7 +7,7 @@ import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
 import { getLines, replaceLines } from "../deps/scrapbox-std-dom.ts";
 
 /** 選択範囲中の項目を判断する時間を設ける */
-export async function makeJudgeTimeFromSelection() {
+export const makeJudgeTimeFromSelection = async (): Promise<void> => {
   // 選択範囲から判断する項目と開始日時を取得する
   const [start, end] = getLineRange();
   const stacks = getLines().slice(start, end + 1)
@@ -68,4 +68,4 @@ export async function makeJudgeTimeFromSelection() {
 
   // 書き込む
   await replaceLines(start, end, text);
-}
+};

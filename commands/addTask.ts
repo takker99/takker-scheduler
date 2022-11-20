@@ -7,7 +7,7 @@ const interval = 5 * 60; // 5 minutes
  *
  * カーソル行がタスクだった場合は、そのタスクの日付と予定開始時刻、見積もり時間を引き継ぐ
  */
-export async function addTask() {
+export const addTask = async (): Promise<void> => {
   const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
 
@@ -32,4 +32,4 @@ export async function addTask() {
     linePos + 1,
     toString({ title: "", base, plan, record: {} }),
   );
-}
+};

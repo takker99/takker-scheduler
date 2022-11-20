@@ -6,7 +6,7 @@ import { caret, getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
  * 既に終了していたら、終了をキャンセルする
  * 開始されていないタスクには効果がない
  */
-export async function endTask() {
+export const endTask = async (): Promise<void> => {
   const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
@@ -22,4 +22,4 @@ export async function endTask() {
       ...rest,
     }),
   );
-}
+};

@@ -12,7 +12,10 @@ declare const scrapbox: Scrapbox;
  * @param dates 作成したい日付のリスト
  * @param project 日付ページを作成するproject
  */
-export async function* makePlan(dates: Iterable<Date>, project: string) {
+export async function* makePlan(
+  dates: Iterable<Date>,
+  project: string,
+): AsyncGenerator<{ message: string; lines: string[] }, void, unknown> {
   // backgroundでページを追記作成する
   const socket = await makeSocket();
   for await (const { lines } of makeDiaryPages(dates)) {

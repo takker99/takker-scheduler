@@ -6,10 +6,10 @@ import { modifyTasks } from "./modifyTasks.ts";
  *
  * @param [count=1] 進める日数
  */
-export async function walkDay(count = 1) {
+export const walkDay = async (count = 1): Promise<void> => {
   const [start, end] = getLineRange();
   await modifyTasks(start, end, (task) => {
     task.base = addDays(task.base, count);
     return task;
   });
-}
+};

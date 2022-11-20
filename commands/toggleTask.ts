@@ -12,7 +12,7 @@ import { endTask } from "./endTask.ts";
  * 4. 未開始
  * ...
  */
-export async function toggleTask() {
+export const toggleTask = async (): Promise<void> => {
   const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
@@ -38,4 +38,4 @@ export async function toggleTask() {
       ...rest,
     }),
   );
-}
+};

@@ -29,7 +29,7 @@ export interface Task {
 const taskReg =
   /^`(\d{4}-\d{2}-\d{2}) ( {5}|\d{2}:\d{2}) ( {4}|\d{4}) ( {8}|\d{2}:\d{2}:\d{2}) ( {8}|\d{2}:\d{2}:\d{2})`([^\n]*)$/;
 
-function parseTask(text: string): Task | undefined {
+const parseTask = (text: string): Task | undefined => {
   if (!isTask(text)) return undefined;
 
   // タスクが書き込まれた行を解析する
@@ -61,26 +61,24 @@ function parseTask(text: string): Task | undefined {
   }
 
   return task;
-}
+};
 export { parseTask as parse };
-export function isTask(text: string) {
-  return taskReg.test(text);
-}
+export const isTask = (text: string): boolean => taskReg.test(text);
+
 /** 比較用の開始日時を取得する */
-export function startDate(task: Task) {
-  return task.record?.start ?? task.plan?.start ?? task.base;
-}
+export const startDate = (task: Task): Date =>
+  task.record?.start ?? task.plan?.start ?? task.base;
+
 /** 比較用の終了を取得する */
-export function endDate(task: Task) {
-  return task.record?.end ??
+export const endDate = (task: Task): Date =>
+  task.record?.end ??
     (!isNone(task.plan?.duration)
       ? addSeconds(startDate(task), task.plan.duration)
       : task.base);
-}
 
 /** Taskを文字列に直す */
-export function toString({ title, base, plan, record }: Task) {
-  return [
+export const toString = ({ title, base, plan, record }: Task): string =>
+  [
     "`",
     lightFormat(base, "yyyy-MM-dd"),
     " ",
@@ -97,7 +95,6 @@ export function toString({ title, base, plan, record }: Task) {
     "`",
     title,
   ].join("");
-}
 
 /** Taskに、インデントでぶら下がっている行のテキストデータを加えたもの*/
 export interface TaskBlock extends Task {

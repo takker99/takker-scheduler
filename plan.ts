@@ -7,9 +7,9 @@ import { encodeTitleURI } from "./deps/scrapbox-std.ts";
 import type { Scrapbox } from "./deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
 
-export function isTaskPortalPage(title: string) {
-  return /^(?:🔳|📝)/u.test(title);
-}
+export const isTaskPortalPage = (title: string): boolean =>
+  /^(?:🔳|📝)/u.test(title);
+
 export type IsTaskPortalPage = (title: string) => boolean;
 /** 指定された日付に実行するタスクを出力する函数
  *
@@ -19,7 +19,7 @@ export type TaskGenerator = (date: Date) => Task[] | Promise<Task[]>;
 
 export async function* makeDiaryPages(
   dates: Iterable<Date>,
-) {
+): AsyncGenerator<{ date: Date; lines: string[] }, void, unknown> {
   const pendings = [] as Promise<{ date: Date; lines: string[] }>[];
   for (const date of dates) {
     pendings.push((async () => {
@@ -60,7 +60,7 @@ async function* getFunctions(judge: IsTaskPortalPage, filename: string) {
     yield result.value;
   }
 }
-async function getFunction(title: string, filename: string) {
+const getFunction = async (title: string, filename: string) => {
   try {
     const { generate } = await import(
       `/api/code/${scrapbox.Project.name}/${encodeTitleURI(title)}/${filename}`
@@ -72,4 +72,4 @@ async function getFunction(title: string, filename: string) {
     if (e instanceof TypeError) return;
     throw e;
   }
-}
+};

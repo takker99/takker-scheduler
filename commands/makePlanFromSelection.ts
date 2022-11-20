@@ -8,7 +8,9 @@ import { makePlan } from "./makePlan.ts";
  *
  * @param project 日付ページを作成するproject
  */
-export async function* makePlanFromSelection(project: string) {
+export async function* makePlanFromSelection(
+  project: string,
+): AsyncGenerator<{ message: string; lines: string[] }, void, unknown> {
   const dates = [...getDatesFromSelection()];
   if (dates.length === 0) return;
   if (dates.length === 1) {

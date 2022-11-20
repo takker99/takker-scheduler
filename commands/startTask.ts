@@ -5,7 +5,7 @@ import { parse, toString } from "../task.ts";
  *
  * 既に開始されていたら、開始をキャンセルする
  */
-export async function startTask() {
+export const startTask = async (): Promise<void> => {
   const linePos = caret().position.line;
   const taskLine = parse(getText(linePos) ?? "");
   if (!taskLine) return; // タスクでなければ何もしない
@@ -21,4 +21,4 @@ export async function startTask() {
       ...rest,
     }),
   );
-}
+};

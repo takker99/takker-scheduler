@@ -1,12 +1,12 @@
 // The most of this code is ported from https://deno.land/x/unknownutil@v1.1.0/mod.ts
 
 // export type Predicate<T> = (value: unknown) => value is T;
-export function isNone(value: unknown): value is undefined | null {
-  return value === null || value === undefined;
-}
-export function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
+export const isNone = (value: unknown): value is undefined | null =>
+  value === null || value === undefined;
+
+export const isString = (value: unknown): value is string =>
+  typeof value === "string";
+
 // export function isNumber(value: unknown): value is number {
 //   return typeof value === "number";
 // }
@@ -36,7 +36,7 @@ export type OneByOneResult<T> = {
 /** Promiseを解決した順に返す函数 */
 export async function* oneByOne<T>(
   promises: Iterable<Promise<T>>,
-) {
+): AsyncGenerator<OneByOneResult<T>, void, unknown> {
   const queue = [] as OneByOneResult<T>[];
   let resolve: ((item: OneByOneResult<T>) => void) | undefined;
   const push = (item: OneByOneResult<T>) => {

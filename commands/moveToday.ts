@@ -3,7 +3,7 @@ import { getLineRange } from "./getLineRange.ts";
 import { modifyTasks } from "./modifyTasks.ts";
 
 /** カーソル行もしくは選択範囲内の全てのタスクの日付を今日にする */
-export async function moveToday() {
+export const moveToday = async (): Promise<void> => {
   const [start, end] = getLineRange();
   const now = new Date();
   await modifyTasks(start, end, (task) => {
@@ -12,4 +12,4 @@ export async function moveToday() {
     task.base = now;
     return task;
   });
-}
+};
