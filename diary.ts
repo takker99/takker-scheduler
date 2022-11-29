@@ -7,14 +7,7 @@ import {
   parse,
   subDays,
 } from "./deps/date-fns.ts";
-import {
-  endDate,
-  parse as parseTask,
-  startDate,
-  Task,
-  toString,
-} from "./task.ts";
-import { getIndentLineCount } from "./deps/scrapbox-std.ts";
+import { endDate, parseLines, startDate, TaskBlock, toString } from "./task.ts";
 
 const baseTitle = "日刊記録sheet";
 const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{2}/;
@@ -76,38 +69,23 @@ export const format = (lines: string[]): string[] => {
   const label = makeBackLabel(today);
 
   // タスクとインデントのセットを取得する
-  const taskBlocks = [] as {
-    task: Task;
-    range: [number, number];
-  }[];
-  const otherLineNos = [] as number[]; // タスクブロック以外の行の番号
-  for (let i = 1; i < lines.length; i++) {
-    // 先頭行のタイトルは別扱いする
-    const task = parseTask(lines[i]);
-    if (!task) {
+  const taskBlocks: TaskBlock[] = [];
+  const otherLines: string[] = []; // タスクブロック以外の行の番号
+  for (const item of parseLines(lines.slice(1))) {
+    if (typeof item === "string") {
       // 自動で挿入した行は外す
-      if (sections.includes(lines[i])) continue;
-      if (label !== "" && label === lines[i]) continue;
-      otherLineNos.push(i);
+      if (sections.includes(item)) continue;
+      if (label !== "" && label === item) continue;
+      otherLines.push(item);
       continue;
     }
-
-    const indentedLineNum = getIndentLineCount(i, lines) ?? 0;
-    taskBlocks.push({
-      task,
-      range: [i + 1, i + 1 + indentedLineNum],
-    });
-    i += indentedLineNum;
+    taskBlocks.push(item);
   }
 
   // task blocksを並び替える
-  const sortedTaskBlocks = taskBlocks
-    .sort((a, b) =>
-      compareAsc(
-        startDate(a.task),
-        startDate(b.task),
-      )
-    );
+  const sortedTaskBlocks = taskBlocks.sort((a, b) =>
+    compareAsc(startDate(a), startDate(b))
+  );
 
   // 見出しを挿入する
   if (sortedTaskBlocks.length === 0) {
@@ -116,7 +94,7 @@ export const format = (lines: string[]): string[] => {
       lines[0], // タイトル
       label, // 前日のページへのリンク
       ...sections, // 見出し
-      ...otherLineNos.map((i) => lines[i]), //タスク以外の行
+      ...otherLines, // タスク以外の行
     ];
   }
 
@@ -132,9 +110,9 @@ export const format = (lines: string[]): string[] => {
     );
 
     // 見出しの時間帯内に開始する最初のタスク
-    const lowerTaskIndex = sortedTaskBlocks.findIndex((
-      { task },
-    ) => isAfter(startDate(task), start));
+    const lowerTaskIndex = sortedTaskBlocks.findIndex((task) =>
+      isAfter(startDate(task), start)
+    );
 
     // 見出し以降にタスクが一つもないとき
     if (lowerTaskIndex < 0) {
@@ -145,7 +123,7 @@ export const format = (lines: string[]): string[] => {
     if (lowerTaskIndex === 0) continue; // 初期値のまま
 
     // 一つ前のタスクの長さで決める
-    const task = sortedTaskBlocks[lowerTaskIndex - 1].task;
+    const task = sortedTaskBlocks[lowerTaskIndex - 1];
     const s = startDate(task);
     const e = endDate(task);
     insertPoint[i] =
@@ -159,11 +137,11 @@ export const format = (lines: string[]): string[] => {
     label, // 前日のページへのリンク
     ...sortedTaskBlocks.flatMap((block, i) => [
       ...insertPoint.flatMap((j, k) => j === i ? [sections[k]] : []), // 見出し
-      toString(block.task), // タスク
-      ...lines.slice(block.range[0], block.range[1]).map((line) => line), // タスクにぶら下がった行
+      toString(block), // タスク
+      ...block.lines, // タスクにぶら下がった行
     ]),
     ...insertPoint.flatMap((i, k) => i === -1 ? [sections[k]] : []),
-    ...otherLineNos.map((i) => lines[i]), // タスク以外の行
+    ...otherLines, // タスク以外の行
   ];
 };
 
