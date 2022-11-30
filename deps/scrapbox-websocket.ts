@@ -2,7 +2,7 @@ export {
   disconnect,
   makeSocket,
   patch,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.9/browser/websocket/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/browser/websocket/mod.ts";
 export type {
   Socket,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.9/browser/websocket/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/browser/websocket/mod.ts";
