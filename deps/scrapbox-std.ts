@@ -4,11 +4,11 @@ export type {
 } from "https://raw.githubusercontent.com/scrapbox-jp/types/0.3.6/rest.ts";
 export {
   getIndentLineCount,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/text.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.15.0/text.ts";
 export {
   encodeTitleURI,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/title.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.15.0/title.ts";
 export {
   sleep,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/sleep.ts";
-export { getPage } from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.14.10/rest/pages.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.15.0/sleep.ts";
+export { getPage } from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.15.0/rest/pages.ts";
