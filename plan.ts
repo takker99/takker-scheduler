@@ -1,8 +1,6 @@
 /// <reference lib="dom" />
-import { Task, toString } from "./task.ts";
-import { format, toTitle } from "./diary.ts";
+import { Task } from "./task.ts";
 import { oneByOne } from "./utils.ts";
-import { lightFormat } from "./deps/date-fns.ts";
 import { encodeTitleURI } from "./deps/scrapbox-std.ts";
 import type { Scrapbox } from "./deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
@@ -11,42 +9,25 @@ export const isTaskPortalPage = (title: string): boolean =>
   /^(?:🔳|📝)/u.test(title);
 
 export type IsTaskPortalPage = (title: string) => boolean;
+
 /** 指定された日付に実行するタスクを出力する函数
  *
  * @param date 実行日
  */
 export type TaskGenerator = (date: Date) => Task[] | Promise<Task[]>;
 
-export async function* makeDiaryPages(
-  dates: Iterable<Date>,
-): AsyncGenerator<{ date: Date; lines: string[] }, void, unknown> {
-  const pendings = [] as Promise<{ date: Date; lines: string[] }>[];
-  for (const date of dates) {
-    pendings.push((async () => {
-      const lines = [toTitle(date)];
-      for await (
-        const generate of getFunctions(isTaskPortalPage, "generate.js")
-      ) {
-        const pending = generate(date);
-        for (
-          const task of pending instanceof Promise ? await pending : pending
-        ) {
-          lines.push(toString(task));
-        }
-      }
-
-      return {
-        date,
-        lines: [...format(lines), lightFormat(date, "#yyyy-MM-dd HH:mm:ss")],
-      };
-    })());
-  }
-
-  for await (const result of oneByOne(pendings)) {
-    if (result.state === "rejected") continue;
-    yield result.value;
+/** 指定された日付に実行するタスクを取得する */
+export async function* readProgrammableTasks(
+  date: Date,
+): AsyncGenerator<Task[], void, unknown> {
+  for await (
+    const generate of getFunctions(isTaskPortalPage, "generate.js")
+  ) {
+    const pending = generate(date);
+    yield pending instanceof Promise ? await pending : pending;
   }
 }
+
 async function* getFunctions(judge: IsTaskPortalPage, filename: string) {
   const pendings = scrapbox.Project.pages
     .flatMap(({ title, exists }) =>
