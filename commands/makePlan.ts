@@ -1,6 +1,7 @@
-import { toTitle } from "../diary.ts";
+import { format, toTitle } from "../diary.ts";
+import { toString } from "../task.ts";
 import { isSameDay } from "../deps/date-fns.ts";
-import { makeDiaryPages } from "../plan.ts";
+import { readProgrammableTasks } from "../plan.ts";
 import { openInTheSameTab, Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { disconnect, makeSocket, patch } from "../deps/scrapbox-websocket.ts";
 declare const scrapbox: Scrapbox;
@@ -18,15 +19,24 @@ export async function* makePlan(
 ): AsyncGenerator<{ message: string; lines: string[] }, void, unknown> {
   // backgroundでページを追記作成する
   const socket = await makeSocket();
-  for await (const { lines } of makeDiaryPages(dates)) {
+
+  for (const date of dates) {
+    const title = toTitle(date);
+    const lines: string[] = [];
+    for await (const tasks of readProgrammableTasks(date)) {
+      lines.push(...tasks.map((task) => toString(task)));
+    }
+
     await patch(
       project,
-      lines[0],
-      (oldLines) => [...oldLines.map((line) => line.text), ...lines.slice(1)],
+      title,
+      (oldLines) => format([...oldLines.map((line) => line.text), ...lines]),
       { socket },
     );
-    yield { message: `Created "/${project}/${lines[0]}"`, lines };
+
+    yield { message: `Created "/${project}/${title}"`, lines };
   }
+
   await disconnect(socket);
 
   // 今日の日付ページがあったら現在のタブで開く
