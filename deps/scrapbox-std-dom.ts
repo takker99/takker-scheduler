@@ -6,7 +6,7 @@ export {
   openInTheSameTab,
   replaceLines,
   useStatusBar,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.19.0/browser/dom/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.19.2/browser/dom/mod.ts";
 export type {
   Scrapbox,
 } from "https://raw.githubusercontent.com/scrapbox-jp/types/0.3.8/userscript.ts";
