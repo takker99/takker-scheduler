@@ -1,7 +1,7 @@
 export type {
   BaseLine as Line,
   PageList,
-} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.4.2/rest.ts";
+} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.5.0/rest.ts";
 export {
   getIndentLineCount,
 } from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.24.1/text.ts";
