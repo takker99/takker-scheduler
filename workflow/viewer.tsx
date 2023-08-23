@@ -118,14 +118,11 @@ const App = ({ getController, projects }: Props) => {
   }, [tasks]);
 
   // UIの開閉
-  const { ref, open, close, toggle, isOpen } = useDialog();
-  // 始めて開くときだけ読み込みする
-  const initialized = useRef(false);
+  const { ref, open, close, toggle, onOpen } = useDialog();
   useEffect(() => {
-    if (!isOpen || initialized.current) return;
-    load();
-    initialized.current = true;
-  }, [isOpen]);
+    if (trees.some((tree) => tree.actions.length > 0)) return;
+    return onOpen(load);
+  }, [trees]);
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
