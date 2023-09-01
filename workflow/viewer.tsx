@@ -16,6 +16,8 @@ import {
 } from "../deps/preact.tsx";
 import { Category, Progress, Task, useTaskCrawler } from "./useTaskCrawler.ts";
 import { compare } from "./compare.ts";
+import { useDialog } from "./useDialog.ts";
+import { CSS } from "./viewer.min.css.ts";
 import { encodeTitleURI, sleep } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
@@ -116,50 +118,26 @@ const App = ({ getController, projects }: Props) => {
   }, [tasks]);
 
   // UIの開閉
-  // 始めて開くときだけ読み込みする
-  const initialized = useRef(false);
-  const initialize = useCallback(() => {
-    if (initialized.current) return;
-    load();
-    initialized.current = true;
-  }, []);
-  const [closed, setClosed] = useState(true);
-  const open = useCallback(() => {
-    setClosed(false);
-    initialize();
-  }, []);
-  const close = useCallback(() => setClosed(true), []);
-  const toggle = useCallback(() =>
-    setClosed((prev) => {
-      if (!prev) return true;
-      initialize();
-      return false;
-    }), []);
+  const { ref, open, close, toggle, onOpen } = useDialog();
+  useEffect(() => {
+    if (trees.some((tree) => tree.actions.length > 0)) return;
+    return onOpen(load);
+  }, [trees]);
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
-  const handleClose = useCallback((e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) return;
-    if (e.target.id !== "background") return;
-    close();
-  }, []);
+  /** dialogクリックではmodalを閉じないようにする */
+  const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
 
   return (
     <>
-      <style>
-        {'.fa{font-weight:900;font-family:"Font Awesome 5 Free";-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:inline-block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:1}.fa-spinner{animation:spin 2s infinite linear}@keyframes spin{0%{transform:rotate(0)}to{transform:rotate(359deg)}}.fa-spinner:before{content:""}.kamon:before{font-family:"AppIcons";-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-style:normal;font-variant:normal;font-weight:normal;text-decoration:none;text-transform:none}.kamon-check-circle:before{content:""}.modal{position:fixed;inset:0;z-index:1050;background-color:#000c;display:flex;flex-direction:column;align-items:center;row-gap:10px;padding:10px}.closed{display:none}.modal>*{color:var(--page-text-color, #4a4a4a);background-color:var(--dropdown-menu-bg, #fff);border:1px solid rgba(0,0,0,.2);border-radius:6px}@media (min-width: 768px){.modal{padding:30px 0;--item-width: 600px}}.result{padding:15px;width:calc(var(--item-width, 100%) - 30px);overflow-y:scroll}.controller{padding:5px;width:calc(var(--item-width, 100%) - 10px);display:flex;flex-direction:row-reverse;gap:.2em}.progress{width:100%}.progress>*{padding:0 2px}a{text-decoration:none;color:var(--page-link-color, #5e8af7)}a:hover{color:var(--page-link-hover-color, #2d67f5)}.copy{font-family:"Font Awesome 5 Free";cursor:pointer;background:unset;color:unset;border:unset}'}
-      </style>
-      <div
-        id="background"
-        className={`modal${closed ? " closed" : ""}`}
-        role="dialog"
-        onClick={handleClose}
-      >
-        <div className="controller">
+      <style>{CSS}</style>
+      <dialog ref={ref} onClick={close}>
+        <div className="controller" onClick={stopPropagation}>
           <button className="close" onClick={close}>X</button>
           <button className="reload" onClick={load}>reload</button>
           <ProgressBar progress={progress} />
         </div>
-        <div className="result">
+        <div className="result" onClick={stopPropagation}>
           {trees.map((tree) =>
             tree.actions.length === 0
               ? <div key={tree.summary}>{tree.summary}</div>
@@ -186,7 +164,7 @@ const App = ({ getController, projects }: Props) => {
               )
           )}
         </div>
-      </div>
+      </dialog>
     </>
   );
 };
