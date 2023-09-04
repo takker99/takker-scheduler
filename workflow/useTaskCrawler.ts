@@ -28,7 +28,6 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
 
   /** タスクを全て拾い上げる */
   const crawl = useCallback(async () => {
-    setTasks([]);
     const titleLcs = new Set<string>(); // 重複除外用
     const now = new Date();
 
@@ -52,7 +51,7 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
         return [{ project, title, category, ...task }];
       })
     );
-    setTasks((old) => [...old, ...tasks]);
+    setTasks(tasks);
 
     setLoading(false);
   }, [projects]);
