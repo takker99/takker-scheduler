@@ -11,10 +11,9 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "../deps/preact.tsx";
-import { Category, Progress, Task, useTaskCrawler } from "./useTaskCrawler.ts";
+import { Category, Task, useTaskCrawler } from "./useTaskCrawler.ts";
 import { compare } from "./compare.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
@@ -67,10 +66,10 @@ interface Props {
   projects: string[];
 }
 const App = ({ getController, projects }: Props) => {
-  const { tasks, load, progress } = useTaskCrawler(projects);
+  const { tasks, load, loading } = useTaskCrawler(projects);
 
   // 未完了のタスクだけ集めて、render用の形式に加工する
-  const trees = useMemo(() => {
+  const trees: Tree[] = useMemo(() => {
     const categories: {
       summary: string;
       category: Category;
@@ -118,11 +117,7 @@ const App = ({ getController, projects }: Props) => {
   }, [tasks]);
 
   // UIの開閉
-  const { ref, open, close, toggle, onOpen } = useDialog();
-  useEffect(() => {
-    if (trees.some((tree) => tree.actions.length > 0)) return;
-    return onOpen(load);
-  }, [trees]);
+  const { ref, open, close, toggle } = useDialog();
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
@@ -134,8 +129,10 @@ const App = ({ getController, projects }: Props) => {
       <dialog ref={ref} onClick={close}>
         <div className="controller" onClick={stopPropagation}>
           <button className="close" onClick={close}>X</button>
-          <button className="reload" onClick={load}>reload</button>
-          <ProgressBar progress={progress} />
+          <button className="reload" onClick={load} disabled={loading}>
+            request reload
+          </button>
+          <ProgressBar loading={loading} />
         </div>
         <div className="result" onClick={stopPropagation}>
           {trees.map((tree) =>
@@ -170,30 +167,16 @@ const App = ({ getController, projects }: Props) => {
 };
 
 /** 読み込み状況を表示する部品 */
-const ProgressBar = ({ progress }: { progress: Progress }) => {
-  switch (progress.state) {
-    case "neutral":
-      return <div className="progress" />;
-    case "loading":
-      return (
-        <div className="progress">
-          <i className="fa fa-spinner" />
-          <span>
-            {`loading tasks from ${progress.projectCount} projects: ${progress.taskCount} tasks...`}
-          </span>
-        </div>
-      );
-    case "finished":
-      return (
-        <div className="progress">
-          <i className="kamon kamon-check-circle" />
-          <span>
-            {`loaded ${progress.taskCount} tasks from ${progress.projectCount} projects.`}
-          </span>
-        </div>
-      );
-  }
-};
+const ProgressBar = (
+  { loading }: { loading: boolean },
+) => (loading
+  ? (
+    <div className="progress">
+      <i className="fa fa-spinner" />
+      <span>{"loading tasks..."}</span>
+    </div>
+  )
+  : <div className="progress" />);
 
 /** リンク
  *
