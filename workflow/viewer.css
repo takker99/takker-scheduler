@@ -43,6 +43,7 @@ dialog > * {
 
   display: flex;
   flex-direction: row-reverse;
+  flex-wrap: wrap;
   gap: 0.2em;
 }
 .progress {

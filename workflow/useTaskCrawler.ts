@@ -1,8 +1,13 @@
-import { useCallback, useState } from "../deps/preact.tsx";
-import type { Task as TaskBase } from "./parse.ts";
+import { useCallback, useEffect, useState } from "../deps/preact.tsx";
+import { parse, Task as TaskBase } from "./parse.ts";
 import { Category, classify } from "./classify.ts";
-import { list } from "./list.ts";
-import { sleep, toTitleLc } from "../deps/scrapbox-std.ts";
+import {
+  check,
+  decode,
+  load as loadLinks,
+  subscribe,
+} from "../deps/storage.ts";
+import { toTitleLc } from "../deps/scrapbox-std.ts";
 
 export type { Category, TaskBase };
 export interface Task extends TaskBase {
@@ -10,90 +15,59 @@ export interface Task extends TaskBase {
   title: string;
   category: Category;
 }
-/** タスク収集の進捗表示用 */
-export interface Progress {
-  /** 収集処理の状態 */
-  state: "loading" | "finished" | "neutral";
-  /** 読み込むprojectの総数 */
-  projectCount: number;
-  /** 現在までに収集したタスクの総数 */
-  taskCount: number;
-}
 
 export interface UseTaskCrawler {
   tasks: Task[];
   load: () => Promise<void>;
-  progress: Progress;
+  loading: boolean;
 }
+
 export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [progress, setProgress] = useState<Progress>({
-    state: "neutral",
-    projectCount: 0,
-    taskCount: 0,
-  });
-  const load = useCallback(async () => {
-    setTasks([]);
+  const [loading, setLoading] = useState(false);
+
+  /** タスクを全て拾い上げる */
+  const crawl = useCallback(async () => {
     const titleLcs = new Set<string>(); // 重複除外用
     const now = new Date();
 
-    setProgress({
-      state: "loading",
-      projectCount: projects.length,
-      taskCount: titleLcs.size,
-    });
+    setLoading(true);
 
-    let animationId: number | undefined;
-    let queue: Task[] = [];
-    const promises = projects.map(async (project) => {
-      for await (const { task, title } of list(project)) {
+    const result = await loadLinks(projects);
+    const tasks = result.flatMap(({ links, project }) =>
+      links.flatMap((link) => {
+        const { title } = decode(link);
+        const task = parse(title);
+        if (!task) return [];
+
         // 重複除去
         const titleLc = toTitleLc(title);
-        if (titleLcs.has(titleLc)) continue;
+        if (titleLcs.has(titleLc)) return [];
         titleLcs.add(titleLc);
 
+        // 分別
         const category = classify(task, now);
-        // 一旦貯める
-        queue.push({
-          project,
-          title,
-          category,
-          ...task,
-        });
 
-        // 一定間隔ごとにデータを反映させる
-        if (animationId !== undefined) cancelAnimationFrame(animationId);
-        animationId = requestAnimationFrame(() => {
-          setTasks((tasks) => [...tasks, ...queue]);
-          queue = [];
-          setProgress({
-            state: "loading",
-            projectCount: projects.length,
-            taskCount: titleLcs.size,
-          });
-          animationId = undefined;
-        });
-      }
-    });
-
-    await Promise.all(promises);
-    // ↑の描画処理が全部終わるのを待つ
-    // これがないと、↓の描画完了イベントが発行されない
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => resolve())
+        return [{ project, title, category, ...task }];
+      })
     );
-    setProgress({
-      state: "finished",
-      projectCount: projects.length,
-      taskCount: titleLcs.size,
-    });
-    await sleep(1000);
-    setProgress({
-      state: "neutral",
-      projectCount: 0,
-      taskCount: 0,
-    });
-  }, [projects.length]);
+    setTasks(tasks);
 
-  return { tasks, load, progress };
+    setLoading(false);
+  }, [projects]);
+
+  /** タスクデータをNetworkから読み込む */
+  const load = useCallback(async () => {
+    setLoading(true);
+    await check(projects, 60);
+    setLoading(false);
+  }, [projects]);
+
+  /** 更新があれば再読込する */
+  useEffect(() => {
+    crawl();
+    return subscribe(projects, crawl);
+  }, [projects, crawl]);
+
+  return { tasks, load, loading };
 };
