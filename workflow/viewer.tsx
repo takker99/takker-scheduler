@@ -137,7 +137,8 @@ const App = ({ getController, projects }: Props) => {
       // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
       /** やり残した予定 */
       const restActions = tasks.filter((task) =>
-        task.status === "schedule" && isBefore(getEnd(task), fromDate(now))
+        task.status === "schedule" && isBefore(getEnd(task), fromDate(now)) &&
+        !task.repeat
       ).sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
         .map((task) => ({
           title: task.title,
