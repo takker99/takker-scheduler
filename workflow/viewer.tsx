@@ -26,7 +26,7 @@ import {
 } from "../deps/date-fns.ts";
 import { fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
-import { getEnd } from "./parse.ts";
+import { getEnd, Status } from "./parse.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -66,6 +66,7 @@ interface Action {
   title: string;
   project: string;
   freshness: number;
+  status: Status;
   /** タスクリンクのURL */
   href: string;
 }
@@ -104,6 +105,7 @@ const App = ({ getController, projects }: Props) => {
           ).map(([task, freshness]) => ({
             title: task.title,
             project: task.project,
+            status: task.status,
             freshness,
             href: `https://${location.hostname}/${task.project}/${
               encodeTitleURI(task.title)
@@ -131,6 +133,7 @@ const App = ({ getController, projects }: Props) => {
         .map((task) => ({
           title: task.title,
           project: task.project,
+          status: task.status,
           freshness: -Infinity,
           href: `https://${location.hostname}/${task.project}/${
             encodeTitleURI(task.title)
@@ -155,6 +158,7 @@ const App = ({ getController, projects }: Props) => {
         title: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
         link: `[${error.title}]`,
         project: error.project,
+        status: "todo" as Status,
         freshness: -Infinity,
         href: `https://${location.hostname}/${error.project}/${
           encodeTitleURI(error.title)
@@ -224,15 +228,40 @@ const TreeComponent = (
       </summary>
       <ul>
         {tree.actions.map((action) => (
-          <li key={action.title} data-freshness={action.freshness.toFixed(2)}>
-            <Link {...action} onPageChanged={onPageChanged} />
-          </li>
+          <TaskItem action={action} onPageChanged={onPageChanged} />
         ))}
       </ul>
     </details>
   );
 };
 
+const TaskItem = (
+  { action, onPageChanged }: { action: Action; onPageChanged: () => void },
+) => {
+  const label = useMemo(() => {
+    switch (action.status) {
+      case "schedule":
+        return "予定";
+      case "todo":
+        return "ToDo";
+      case "note":
+        return "覚書";
+      case "deadline":
+        return "締切";
+      case "up-down":
+        return "浮遊";
+      case "done":
+        return "完了";
+    }
+  }, [action.status]);
+
+  return (
+    <li data-freshness={action.freshness.toFixed(2)}>
+      <span className="label">{label}</span>
+      <Link {...action} onPageChanged={onPageChanged} />
+    </li>
+  );
+};
 /** 読み込み状況を表示する部品 */
 const ProgressBar = (
   { loading }: { loading: boolean },
