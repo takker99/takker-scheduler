@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: denoland/setup-deno@main
         with:
-          deno-version: "1.28.1"
+          deno-version: "1.36.3"
       - name: Check fmt
         run: deno fmt --check
       - name: Run lint
@@ -17,4 +17,4 @@ jobs:
       - name: Run type check
         run: deno check --remote mod.ts
       - name: Run test
-        run: deno test
+        run: deno test --allow-read
