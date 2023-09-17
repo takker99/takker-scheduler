@@ -224,7 +224,7 @@ const TreeComponent = (
       </summary>
       <ul>
         {tree.actions.map((action) => (
-          <li key={action.title}>
+          <li key={action.title} data-freshness={action.freshness.toFixed(2)}>
             <Link {...action} onPageChanged={onPageChanged} />
           </li>
         ))}
@@ -251,7 +251,7 @@ const ProgressBar = (
  * - 同じタブでページ遷移する場合はmodalを閉じる
  */
 const Link = (
-  { href, project, title, freshness, onPageChanged }:
+  { href, project, title, onPageChanged }:
     & { onPageChanged: () => void }
     & Action,
 ) => {
@@ -266,7 +266,6 @@ const Link = (
     return (
       <a
         href={href}
-        data-freshness={freshness.toFixed(2)}
         onClick={handleClick}
       >
         {title}
@@ -276,7 +275,6 @@ const Link = (
     return (
       <a
         href={href}
-        data-freshness={freshness.toFixed(2)}
         rel="noopener noreferrer"
         target="_blank"
         onClick={handleClick}
