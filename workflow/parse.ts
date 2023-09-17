@@ -1,245 +1,263 @@
-import { subWeeks } from "../deps/date-fns.ts";
+import { isValid } from "../deps/date-fns.ts";
+import { Result } from "../deps/scrapbox-std.ts";
+import {
+  format,
+  fromDate,
+  isBefore,
+  LocalDate,
+  LocalDateTime,
+  toDate,
+} from "./localDate.ts";
 
-export type Status = "⬜" | "📝" | "🚧" | "⏳" | "✅" | "❌";
-export const isStatus = (status: string): status is Status =>
-  ["⬜", "📝", "🚧", "⏳", "✅", "❌"].includes(status);
+export type Status =
+  | "schedule"
+  | "todo"
+  | "deadline"
+  | "done"
+  | "note"
+  | "up-down";
+
+export const toStatus = (symbol: string): Status | undefined => {
+  switch (symbol) {
+    case "":
+      return "schedule";
+    case "+":
+      return "todo";
+    case "-":
+      return "note";
+    case "!":
+      return "deadline";
+    case ".":
+      return "done";
+    case "~":
+      return "up-down";
+    default:
+      return;
+  }
+};
+
+export const toFrequency = (
+  symbol: string,
+): "yearly" | "monthly" | "weekly" | "daily" | undefined => {
+  switch (symbol.toLowerCase()) {
+    case "y":
+      return "yearly";
+    case "m":
+      return "monthly";
+    case "w":
+      return "weekly";
+    case "d":
+      return "daily";
+    default:
+      return;
+  }
+};
+
+export interface Repeat {
+  type: "yearly" | "monthly" | "weekly" | "daily";
+  count: number;
+}
+
+/* いずれ実装する
+/** 曜日指定情報を加えたDate *
+export interface ExDate {
+  base: Date;
+  startOfDay: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  weekNum: number;
+}
+*/
 
 export interface Task {
   /** task name */
   name: string;
-  /** タスクの状態 */
+
+  /** howm記号 */
   status: Status;
-  /** 自分の意志では動かせない期日 */
-  due?: Date;
 
-  /** 予想所要時間 (単位はmin) **/
+  /** hown記号のオプション */
+  speed?: number;
+
+  repeat?: Repeat;
+
+  /** 開始日時 */
+  start: LocalDate | LocalDateTime;
+
+  /** 終了日時 */
+  end?: LocalDate | LocalDateTime;
+
+  /** 所要時間 (単位はmin) **/
   duration?: number;
-
-  /** いつ頃やりたいか
-   *
-   * 指定がない場合は、`due`の2週間前か今日のどちらか遅いほうを仮に入れておく。
-   * `due`もないなら空にする
-   */
-  startAt?: {
-    type: "date";
-    year: number;
-    month: number;
-    date: number;
-    hours?: number;
-    minutes?: number;
-  } | {
-    type: "week";
-    year: number;
-    week: number;
-  } | {
-    type: "month";
-    year: number;
-    month: number;
-  } | {
-    type: "year";
-    year: number;
-  };
 
   /** 解析前の文字列 */
   raw: string;
 }
 
+export interface TaskRangeError {
+  name: "TaskRangeError";
+  message: string;
+}
+
+export interface InvalidDateError {
+  name: "InvalidDateError";
+  message: string;
+}
+
 /** Taskを解析する
  *
  * @param text Taskの文字列
- * @param [today] 現在時刻 debug用に外部から指定できるようにしてある
+ * @return 解析結果。Taskでなければ`undefined`を返す
  */
-export const parse = (text: string, today?: Date): Task | undefined => {
-  const status = text.match(/^[\uFE00-\uFE0F]*([⬜📝🚧⏳✅❌])/u)?.[1] ?? "";
-  if (!isStatus(status)) return;
-
-  const dueData = detectDue(text);
-  const due = dueData?.due;
-
-  const startAtMatches = text.match(
-    /@(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?:\/\d{2}:\d{2}|D\d{1,4})?|D\d{1,4})?|\d{4}(?:-\d{2}(?:-\d{2})?|-w\d{2})?(?:D\d+)?)/,
+export const parse = (
+  text: string,
+): Result<Task, TaskRangeError | InvalidDateError> | undefined => {
+  const matched = text.match(
+    /(?:([\+\-!~.])(\d+)?)?@(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?(?:\/(\d{2}):(\d{2})|\/(?:(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)|D(\d+))?(?:R([YMWD])?(\d+))?/i,
   );
+  if (!matched) return;
 
-  // タスク名を取り出す
-  const name = [...text.replace(/^[\uFE00-\uFE0F]*/, "")].slice(1).join("")
-    .replace(dueData?.raw ?? "", "")
-    .replace(startAtMatches?.[0] ?? "", "")
-    .trim();
-  if (!startAtMatches) {
-    if (!due) return { name, status, raw: text };
+  const [
+    matchedText,
+    statusSym = "",
+    speedStr,
+    syear,
+    smonth,
+    sdate,
+    shours,
+    sminutes,
+    ehours2,
+    eminutes2,
+    eyear,
+    emonth,
+    edate,
+    ehours,
+    eminutes,
+    durationStr,
+    repeatSym = "D",
+    countStr,
+  ] = matched;
 
-    // startAtがないときは、dueから仮の値を計算する
-    const startAt_ = subWeeks(due, 2);
-    today ??= new Date();
-    const startAt = startAt_.getTime() > today.getTime() ? startAt_ : today;
+  /** task name */
+  const name = `${text.slice(0, matched.index).trim()}${
+    text.slice((matched.index ?? 0) + matchedText.length).trim()
+  }`;
+
+  const status_ = toStatus(statusSym);
+  // /[\+\-!~.]/以外にマッチするはずがない
+  if (!status_) throw Error("status must be +,,-,!,~,.");
+
+  // 後方互換性用コード
+  // 先頭が✅か❌のときは、`done`とみなす
+  /** task status */
+  const status = /^[\uFE00-\uFE0F]*[✅❌]/.test(text) ? "done" : status_;
+  const start_: LocalDate = {
+    year: parseInt(syear),
+    month: parseInt(smonth),
+    date: parseInt(sdate),
+  };
+  /** 開始日時 */
+  const start: LocalDate | LocalDateTime = !shours
+    ? start_
+    : { ...start_, hours: parseInt(shours), minutes: parseInt(sminutes) };
+  if (!isValid(toDate(start))) {
     return {
-      name,
-      status,
-      due,
-      startAt: {
-        type: "date",
-        year: startAt.getFullYear(),
-        month: startAt.getMonth(),
-        date: startAt.getDate(),
+      ok: false,
+      value: {
+        name: "InvalidDateError",
+        message: `The start of the task "${format(start)}" is an invalid date.`,
       },
-      raw: text,
     };
   }
 
-  {
-    const matches = startAtMatches[1].match(
-      /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?:(\/)(\d{2}):(\d{2})|(D)(\d+))?/,
-    );
-    if (matches) {
-      const [, year, month, date, hours, minutes, slash, h, m, d, duration] =
-        matches;
-
-      const startAt = {
-        type: "date",
-        year: parseInt(year),
-        month: parseInt(month) - 1,
-        date: parseInt(date),
-        hours: parseInt(hours),
-        minutes: parseInt(minutes),
-      } as const;
-      const task: Task = {
-        name,
-        status,
-        startAt,
-        ...(due ? { due } : {}),
-        raw: text,
-      };
-
-      // 見積もり時間を計算する
-      if (slash || d) {
-        if (slash) {
-          const start = new Date(
-            startAt.year,
-            startAt.month,
-            startAt.date,
-            startAt.hours,
-            startAt.minutes,
-          );
-          const end = new Date(
-            startAt.year,
-            startAt.month,
-            startAt.date,
-            parseInt(h),
-            parseInt(m),
-          );
-
-          task.duration = Math.max(
-            0,
-            end.getTime() >= start.getTime()
-              ? Math.round((end.getTime() - start.getTime()) / 60000)
-              // 終了時刻が開始時刻より早い場合は、日をまたいでいると判断する
-              : Math.round((end.getTime() - start.getTime()) / 60000 + 1440),
-          );
-        } else {
-          task.duration = parseInt(duration);
-        }
-      }
-      return task;
-    }
+  const task: Task = { name, status, start, raw: text };
+  if (speedStr) task.speed = parseInt(speedStr);
+  if (countStr) {
+    const type = toFrequency(repeatSym);
+    if (!type) throw Error("`repeat` must be Y,M,W,D");
+    task.repeat = { type, count: parseInt(countStr) };
   }
-
-  {
-    const matches = startAtMatches[1].match(
-      /(\d{4})-(\d{2})-(\d{2})(?:D(\d+))?/,
-    );
-    if (matches) {
-      const [, year, month, date, duration] = matches;
-      const task: Task = {
-        name,
-        status,
-        ...(due ? { due } : {}),
-        startAt: {
-          type: "date",
-          year: parseInt(year),
-          month: parseInt(month) - 1,
-          date: parseInt(date),
+  if (ehours2 || edate) {
+    let end: LocalDate | LocalDateTime = {
+      year: start.year,
+      month: start.month,
+      date: start.date,
+    };
+    if (ehours2) {
+      end = { ...end, hours: parseInt(ehours2), minutes: parseInt(eminutes2) };
+    } else {
+      if (eyear) end.year = parseInt(eyear);
+      if (emonth) end.month = parseInt(emonth);
+      if (edate) end.date = parseInt(edate);
+      if (ehours) {
+        end = {
+          ...end,
+          hours: parseInt(ehours),
+          minutes: parseInt(eminutes),
+        };
+      }
+    }
+    if (!isValid(toDate(end))) {
+      return {
+        ok: false,
+        value: {
+          name: "InvalidDateError",
+          message: `The end of the task "${format(end)}" is an invalid date.`,
         },
-        raw: text,
       };
-      if (duration) {
-        task.duration = parseInt(duration);
-      }
-      return task;
     }
-  }
-
-  {
-    const matches = startAtMatches[1].match(/(\d{4})-w(\d{2})(?:D(\d+))?/);
-    if (matches) {
-      const [, year, week, duration] = matches;
-
-      const task: Task = {
-        name,
-        status,
-        ...(due ? { due } : {}),
-        startAt: {
-          type: "week",
-          year: parseInt(year),
-          week: parseInt(week),
+    if (isBefore(end, start)) {
+      return {
+        ok: false,
+        value: {
+          name: "TaskRangeError",
+          message: `The start of an task cannot be after its end.\n\nstart:${
+            format(start)
+          }\nend:${format(end)}`,
         },
-        raw: text,
       };
-      if (duration) {
-        task.duration = parseInt(duration);
-      }
-      return task;
     }
+    task.end = end;
   }
+  if (durationStr) task.duration = parseInt(durationStr);
 
-  {
-    const matches = startAtMatches[1].match(/(\d{4})-(\d{2})(?:D(\d+))?/);
-    if (matches) {
-      const [, year, month, duration] = matches;
-      const task: Task = {
-        name,
-        status,
-        ...(due ? { due } : {}),
-        startAt: {
-          type: "month",
-          year: parseInt(year),
-          month: parseInt(month) - 1,
-        },
-        raw: text,
-      };
-      if (duration) {
-        task.duration = parseInt(duration);
-      }
-      return task;
-    }
-  }
-
-  const matches = startAtMatches[1].match(/(\d{4})(?:D(\d+))?/);
-  if (!matches) return;
-  const [, year, duration] = matches;
-  const task: Task = {
-    name,
-    status,
-    ...(due ? { due } : {}),
-    startAt: {
-      type: "year",
-      year: parseInt(year),
-    },
-    raw: text,
-  };
-  if (duration) {
-    task.duration = parseInt(duration);
-  }
-  return task;
+  return { ok: true, value: task };
 };
 
-const detectDue = (text: string): { due: Date; raw: string } | undefined => {
-  const dueMatches = text.match(/~(\d{4})-(\d{2})-(\d{2})/);
-  if (!dueMatches) return;
+/** 終日タスクかどうか判定する
+ *
+ * `start`に時刻が含まれていないタスクは全て終日タスクだとみなす
+ */
+export const isAllDay = (task: Task): boolean => !("hours" in task.start);
 
-  const due = new Date(
-    parseInt(dueMatches[1]),
-    parseInt(dueMatches[2]) - 1,
-    parseInt(dueMatches[3]),
-  );
-  return { due, raw: dueMatches[0] };
+/** タスクの所要時間を分単位で得る
+ *
+ * 所要時間が設定されていない場合は`undefined`を返す
+ */
+export const getDuration = (task: Task): number | undefined =>
+  task.end
+    ? isAllDay(task) ? undefined : Math.round(
+      (toDate(task.end).getTime() - toDate(task.start).getTime()) / (60 * 1000),
+    )
+    : task.duration;
+
+/** タスクの終了日時を得る
+ *
+ * 終日の場合は、最終日の翌日0時を終了日時とする
+ */
+export const getEnd = (task: Task): LocalDateTime => {
+  if (task.end) {
+    if ("hours" in task.end) return task.end;
+    const end = toDate(task.end);
+    end.setDate(end.getDate() + 1);
+    return fromDate(end);
+  }
+  if (task.duration === undefined || !("hours" in task.start)) {
+    const end = toDate(task.start);
+    end.setHours(0);
+    end.setMinutes(0);
+    end.setDate(end.getDate() + 1);
+    return fromDate(end);
+  }
+  const end = toDate(task.start);
+  end.setMinutes(end.getMinutes() + task.duration);
+  return fromDate(end);
 };

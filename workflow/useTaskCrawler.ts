@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "../deps/preact.tsx";
-import { parse, Task as TaskBase } from "./parse.ts";
-import { Category, classify } from "./classify.ts";
+import {
+  InvalidDateError,
+  parse,
+  Task as TaskBase,
+  TaskRangeError,
+} from "./parse.ts";
 import {
   check,
   decode,
@@ -9,49 +13,58 @@ import {
 } from "../deps/storage.ts";
 import { toTitleLc } from "../deps/scrapbox-std.ts";
 
-export type { Category, TaskBase };
+export type { InvalidDateError, TaskBase, TaskRangeError };
 export interface Task extends TaskBase {
   project: string;
   title: string;
-  category: Category;
 }
+
+export type TaskError =
+  & { project: string; title: string }
+  & (InvalidDateError | TaskRangeError);
 
 export interface UseTaskCrawler {
   tasks: Task[];
+  errors: TaskError[];
   load: () => Promise<void>;
   loading: boolean;
 }
 
 export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [errors, setErrors] = useState<
+    TaskError[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   /** タスクを全て拾い上げる */
   const crawl = useCallback(async () => {
     const titleLcs = new Set<string>(); // 重複除外用
-    const now = new Date();
 
     setLoading(true);
 
     const result = await loadLinks(projects);
+    const errors: TaskError[] = [];
     const tasks = result.flatMap(({ links, project }) =>
       links.flatMap((link) => {
         const { title } = decode(link);
-        const task = parse(title);
-        if (!task) return [];
+        const result = parse(title);
+        if (!result) return [];
+        if (!result.ok) {
+          errors.push({ project, title, ...result.value });
+          return [];
+        }
 
         // 重複除去
         const titleLc = toTitleLc(title);
         if (titleLcs.has(titleLc)) return [];
         titleLcs.add(titleLc);
 
-        // 分別
-        const category = classify(task, now);
-
-        return [{ project, title, category, ...task }];
+        return [{ project, title, ...result.value }];
       })
     );
     setTasks(tasks);
+    setErrors(errors);
 
     setLoading(false);
   }, [projects]);
@@ -69,5 +82,5 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
     return subscribe(projects, crawl);
   }, [projects, crawl]);
 
-  return { tasks, load, loading };
+  return { tasks, errors, load, loading };
 };

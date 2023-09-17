@@ -13,12 +13,20 @@ import {
   useMemo,
   useState,
 } from "../deps/preact.tsx";
-import { Category, Task, useTaskCrawler } from "./useTaskCrawler.ts";
-import { compare } from "./compare.ts";
+import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
 import { encodeTitleURI, sleep } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
+import {
+  addDays,
+  eachDayOfInterval,
+  isSameDay,
+  lightFormat,
+} from "../deps/date-fns.ts";
+import { fromDate, isBefore } from "./localDate.ts";
+import { calcFreshness } from "./freshness.ts";
+import { getEnd, Status } from "./parse.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -57,6 +65,8 @@ interface Action {
   /** 解析前のリンクの文字列 */
   title: string;
   project: string;
+  freshness: number;
+  status: Status;
   /** タスクリンクのURL */
   href: string;
 }
@@ -66,55 +76,107 @@ interface Props {
   projects: string[];
 }
 const App = ({ getController, projects }: Props) => {
-  const { tasks, load, loading } = useTaskCrawler(projects);
+  const { tasks, errors, load, loading } = useTaskCrawler(projects);
 
-  // 未完了のタスクだけ集めて、render用の形式に加工する
+  // 当日から2週間分のタスクのみ抽出する
   const trees: Tree[] = useMemo(() => {
-    const categories: {
-      summary: string;
-      category: Category;
-      tasks: Task[];
-    }[] = [
-      { summary: "やり残していること", category: "missed", tasks: [] },
-      { summary: "今日やること", category: "today", tasks: [] },
-      { summary: "明日やること", category: "tomorrow", tasks: [] },
-      { summary: "今週やること", category: "in week", tasks: [] },
-      { summary: "来週やること", category: "in next week", tasks: [] },
-      { summary: "今月やること", category: "in month", tasks: [] },
-      { summary: "来月やること", category: "in next month", tasks: [] },
-      { summary: "今年やること", category: "in year", tasks: [] },
-      { summary: "来年やること", category: "in next year", tasks: [] },
-      { summary: "いつかやること", category: "someday", tasks: [] },
-      { summary: "時間情報なし", category: "no startAt", tasks: [] },
-    ];
+    const now = new Date();
 
-    // categoryごとに仕分ける
-    for (const task of tasks) {
-      if (task.status === "✅") continue;
-      if (task.status === "❌") continue;
+    const trees = eachDayOfInterval({ start: now, end: addDays(now, 14) })
+      .map((date) => {
+        const isNow = isSameDay(now, date);
+        const summary = lightFormat(date, "yyyy-MM-dd");
+        const actions = tasks.flatMap((task) => {
+          const freshness = calcFreshness(task, date);
+          return freshness > -999 &&
+              (isNow || task.status === "schedule" ||
+                task.status === "deadline")
+            ? [[task, freshness]] as const
+            : [];
+        })
+          // 旬度順と開始日時順に並べ替える
+          .sort((a, b) =>
+            b[1] !== a[1]
+              ? b[1] - a[1]
+              : isBefore(a[0].start, b[0].start)
+              ? -1
+              : 1
+            // UI向けに変換
+          ).map(([task, freshness]) => ({
+            title: task.title,
+            project: task.project,
+            status: task.status,
+            freshness,
+            href: `https://${location.hostname}/${task.project}/${
+              encodeTitleURI(task.title)
+            }`,
+          }));
 
-      categories.find(({ category }) => category === task.category)?.tasks
-        ?.push?.(task);
+        return {
+          summary,
+          actions,
+          // コピー処理を作る
+          copyText: [
+            summary,
+            ...actions.map(({ title }) => ` [${title}]`),
+            "",
+          ].join("\n"),
+        };
+      });
+
+    {
+      // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
+      /** やり残した予定 */
+      const restActions = tasks.filter((task) =>
+        task.status === "schedule" && isBefore(getEnd(task), fromDate(now))
+      ).sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
+        .map((task) => ({
+          title: task.title,
+          project: task.project,
+          status: task.status,
+          freshness: -Infinity,
+          href: `https://${location.hostname}/${task.project}/${
+            encodeTitleURI(task.title)
+          }`,
+        }));
+
+      const summary = "やり残した予定";
+      trees.unshift({
+        summary,
+        actions: restActions,
+        copyText: [
+          summary,
+          ...restActions.map(({ title }) => ` [${title}]`),
+          "",
+        ].join("\n"),
+      });
     }
 
-    return categories.map((category) => ({
-      summary: category.summary,
-      // 並び替え&変換
-      actions: category.tasks.sort((a, b) => compare(a, b)).map((task) => ({
-        title: task.title,
-        project: task.project,
-        href: `https://${location.hostname}/${task.project}/${
-          encodeTitleURI(task.title)
+    if (errors.length > 0) {
+      const summary = "error";
+      const actions = errors.map((error) => ({
+        title: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
+        link: `[${error.title}]`,
+        project: error.project,
+        status: "todo" as Status,
+        freshness: -Infinity,
+        href: `https://${location.hostname}/${error.project}/${
+          encodeTitleURI(error.title)
         }`,
-      })),
-      // コピー処理を作る
-      copyText: [
-        category.summary,
-        ...category.tasks.map((task) => ` [${task.title}]`),
-        "",
-      ].join("\n"),
-    }));
-  }, [tasks]);
+      }));
+      trees.push({
+        summary,
+        actions,
+        copyText: [
+          summary,
+          ...actions.map(({ link }) => link),
+          "",
+        ].join("\n"),
+      });
+    }
+
+    return trees;
+  }, [tasks, errors]);
 
   // UIの開閉
   const { ref, open, close, toggle } = useDialog();
@@ -135,37 +197,71 @@ const App = ({ getController, projects }: Props) => {
           <ProgressBar loading={loading} />
         </div>
         <div className="result" onClick={stopPropagation}>
-          {trees.map((tree) =>
-            tree.actions.length === 0
-              ? <div key={tree.summary}>{tree.summary}</div>
-              : (
-                // 一部のカテゴリだけ最初から開いておく
-                <details
-                  key={tree.summary}
-                  open={["今日やること", "やり残していること"].includes(
-                    tree.summary,
-                  )}
-                >
-                  <summary>
-                    {tree.summary}
-                    <Copy text={tree.copyText} />
-                  </summary>
-                  <ul>
-                    {tree.actions.map((action) => (
-                      <li key={action.title}>
-                        <Link {...action} onPageChanged={close} />
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )
-          )}
+          {trees.map((tree) => (
+            <TreeComponent
+              tree={tree}
+              key={tree.summary}
+              onPageChanged={close}
+            />
+          ))}
         </div>
       </dialog>
     </>
   );
 };
 
+const TreeComponent = (
+  { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
+) => {
+  if (tree.actions.length === 0) {
+    return <div key={tree.summary}>{tree.summary}</div>;
+  }
+
+  return (
+    // 一部のカテゴリだけ最初から開いておく
+    <details
+      open={lightFormat(new Date(), "yyyy-MM-dd") === tree.summary}
+    >
+      <summary>
+        {tree.summary}
+        <Copy text={tree.copyText} />
+      </summary>
+      <ul>
+        {tree.actions.map((action) => (
+          <TaskItem action={action} onPageChanged={onPageChanged} />
+        ))}
+      </ul>
+    </details>
+  );
+};
+
+const TaskItem = (
+  { action, onPageChanged }: { action: Action; onPageChanged: () => void },
+) => {
+  const label = useMemo(() => {
+    switch (action.status) {
+      case "schedule":
+        return "予定";
+      case "todo":
+        return "ToDo";
+      case "note":
+        return "覚書";
+      case "deadline":
+        return "締切";
+      case "up-down":
+        return "浮遊";
+      case "done":
+        return "完了";
+    }
+  }, [action.status]);
+
+  return (
+    <li data-freshness={action.freshness.toFixed(2)}>
+      <span className="label">{label}</span>
+      <Link {...action} onPageChanged={onPageChanged} />
+    </li>
+  );
+};
 /** 読み込み状況を表示する部品 */
 const ProgressBar = (
   { loading }: { loading: boolean },
@@ -184,12 +280,9 @@ const ProgressBar = (
  * - 同じタブでページ遷移する場合はmodalを閉じる
  */
 const Link = (
-  { href, project, title, onPageChanged }: {
-    href: string;
-    project: string;
-    title: string;
-    onPageChanged: () => void;
-  },
+  { href, project, title, onPageChanged }:
+    & { onPageChanged: () => void }
+    & Action,
 ) => {
   // 同じタブで別のページに遷移したときはmodalを閉じる
   const handleClick = useCallback(() => {
@@ -199,7 +292,14 @@ const Link = (
   }, []);
 
   if (project === scrapbox.Project.name) {
-    return <a href={href} onClick={handleClick}>{title}</a>;
+    return (
+      <a
+        href={href}
+        onClick={handleClick}
+      >
+        {title}
+      </a>
+    );
   } else {
     return (
       <a
