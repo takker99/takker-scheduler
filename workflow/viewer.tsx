@@ -23,7 +23,6 @@ import {
   eachDayOfInterval,
   isSameDay,
   lightFormat,
-  subDays,
 } from "../deps/date-fns.ts";
 import { fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
@@ -78,12 +77,11 @@ interface Props {
 const App = ({ getController, projects }: Props) => {
   const { tasks, errors, load, loading } = useTaskCrawler(projects);
 
-  // ±2週間分のタスクのみ抽出する
+  // 当日から2週間分のタスクのみ抽出する
   const trees: Tree[] = useMemo(() => {
     const now = new Date();
 
-    const start = subDays(now, 14);
-    const trees = eachDayOfInterval({ start, end: addDays(now, 14) })
+    const trees = eachDayOfInterval({ start: now, end: addDays(now, 14) })
       .map((date) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
@@ -128,7 +126,7 @@ const App = ({ getController, projects }: Props) => {
       // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
       /** やり残した予定 */
       const restActions = tasks.filter((task) =>
-        task.status === "schedule" && isBefore(getEnd(task), fromDate(start))
+        task.status === "schedule" && isBefore(getEnd(task), fromDate(now))
       ).sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
         .map((task) => ({
           title: task.title,
