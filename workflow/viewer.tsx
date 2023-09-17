@@ -180,8 +180,6 @@ const App = ({ getController, projects }: Props) => {
   const { ref, open, close, toggle } = useDialog();
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
-  useEffect(() => console.error(errors), [errors]);
-
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
 
