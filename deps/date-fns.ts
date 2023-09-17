@@ -37,6 +37,8 @@ export { default as startOfWeek } from "https://deno.land/x/date_fns@v2.22.1/sta
 export { default as intervalToDuration } from "./patch/intervalToDuration.ts";
 export { default as areIntervalsOverlapping } from "./patch/areIntervalsOverlapping.ts";
 export { default as differenceInMinutes } from "https://deno.land/x/date_fns@v2.22.1/differenceInMinutes/index.js";
+export { default as differenceInCalendarDays } from "https://deno.land/x/date_fns@v2.22.1/differenceInCalendarDays/index.ts";
+export { default as differenceInCalendarMonths } from "https://deno.land/x/date_fns@v2.22.1/differenceInCalendarMonths/index.ts";
 export { default as eachDayOfInterval } from "./patch/eachDayOfInterval.ts";
 export type {
   DateValues,
