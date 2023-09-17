@@ -1,32 +1,17 @@
-import type { Task as TaskLink } from "./parse.ts";
-import type { Task } from "../task.ts";
+import { getDuration, isAllDay, Task as TaskLink } from "./parse.ts";
+import { Task } from "../task.ts";
+import { toDate } from "./localDate.ts";
 
 export const linkToTask = (taskLink: TaskLink): Task | undefined => {
-  const { raw, startAt, duration } = taskLink;
-  if (!startAt) return;
-  if (startAt.type !== "date") return;
-  const date = new Date(
-    startAt.year,
-    startAt.month,
-    startAt.date,
-  );
+  const start = toDate(taskLink.start);
+  const dur = getDuration(taskLink);
 
   return {
-    title: `[${raw}]`,
-    base: date,
+    title: `[${taskLink.raw}]`,
+    base: start,
     plan: {
-      start: startAt.hours !== undefined
-        ? new Date(
-          startAt.year,
-          startAt.month,
-          startAt.date,
-          startAt.hours,
-          startAt.minutes ?? 0,
-        )
-        : undefined,
-      duration: duration !== undefined
-        ? duration * 60 // minからsに変換する
-        : undefined,
+      start: isAllDay(taskLink) ? undefined : start,
+      duration: dur !== undefined ? dur * 60 : undefined,
     },
     record: {},
   };
