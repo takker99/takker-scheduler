@@ -1,4 +1,8 @@
-import { isValid } from "../deps/date-fns.ts";
+import {
+  differenceInCalendarDays,
+  differenceInCalendarMonths,
+  isValid,
+} from "../deps/date-fns.ts";
 import { Result } from "../deps/scrapbox-std.ts";
 import {
   format,
@@ -260,4 +264,49 @@ export const getEnd = (task: Task): LocalDateTime => {
   const end = toDate(task.start);
   end.setMinutes(end.getMinutes() + task.duration);
   return fromDate(end);
+};
+
+/** 指定日に繰り返す繰り返しタスクか調べる。
+ *
+ * 繰り返す場合はそのタスクを指定日の日付で生成する。
+ * 繰り返さない場合は`undefined`を返す
+ */
+export const makeRepeat = (
+  task: Task,
+  date: LocalDate,
+): Task | undefined => {
+  if (!task.repeat) return;
+  const newTask = structuredClone(task);
+  if (task.repeat.type === "yearly") {
+    if (
+      Math.abs(date.year - newTask.start.year) % (task.repeat.count ?? 1) !== 0
+    ) return;
+    newTask.start.year = date.year;
+
+    return newTask.start.month === date.month &&
+        newTask.start.date === date.date
+      ? newTask
+      : undefined;
+  }
+  if (task.repeat.type === "monthly") {
+    const diff = differenceInCalendarMonths(
+      toDate(date),
+      toDate(newTask.start),
+    );
+    if (diff % (task.repeat.count ?? 1) !== 0) return;
+
+    newTask.start.year = date.year;
+    newTask.start.month = date.month;
+
+    return newTask.start.date === date.date ? newTask : undefined;
+  }
+
+  const interval = task.repeat.type === "weekly" ? 7 : 1;
+  const diff = differenceInCalendarDays(toDate(date), toDate(newTask.start));
+  if (diff % ((task.repeat.count ?? 1) * interval) !== 0) return;
+  newTask.start.year = date.year;
+  newTask.start.month = date.month;
+  newTask.start.date = date.date;
+
+  return newTask;
 };
