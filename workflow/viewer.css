@@ -83,7 +83,7 @@ li:not([data-freshness^="-"]):not([data-freshness^="0"]) {
 
 /* 0未満は半透明にする */
 li[data-freshness^="-"] {
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .label {
