@@ -39,6 +39,24 @@ export const toStatus = (symbol: string): Status | undefined => {
       return;
   }
 };
+export const fromStatus = (
+  status: Status,
+): "" | "+" | "-" | "!" | "." | "~" => {
+  switch (status) {
+    case "schedule":
+      return "";
+    case "todo":
+      return "+";
+    case "note":
+      return "-";
+    case "deadline":
+      return "!";
+    case "done":
+      return ".";
+    case "up-down":
+      return "~";
+  }
+};
 
 export const toFrequency = (
   symbol: string,
@@ -266,6 +284,15 @@ export const getEnd = (task: Task): LocalDateTime => {
   return fromDate(end);
 };
 
+/** Task objectからタスクリンクの文字列を作る */
+const toString = (task: Task): string => {
+  const duration = getDuration(task);
+
+  return `${fromStatus(task.status)}${task.speed ?? ""}@${format(task.start)}${
+    duration === undefined ? "" : `D${duration}`
+  }${task.name}`;
+};
+
 /** 指定日に繰り返す繰り返しタスクか調べる。
  *
  * 繰り返す場合はそのタスクを指定日の日付で生成する。
@@ -276,37 +303,38 @@ export const makeRepeat = (
   date: LocalDate,
 ): Task | undefined => {
   if (!task.repeat) return;
-  const newTask = structuredClone(task);
+
+  const str = toString(task).replace(
+    /@\d{4}-\d{2}-\d{2}/,
+    `@${format(date).slice(0, -6)}`,
+  );
+  const result = parse(str);
+  if (!result || !result.ok) throw Error(`"${str}" must be parsed correctly.`);
+  const newTask = result.value;
+
   if (task.repeat.type === "yearly") {
     if (
-      Math.abs(date.year - newTask.start.year) % (task.repeat.count ?? 1) !== 0
+      Math.abs(date.year - task.start.year) % (task.repeat.count ?? 1) !== 0
     ) return;
-    newTask.start.year = date.year;
 
-    return newTask.start.month === date.month &&
-        newTask.start.date === date.date
+    return task.start.month === date.month &&
+        task.start.date === date.date
       ? newTask
       : undefined;
   }
   if (task.repeat.type === "monthly") {
     const diff = differenceInCalendarMonths(
       toDate(date),
-      toDate(newTask.start),
+      toDate(task.start),
     );
     if (diff % (task.repeat.count ?? 1) !== 0) return;
 
-    newTask.start.year = date.year;
-    newTask.start.month = date.month;
-
-    return newTask.start.date === date.date ? newTask : undefined;
+    return task.start.date === date.date ? newTask : undefined;
   }
 
   const interval = task.repeat.type === "weekly" ? 7 : 1;
-  const diff = differenceInCalendarDays(toDate(date), toDate(newTask.start));
+  const diff = differenceInCalendarDays(toDate(date), toDate(task.start));
   if (diff % ((task.repeat.count ?? 1) * interval) !== 0) return;
-  newTask.start.year = date.year;
-  newTask.start.month = date.month;
-  newTask.start.date = date.date;
 
   return newTask;
 };

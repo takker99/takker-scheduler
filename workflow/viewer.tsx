@@ -26,7 +26,7 @@ import {
 } from "../deps/date-fns.ts";
 import { fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
-import { getEnd, Status } from "./parse.ts";
+import { getEnd, makeRepeat, Status } from "./parse.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -87,6 +87,15 @@ const App = ({ getController, projects }: Props) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
         const actions = tasks.flatMap((task) => {
+          const generatedTask = makeRepeat(task, fromDate(date));
+          if (generatedTask) {
+            const freshness = calcFreshness(generatedTask, date);
+            return [[{
+              ...generatedTask,
+              title: task.title,
+              project: task.project,
+            }, freshness]] as const;
+          }
           const freshness = calcFreshness(task, date);
           return freshness > -999 &&
               (isNow || task.status === "schedule" ||
@@ -103,7 +112,7 @@ const App = ({ getController, projects }: Props) => {
               : 1
             // UI向けに変換
           ).map(([task, freshness]) => ({
-            title: task.title,
+            title: task.raw,
             project: task.project,
             status: task.status,
             freshness,
