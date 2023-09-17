@@ -19,9 +19,13 @@ export interface Task extends TaskBase {
   title: string;
 }
 
+export type TaskError =
+  & { project: string; title: string }
+  & (InvalidDateError | TaskRangeError);
+
 export interface UseTaskCrawler {
   tasks: Task[];
-  errors: ({ raw: string } & (InvalidDateError | TaskRangeError))[];
+  errors: TaskError[];
   load: () => Promise<void>;
   loading: boolean;
 }
@@ -29,7 +33,7 @@ export interface UseTaskCrawler {
 export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<
-    ({ raw: string } & (InvalidDateError | TaskRangeError))[]
+    TaskError[]
   >([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,15 +44,14 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
     setLoading(true);
 
     const result = await loadLinks(projects);
-    const errors: ({ raw: string } & (InvalidDateError | TaskRangeError))[] =
-      [];
+    const errors: TaskError[] = [];
     const tasks = result.flatMap(({ links, project }) =>
       links.flatMap((link) => {
         const { title } = decode(link);
         const result = parse(title);
         if (!result) return [];
         if (!result.ok) {
-          errors.push({ raw: title, ...result.value });
+          errors.push({ project, title, ...result.value });
           return [];
         }
 

@@ -25,8 +25,9 @@ import {
   lightFormat,
   subDays,
 } from "../deps/date-fns.ts";
-import { isBefore } from "./localDate.ts";
+import { fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
+import { getEnd } from "./parse.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -81,7 +82,8 @@ const App = ({ getController, projects }: Props) => {
   const trees: Tree[] = useMemo(() => {
     const now = new Date();
 
-    return eachDayOfInterval({ start: subDays(now, 14), end: addDays(now, 14) })
+    const start = subDays(now, 14);
+    const trees = eachDayOfInterval({ start, end: addDays(now, 14) })
       .map((date) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
@@ -121,7 +123,58 @@ const App = ({ getController, projects }: Props) => {
           ].join("\n"),
         };
       });
-  }, [tasks]);
+
+    {
+      // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
+      /** やり残した予定 */
+      const restActions = tasks.filter((task) =>
+        task.status === "schedule" && isBefore(getEnd(task), fromDate(start))
+      ).sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
+        .map((task) => ({
+          title: task.title,
+          project: task.project,
+          freshness: -Infinity,
+          href: `https://${location.hostname}/${task.project}/${
+            encodeTitleURI(task.title)
+          }`,
+        }));
+
+      const summary = "やり残した予定";
+      trees.unshift({
+        summary,
+        actions: restActions,
+        copyText: [
+          summary,
+          ...restActions.map(({ title }) => ` [${title}]`),
+          "",
+        ].join("\n"),
+      });
+    }
+
+    if (errors.length > 0) {
+      const summary = "error";
+      const actions = errors.map((error) => ({
+        title: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
+        link: `[${error.title}]`,
+        project: error.project,
+        freshness: -Infinity,
+        href: `https://${location.hostname}/${error.project}/${
+          encodeTitleURI(error.title)
+        }`,
+      }));
+      trees.push({
+        summary,
+        actions,
+        copyText: [
+          summary,
+          ...actions.map(({ link }) => link),
+          "",
+        ].join("\n"),
+      });
+    }
+
+    return trees;
+  }, [tasks, errors]);
 
   // UIの開閉
   const { ref, open, close, toggle } = useDialog();
