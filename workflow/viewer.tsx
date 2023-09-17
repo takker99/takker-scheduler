@@ -78,11 +78,11 @@ interface Props {
 const App = ({ getController, projects }: Props) => {
   const { tasks, errors, load, loading } = useTaskCrawler(projects);
 
-  // 当日から2週間分のタスクのみ抽出する
+  // 当日から4週間分のタスクのみ抽出する
   const trees: Tree[] = useMemo(() => {
     const now = new Date();
 
-    const trees = eachDayOfInterval({ start: now, end: addDays(now, 14) })
+    const trees = eachDayOfInterval({ start: now, end: addDays(now, 28) })
       .map((date) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
