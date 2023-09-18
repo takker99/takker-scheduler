@@ -24,6 +24,13 @@
 .fa-spinner::before {
   content: "\f110";
 }
+.fa-sync:before {
+  content: "\f021";
+}
+.fa-fw {
+  text-align: center;
+  width: 1.25em;
+}
 
 .kamon::before {
   font-family: "AppIcons";

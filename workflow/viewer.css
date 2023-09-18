@@ -76,23 +76,45 @@ ul {
 }
 
 /* 1.0以上 */
-li:not([data-freshness^="-"]):not([data-freshness^="0"]) {
+li:not([data-level^="-"]):not([data-level="0"]) {
   font-weight: bold;
 }
 /* 0まではdefaultのまま */
 
 /* 0未満は半透明にする */
-li[data-freshness^="-"] {
+li[data-level^="-"][data-level="-1"] {
   opacity: 0.7;
+}
+li[data-level^="-"][data-level="-2"] {
+  opacity: 0.5;
+}
+li[data-level^="-"][data-level="-3"] {
+  opacity: 0.3;
+}
+li[data-level^="-"] {
+  opacity: 0.1;
 }
 
 .label {
   display: inline-block;
   font-size: 90%;
-  text-align:center;
   padding: 0 3px;
-  width:2.5em;
-  margin-right: 0.5em;
+}
+.type {
+  text-align:center;
+  width: 2.5em;
   border: 1px solid;
   border-radius: 3px;
+}
+.freshness {
+  text-align: right;
+  width: 2.5em;
+}
+.start {
+  text-align: right;
+  width: 3em;
+}
+.duration {
+  text-align: right;
+  width: 3em;
 }
