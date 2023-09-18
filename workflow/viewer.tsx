@@ -24,9 +24,9 @@ import {
   isSameDay,
   lightFormat,
 } from "../deps/date-fns.ts";
-import { fromDate, isBefore } from "./localDate.ts";
+import { format, fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
-import { getEnd, makeRepeat, Status } from "./parse.ts";
+import { getDuration, getEnd, makeRepeat, Status, Task } from "./parse.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -56,19 +56,13 @@ export const setup = (projects: string[]): Promise<Controller> => {
 interface Tree {
   /** 分類名 */
   summary: string;
-  /** `actions`に含まれる全てのタスクリンクをScrapbox記法で格納しておく */
-  copyText: string;
+
   /** タスクリンク */
   actions: Action[];
 }
-interface Action {
-  /** 解析前のリンクの文字列 */
-  title: string;
+interface Action extends Task {
   project: string;
   freshness: number;
-  status: Status;
-  /** タスクリンクのURL */
-  href: string;
 }
 
 interface Props {
@@ -86,50 +80,28 @@ const App = ({ getController, projects }: Props) => {
       .map((date) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
-        const actions = tasks.flatMap((task) => {
+        const actions: Action[] = tasks.flatMap((task) => {
           const generatedTask = makeRepeat(task, fromDate(date));
           if (generatedTask) {
             const freshness = calcFreshness(generatedTask, date);
-            return [[{
+            return [{
               ...generatedTask,
-              title: task.title,
+              repeat: task.repeat,
               project: task.project,
-            }, freshness]] as const;
+              freshness,
+            } as Action];
           }
           const freshness = calcFreshness(task, date);
           return freshness > -999 &&
               (isNow || task.status === "schedule" ||
                 task.status === "deadline")
-            ? [[task, freshness]] as const
+            ? [{ ...task, freshness } as Action]
             : [];
-        })
-          // 旬度順と開始日時順に並べ替える
-          .sort((a, b) =>
-            b[1] !== a[1]
-              ? b[1] - a[1]
-              : isBefore(a[0].start, b[0].start)
-              ? -1
-              : 1
-            // UI向けに変換
-          ).map(([task, freshness]) => ({
-            title: task.raw,
-            project: task.project,
-            status: task.status,
-            freshness,
-            href: `https://${location.hostname}/${task.project}/${
-              encodeTitleURI(task.title)
-            }`,
-          }));
+        });
 
         return {
           summary,
           actions,
-          // コピー処理を作る
-          copyText: [
-            summary,
-            ...actions.map(({ title }) => ` [${title}]`),
-            "",
-          ].join("\n"),
         };
       });
 
@@ -139,49 +111,31 @@ const App = ({ getController, projects }: Props) => {
       const restActions = tasks.filter((task) =>
         task.status === "schedule" && isBefore(getEnd(task), fromDate(now)) &&
         !task.repeat
-      ).sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
-        .map((task) => ({
-          title: task.title,
-          project: task.project,
-          status: task.status,
-          freshness: -Infinity,
-          href: `https://${location.hostname}/${task.project}/${
-            encodeTitleURI(task.title)
-          }`,
-        }));
+      )
+        .sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
+        .map((task) => ({ ...task, freshness: -Infinity }));
 
       const summary = "やり残した予定";
       trees.unshift({
         summary,
         actions: restActions,
-        copyText: [
-          summary,
-          ...restActions.map(({ title }) => ` [${title}]`),
-          "",
-        ].join("\n"),
       });
     }
 
+    // エラーがあれば、それも表示する
     if (errors.length > 0) {
       const summary = "error";
       const actions = errors.map((error) => ({
-        title: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
-        link: `[${error.title}]`,
+        name: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
+        raw: error.title,
+        start: { year: 9999, month: 1, date: 1 },
         project: error.project,
         status: "todo" as Status,
         freshness: -Infinity,
-        href: `https://${location.hostname}/${error.project}/${
-          encodeTitleURI(error.title)
-        }`,
       }));
       trees.push({
         summary,
         actions,
-        copyText: [
-          summary,
-          ...actions.map(({ link }) => link),
-          "",
-        ].join("\n"),
       });
     }
 
@@ -223,32 +177,66 @@ const App = ({ getController, projects }: Props) => {
 const TreeComponent = (
   { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
 ) => {
-  if (tree.actions.length === 0) {
-    return <div key={tree.summary}>{tree.summary}</div>;
-  }
-
-  return (
-    // 一部のカテゴリだけ最初から開いておく
-    <details
-      open={lightFormat(new Date(), "yyyy-MM-dd") === tree.summary}
-    >
-      <summary>
-        {tree.summary}
-        <Copy text={tree.copyText} />
-      </summary>
-      <ul>
-        {tree.actions.map((action) => (
-          <TaskItem action={action} onPageChanged={onPageChanged} />
-        ))}
-      </ul>
-    </details>
+  const sortedActions = useMemo(
+    () =>
+      tree.actions.sort((a, b) =>
+        b.freshness !== a.freshness
+          ? b.freshness - a.freshness
+          : isBefore(a.start, b.start)
+          ? -1
+          : 1
+      ),
+    [tree.actions],
   );
+  const copyText = useMemo(() =>
+    [
+      tree.summary,
+      ...sortedActions.flatMap((action) =>
+        action.repeat ? [] : [` [${action.raw}]`]
+      ),
+    ].join("\n"), [tree.summary, sortedActions]);
+
+  return tree.actions.length === 0
+    ? <div key={tree.summary}>{tree.summary}</div>
+    : (
+      // 一部のカテゴリだけ最初から開いておく
+      <details
+        open={lightFormat(new Date(), "yyyy-MM-dd") === tree.summary}
+      >
+        <summary>
+          {tree.summary}
+          <Copy text={copyText} />
+        </summary>
+        <ul>
+          {sortedActions.map((action) => (
+            <TaskItem action={action} onPageChanged={onPageChanged} />
+          ))}
+        </ul>
+      </details>
+    );
 };
 
 const TaskItem = (
   { action, onPageChanged }: { action: Action; onPageChanged: () => void },
 ) => {
-  const label = useMemo(() => {
+  const href = useMemo(
+    () =>
+      action.repeat
+        ? ""
+        : `https://${location.hostname}/${action.project}/${
+          encodeTitleURI(action.raw)
+        }`,
+    [action.repeat, action.project, action.raw],
+  );
+
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  const handleClick = useCallback(() => {
+    scrapbox.once("page:changed", onPageChanged);
+    // 2秒以内に遷移しなかったら何もしない
+    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
+  }, []);
+
+  const type = useMemo(() => {
     switch (action.status) {
       case "schedule":
         return "予定";
@@ -264,14 +252,44 @@ const TaskItem = (
         return "完了";
     }
   }, [action.status]);
+  const start = useMemo(() => {
+    const time = format(action.start).slice(11);
+    return time || "     ";
+  }, [action.start]);
+  const duration = useMemo(() => getDuration(action), [action]);
+  const freshnessLevel = Math.floor(Math.round(action.freshness) / 7);
 
   return (
-    <li data-freshness={action.freshness.toFixed(2)}>
-      <span className="label">{label}</span>
-      <Link {...action} onPageChanged={onPageChanged} />
+    <li
+      data-type={type}
+      data-freshness={action.freshness.toFixed(2)}
+      data-level={freshnessLevel}
+    >
+      <span className="label type">{type}</span>
+      <i className={`label fa fa-fw${action.repeat ? " fa-sync" : ""}`} />
+      <span className="label freshness">{action.freshness.toFixed(0)}</span>
+      <time className="label start">{start}</time>
+      <span className="label duration">{duration}m</span>
+      {href
+        ? (
+          <a
+            href={href}
+            {...(action.project === scrapbox.Project.name ? ({}) : (
+              {
+                rel: "noopener noreferrer",
+                target: "_blank",
+              }
+            ))}
+            onClick={handleClick}
+          >
+            {action.name}
+          </a>
+        )
+        : action.name}
     </li>
   );
 };
+
 /** 読み込み状況を表示する部品 */
 const ProgressBar = (
   { loading }: { loading: boolean },
@@ -283,46 +301,6 @@ const ProgressBar = (
     </div>
   )
   : <div className="progress" />);
-
-/** リンク
- *
- * - 今開いているページのprojectと同じリンクかどうかで処理を切り替える
- * - 同じタブでページ遷移する場合はmodalを閉じる
- */
-const Link = (
-  { href, project, title, onPageChanged }:
-    & { onPageChanged: () => void }
-    & Action,
-) => {
-  // 同じタブで別のページに遷移したときはmodalを閉じる
-  const handleClick = useCallback(() => {
-    scrapbox.once("page:changed", onPageChanged);
-    // 2秒以内に遷移しなかったら何もしない
-    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
-  }, []);
-
-  if (project === scrapbox.Project.name) {
-    return (
-      <a
-        href={href}
-        onClick={handleClick}
-      >
-        {title}
-      </a>
-    );
-  } else {
-    return (
-      <a
-        href={href}
-        rel="noopener noreferrer"
-        target="_blank"
-        onClick={handleClick}
-      >
-        {title}
-      </a>
-    );
-  }
-};
 
 /** コピーボタン */
 const Copy = ({ text }: { text: string }) => {
