@@ -11,12 +11,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
 } from "../deps/preact.tsx";
 import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
-import { encodeTitleURI, sleep } from "../deps/scrapbox-std.ts";
+import { Copy } from "./Copy.tsx";
+import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import {
   addDays,
@@ -27,6 +27,7 @@ import {
 import { format, fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
 import { getDuration, getEnd, makeRepeat, Status, Task } from "./parse.ts";
+import { compareFn } from "./sort.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -177,24 +178,14 @@ const App = ({ getController, projects }: Props) => {
 const TreeComponent = (
   { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
 ) => {
-  const sortedActions = useMemo(
-    () =>
-      tree.actions.sort((a, b) =>
-        b.freshness !== a.freshness
-          ? b.freshness - a.freshness
-          : isBefore(a.start, b.start)
-          ? -1
-          : 1
-      ),
-    [tree.actions],
-  );
+  const actions = useMemo(() => tree.actions.sort(compareFn), [
+    tree.actions,
+  ]);
   const copyText = useMemo(() =>
     [
       tree.summary,
-      ...sortedActions.flatMap((action) =>
-        action.repeat ? [] : [` [${action.raw}]`]
-      ),
-    ].join("\n"), [tree.summary, sortedActions]);
+      ...actions.flatMap((action) => action.repeat ? [] : [` [${action.raw}]`]),
+    ].join("\n"), [tree.summary, actions]);
 
   return tree.actions.length === 0
     ? <div key={tree.summary}>{tree.summary}</div>
@@ -208,7 +199,7 @@ const TreeComponent = (
           <Copy text={copyText} />
         </summary>
         <ul>
-          {sortedActions.map((action) => (
+          {actions.map((action) => (
             <TaskItem action={action} onPageChanged={onPageChanged} />
           ))}
         </ul>
@@ -301,29 +292,3 @@ const ProgressBar = (
     </div>
   )
   : <div className="progress" />);
-
-/** コピーボタン */
-const Copy = ({ text }: { text: string }) => {
-  const [buttonLabel, setButtonLabel] = useState("\uf0c5");
-  const handleClick = useCallback(
-    async (e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(text);
-        setButtonLabel("Copied");
-        await sleep(1000);
-        setButtonLabel("\uf0c5");
-      } catch (e) {
-        alert(`Failed to copy the code block\nError:${e.message}`);
-      }
-    },
-    [text],
-  );
-
-  return (
-    <button className="copy" title="Copy" onClick={handleClick}>
-      {buttonLabel}
-    </button>
-  );
-};
