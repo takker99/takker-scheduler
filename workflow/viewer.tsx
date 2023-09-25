@@ -11,12 +11,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
 } from "../deps/preact.tsx";
 import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
-import { encodeTitleURI, sleep } from "../deps/scrapbox-std.ts";
+import { Copy } from "./Copy.tsx";
+import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import {
   addDays,
@@ -27,6 +27,7 @@ import {
 import { format, fromDate, isBefore } from "./localDate.ts";
 import { calcFreshness } from "./freshness.ts";
 import { getDuration, getEnd, makeRepeat, Status, Task } from "./parse.ts";
+import { compareFn } from "./sort.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -174,32 +175,6 @@ const App = ({ getController, projects }: Props) => {
   );
 };
 
-const compareFn = (a: Action, b: Action): number => {
-  if (b.freshness !== a.freshness) return b.freshness - a.freshness;
-  const sa = sortType(a);
-  const sb = sortType(b);
-  if (sa !== sb) return sb - sa;
-
-  return isBefore(a.start, b.start) ? -1 : 1;
-};
-
-const sortType = (action: Action): number => {
-  switch (action.status) {
-    case "schedule":
-      return 4;
-    case "todo":
-      return 3;
-    case "note":
-      return 2;
-    case "deadline":
-      return 5;
-    case "up-down":
-      return 1;
-    case "done":
-      return 0;
-  }
-};
-
 const TreeComponent = (
   { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
 ) => {
@@ -317,29 +292,3 @@ const ProgressBar = (
     </div>
   )
   : <div className="progress" />);
-
-/** コピーボタン */
-const Copy = ({ text }: { text: string }) => {
-  const [buttonLabel, setButtonLabel] = useState("\uf0c5");
-  const handleClick = useCallback(
-    async (e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(text);
-        setButtonLabel("Copied");
-        await sleep(1000);
-        setButtonLabel("\uf0c5");
-      } catch (e) {
-        alert(`Failed to copy the code block\nError:${e.message}`);
-      }
-    },
-    [text],
-  );
-
-  return (
-    <button className="copy" title="Copy" onClick={handleClick}>
-      {buttonLabel}
-    </button>
-  );
-};
