@@ -174,27 +174,43 @@ const App = ({ getController, projects }: Props) => {
   );
 };
 
+const compareFn = (a: Action, b: Action): number => {
+  if (b.freshness !== a.freshness) return b.freshness - a.freshness;
+  const sa = sortType(a);
+  const sb = sortType(b);
+  if (sa !== sb) return sb - sa;
+
+  return isBefore(a.start, b.start) ? -1 : 1;
+};
+
+const sortType = (action: Action): number => {
+  switch (action.status) {
+    case "schedule":
+      return 4;
+    case "todo":
+      return 3;
+    case "note":
+      return 2;
+    case "deadline":
+      return 5;
+    case "up-down":
+      return 1;
+    case "done":
+      return 0;
+  }
+};
+
 const TreeComponent = (
   { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
 ) => {
-  const sortedActions = useMemo(
-    () =>
-      tree.actions.sort((a, b) =>
-        b.freshness !== a.freshness
-          ? b.freshness - a.freshness
-          : isBefore(a.start, b.start)
-          ? -1
-          : 1
-      ),
-    [tree.actions],
-  );
+  const actions = useMemo(() => tree.actions.sort(compareFn), [
+    tree.actions,
+  ]);
   const copyText = useMemo(() =>
     [
       tree.summary,
-      ...sortedActions.flatMap((action) =>
-        action.repeat ? [] : [` [${action.raw}]`]
-      ),
-    ].join("\n"), [tree.summary, sortedActions]);
+      ...actions.flatMap((action) => action.repeat ? [] : [` [${action.raw}]`]),
+    ].join("\n"), [tree.summary, actions]);
 
   return tree.actions.length === 0
     ? <div key={tree.summary}>{tree.summary}</div>
@@ -208,7 +224,7 @@ const TreeComponent = (
           <Copy text={copyText} />
         </summary>
         <ul>
-          {sortedActions.map((action) => (
+          {actions.map((action) => (
             <TaskItem action={action} onPageChanged={onPageChanged} />
           ))}
         </ul>
