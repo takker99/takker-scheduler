@@ -255,6 +255,16 @@ const TaskItem = (
       data-type={type}
       data-freshness={action.freshness.toFixed(2)}
       data-level={freshnessLevel}
+      {...(freshnessLevel < 0
+        ? {
+          style: {
+            opacity: Math.max(
+              0.8 * Math.exp(Math.log(8 / 7) / 7 * action.freshness),
+              0.05,
+            ).toFixed(2),
+          },
+        }
+        : {})}
     >
       <span className="label type">{type}</span>
       <i className={`label fa fa-fw${action.repeat ? " fa-sync" : ""}`} />
