@@ -4,7 +4,7 @@ import {
   parse,
   Task as TaskBase,
   TaskRangeError,
-} from "./parse.ts";
+} from "../howm/parse.ts";
 import {
   check,
   decode,
