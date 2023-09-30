@@ -24,10 +24,16 @@ import {
   isSameDay,
   lightFormat,
 } from "../deps/date-fns.ts";
-import { format, fromDate, isBefore } from "./localDate.ts";
-import { calcFreshness } from "./freshness.ts";
-import { getDuration, getEnd, makeRepeat, Status, Task } from "./parse.ts";
-import { compareFn } from "./sort.ts";
+import { format, fromDate, isBefore } from "../howm/localDate.ts";
+import { calcFreshness } from "../howm/freshness.ts";
+import {
+  getDuration,
+  getEnd,
+  makeRepeat,
+  Status,
+  Task,
+} from "../howm/parse.ts";
+import { compareFn } from "../howm/sort.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
