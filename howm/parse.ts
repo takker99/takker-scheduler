@@ -228,7 +228,7 @@ export const getEnd = (task: Task): LocalDateTime => {
 };
 
 /** Task objectからタスクリンクの文字列を作る */
-const toString = (task: Task): string => {
+export const toString = (task: Task): string => {
   const duration = getDuration(task);
 
   return `${fromStatus(task.status)}${task.speed ?? ""}@${format(task.start)}${
