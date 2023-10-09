@@ -244,6 +244,7 @@ const TaskItem = (
         ? {
           style: {
             opacity: Math.max(
+              // 旬度0で70%, 旬度-7で60%になるよう調節した
               0.8 * Math.exp(Math.log(8 / 7) / 7 * action.freshness),
               0.05,
             ).toFixed(2),
