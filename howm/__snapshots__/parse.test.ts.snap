@@ -5,13 +5,13 @@ snapshot[`parse() > compatibility 1`] = `
   ok: true,
   value: {
     name: "⬜タスクリンク",
-    raw: "⬜タスクリンク@2023-09-10",
+    raw: "⬜タスクリンク+@2023-09-10",
     start: {
       date: 10,
       month: 9,
       year: 2023,
     },
-    status: "schedule",
+    status: "todo",
   },
 }
 `;
@@ -21,7 +21,7 @@ snapshot[`parse() > compatibility 2`] = `
   ok: true,
   value: {
     name: "✅終了したリンク",
-    raw: "✅終了したリンク@2023-09-10",
+    raw: "✅終了したリンク+@2023-09-10",
     start: {
       date: 10,
       month: 9,
@@ -37,13 +37,13 @@ snapshot[`parse() > compatibility 3`] = `
   ok: true,
   value: {
     name: "📝やり途中のリンク",
-    raw: "📝やり途中の@2023-09-10リンク",
+    raw: "📝やり途中の+@2023-09-10リンク",
     start: {
       date: 10,
       month: 9,
       year: 2023,
     },
-    status: "schedule",
+    status: "todo",
   },
 }
 `;
@@ -53,13 +53,13 @@ snapshot[`parse() > compatibility 4`] = `
   ok: true,
   value: {
     name: "先頭にない絵文字は✅タスク判定と関係ない",
-    raw: "先頭にない絵文字は✅タスク判定と関係ない@2023-09-10",
+    raw: "先頭にない絵文字は✅タスク判定と関係ない+@2023-09-10",
     start: {
       date: 10,
       month: 9,
       year: 2023,
     },
-    status: "schedule",
+    status: "todo",
   },
 }
 `;
@@ -71,13 +71,13 @@ snapshot[`parse() 1`] = `
   ok: true,
   value: {
     name: "前後の 空白は無視される",
-    raw: " 前後の 空白は　@2023-09-11 無視される　  ",
+    raw: " 前後の 空白は　+@2023-09-11 無視される　  ",
     start: {
       date: 11,
       month: 9,
       year: 2023,
     },
-    status: "schedule",
+    status: "todo",
   },
 }
 `;
@@ -163,23 +163,7 @@ snapshot[`parse() > type 5`] = `
 }
 `;
 
-snapshot[`parse() > type 6`] = `
-{
-  ok: true,
-  value: {
-    name: "読書会",
-    raw: "読書会@2023-04-11T13:00",
-    start: {
-      date: 11,
-      hours: 13,
-      minutes: 0,
-      month: 4,
-      year: 2023,
-    },
-    status: "schedule",
-  },
-}
-`;
+snapshot[`parse() > type 6`] = `undefined`;
 
 snapshot[`parse() > start datetime 1`] = `
 {
@@ -641,182 +625,6 @@ snapshot[`parse() > end datetime 17`] = `
     speed: 3,
     start: {
       date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 1`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45R4/05:67",
-    repeat: {
-      count: 4,
-      type: "daily",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 2`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45R47/05:67",
-    repeat: {
-      count: 47,
-      type: "daily",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 3`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べるR/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45R/05:67",
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 4`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45RM8/05:67",
-    repeat: {
-      count: 8,
-      type: "monthly",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 5`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45RY8/05:67",
-    repeat: {
-      count: 8,
-      type: "yearly",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 6`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45RW8/05:67",
-    repeat: {
-      count: 8,
-      type: "weekly",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 7`] = `
-{
-  ok: true,
-  value: {
-    duration: 45,
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30D45RD8/05:67",
-    repeat: {
-      count: 8,
-      type: "daily",
-    },
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
-  },
-}
-`;
-
-snapshot[`parse() > recurrence 8`] = `
-{
-  ok: true,
-  value: {
-    end: {
-      date: 30,
-      month: 5,
-      year: 2023,
-    },
-    name: "ごはんを食べる/05:67",
-    raw: "ごはんを食べる+3@2023-04-30/05-30RD8/05:67",
-    repeat: {
-      count: 8,
-      type: "daily",
-    },
-    speed: 3,
-    start: {
-      date: 30,
       month: 4,
       year: 2023,
     },

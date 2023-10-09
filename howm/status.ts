@@ -1,5 +1,4 @@
 export type Status =
-  | "schedule"
   | "todo"
   | "deadline"
   | "done"
@@ -8,8 +7,6 @@ export type Status =
 
 export const toStatus = (symbol: string): Status | undefined => {
   switch (symbol) {
-    case "":
-      return "schedule";
     case "+":
       return "todo";
     case "-":
@@ -26,10 +23,8 @@ export const toStatus = (symbol: string): Status | undefined => {
 };
 export const fromStatus = (
   status: Status,
-): "" | "+" | "-" | "!" | "." | "~" => {
+): "+" | "-" | "!" | "." | "~" => {
   switch (status) {
-    case "schedule":
-      return "";
     case "todo":
       return "+";
     case "note":

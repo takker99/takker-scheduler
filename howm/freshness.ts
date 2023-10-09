@@ -1,5 +1,5 @@
 import { toDate } from "./localDate.ts";
-import { getEnd, Task } from "./parse.ts";
+import { Task } from "./parse.ts";
 
 /** 1日をミリ秒単位で表したもの */
 const oneday = 60 * 60 * 24 * 1000;
@@ -14,18 +14,11 @@ const oneday = 60 * 60 * 24 * 1000;
  */
 export const calcFreshness = (task: Task, now: Date): number => {
   const start = toDate(task.start);
-  const end = toDate(getEnd(task));
   const priority = (now.getTime() - start.getTime()) / oneday;
   start.setHours(0);
   start.setMinutes(0);
 
   switch (task.status) {
-    case "schedule": {
-      // 当日に0、それ以外は最低
-      return start.getTime() <= now.getTime() && now.getTime() < end.getTime()
-        ? 0
-        : -Infinity;
-    }
     case "done":
       // 常に最低
       return -Infinity;

@@ -26,14 +26,9 @@ import {
 } from "../deps/date-fns.ts";
 import { format, fromDate, isBefore } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import {
-  getDuration,
-  getEnd,
-  makeRepeat,
-  Status,
-  Task,
-} from "../howm/parse.ts";
+import { getDuration, getEnd, Task } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
+import { Status } from "../howm/status.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -88,20 +83,9 @@ const App = ({ getController, projects }: Props) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
         const actions: Action[] = tasks.flatMap((task) => {
-          const generatedTask = makeRepeat(task, fromDate(date));
-          if (generatedTask) {
-            const freshness = calcFreshness(generatedTask, date);
-            return [{
-              ...generatedTask,
-              repeat: task.repeat,
-              project: task.project,
-              freshness,
-            } as Action];
-          }
           const freshness = calcFreshness(task, date);
           return freshness > -999 &&
-              (isNow || task.status === "schedule" ||
-                task.status === "deadline")
+              (isNow || task.status === "deadline")
             ? [{ ...task, freshness } as Action]
             : [];
         });
@@ -116,8 +100,7 @@ const App = ({ getController, projects }: Props) => {
       // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
       /** やり残した予定 */
       const restActions = tasks.filter((task) =>
-        task.status === "schedule" && isBefore(getEnd(task), fromDate(now)) &&
-        !task.repeat
+        isBefore(getEnd(task), fromDate(now))
       )
         .sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
         .map((task) => ({ ...task, freshness: -Infinity }));
@@ -190,7 +173,7 @@ const TreeComponent = (
   const copyText = useMemo(() =>
     [
       tree.summary,
-      ...actions.flatMap((action) => action.repeat ? [] : [` [${action.raw}]`]),
+      ...actions.map((action) => ` [${action.raw}]`),
     ].join("\n"), [tree.summary, actions]);
 
   return tree.actions.length === 0
@@ -218,12 +201,10 @@ const TaskItem = (
 ) => {
   const href = useMemo(
     () =>
-      action.repeat
-        ? ""
-        : `https://${location.hostname}/${action.project}/${
-          encodeTitleURI(action.raw)
-        }`,
-    [action.repeat, action.project, action.raw],
+      `https://${location.hostname}/${action.project}/${
+        encodeTitleURI(action.raw)
+      }`,
+    [action.project, action.raw],
   );
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
@@ -235,8 +216,6 @@ const TaskItem = (
 
   const type = useMemo(() => {
     switch (action.status) {
-      case "schedule":
-        return "予定";
       case "todo":
         return "ToDo";
       case "note":
@@ -273,7 +252,6 @@ const TaskItem = (
         : {})}
     >
       <span className="label type">{type}</span>
-      <i className={`label fa fa-fw${action.repeat ? " fa-sync" : ""}`} />
       <span className="label freshness">{action.freshness.toFixed(0)}</span>
       <time className="label start">{start}</time>
       <span className="label duration">{duration}m</span>

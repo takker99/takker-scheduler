@@ -5,19 +5,6 @@ import { parse, Task } from "./parse.ts";
 import { assertEquals } from "../deps/testing.ts";
 
 Deno.test("calcFreshness()", async (t) => {
-  await t.step("schedule", () => {
-    const now = new Date("2023-04-10T00:20");
-    const task = parse("読書会@2023-04-11T13:00")!.value as Task;
-
-    assertEquals(calcFreshness(task, now), -Infinity);
-    now.setDate(11);
-    assertEquals(calcFreshness(task, now), 0);
-    now.setHours(23);
-    assertEquals(calcFreshness(task, now), 0);
-    now.setHours(0);
-    now.setDate(12);
-    assertEquals(calcFreshness(task, now), -Infinity);
-  });
   await t.step("done", () => {
     const now = new Date("2023-04-10T00:20");
     const task = parse("読書会.@2023-04-11T13:00")!.value as Task;
