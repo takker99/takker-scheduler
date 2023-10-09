@@ -238,7 +238,7 @@ const TaskItem = (
   return (
     <li
       data-type={type}
-      data-freshness={action.freshness.toFixed(2)}
+      data-freshness={action.freshness.toFixed(0)}
       data-level={freshnessLevel}
       {...(freshnessLevel < 0
         ? {

@@ -76,7 +76,7 @@ ul {
 }
 
 /* 1.0以上 */
-li:not([data-level^="-"]):not([data-level="0"]) {
+li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
 }
 
