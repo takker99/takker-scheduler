@@ -17,6 +17,7 @@ export { default as set } from "https://deno.land/x/date_fns@v2.22.1/set/index.t
 export { default as subDays } from "https://deno.land/x/date_fns@v2.22.1/subDays/index.ts";
 export { default as subMinutes } from "https://deno.land/x/date_fns@v2.22.1/subMinutes/index.ts";
 export { default as subWeeks } from "https://deno.land/x/date_fns@v2.22.1/subWeeks/index.ts";
+export { default as addMinutes } from "https://deno.land/x/date_fns@v2.22.1/addMinutes/index.ts";
 export { default as addWeeks } from "https://deno.land/x/date_fns@v2.22.1/addWeeks/index.ts";
 export { default as addMonths } from "https://deno.land/x/date_fns@v2.22.1/addMonths/index.ts";
 export { default as addYears } from "https://deno.land/x/date_fns@v2.22.1/addYears/index.ts";

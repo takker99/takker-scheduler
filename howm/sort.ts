@@ -15,8 +15,6 @@ export const compareFn = (
 
 const sortType = (action: Task): number => {
   switch (action.status) {
-    case "schedule":
-      return 4;
     case "todo":
       return 3;
     case "note":

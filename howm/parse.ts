@@ -1,8 +1,4 @@
-import {
-  differenceInCalendarDays,
-  differenceInCalendarMonths,
-  isValid,
-} from "../deps/date-fns.ts";
+import { isValid } from "../deps/date-fns.ts";
 import { Result } from "../deps/scrapbox-std.ts";
 import {
   format,
@@ -55,8 +51,6 @@ export interface Task {
   /** hown記号のオプション */
   speed?: number;
 
-  repeat?: Repeat;
-
   /** 開始日時 */
   start: LocalDate | LocalDateTime;
 
@@ -89,13 +83,13 @@ export const parse = (
   text: string,
 ): Result<Task, TaskRangeError | InvalidDateError> | undefined => {
   const matched = text.match(
-    /(?:([\+\-!~.])(\d+)?)?@(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?(?:\/(\d{2}):(\d{2})|\/(?:(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)|D(\d+))?(?:R([YMWD])?(\d+))?/i,
+    /([\+\-!~.])(\d+)?@(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?(?:\/(\d{2}):(\d{2})|\/(?:(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)|D(\d+))?/i,
   );
   if (!matched) return;
 
   const [
     matchedText,
-    statusSym = "",
+    statusSym,
     speedStr,
     syear,
     smonth,
@@ -110,8 +104,6 @@ export const parse = (
     ehours,
     eminutes,
     durationStr,
-    repeatSym = "D",
-    countStr,
   ] = matched;
 
   /** task name */
@@ -148,11 +140,6 @@ export const parse = (
 
   const task: Task = { name, status, start, raw: text };
   if (speedStr) task.speed = parseInt(speedStr);
-  if (countStr) {
-    const type = toFrequency(repeatSym);
-    if (!type) throw Error("`repeat` must be Y,M,W,D");
-    task.repeat = { type, count: parseInt(countStr) };
-  }
   if (ehours2 || edate) {
     let end: LocalDate | LocalDateTime = {
       year: start.year,
@@ -247,50 +234,4 @@ const toString = (task: Task): string => {
   return `${fromStatus(task.status)}${task.speed ?? ""}@${format(task.start)}${
     duration === undefined ? "" : `D${duration}`
   }${task.name}`;
-};
-
-/** 指定日に繰り返す繰り返しタスクか調べる。
- *
- * 繰り返す場合はそのタスクを指定日の日付で生成する。
- * 繰り返さない場合は`undefined`を返す
- */
-export const makeRepeat = (
-  task: Task,
-  date: LocalDate,
-): Task | undefined => {
-  if (!task.repeat) return;
-
-  const str = toString(task).replace(
-    /@\d{4}-\d{2}-\d{2}/,
-    `@${format(date).slice(0, -6)}`,
-  );
-  const result = parse(str);
-  if (!result || !result.ok) throw Error(`"${str}" must be parsed correctly.`);
-  const newTask = result.value;
-
-  if (task.repeat.type === "yearly") {
-    if (
-      Math.abs(date.year - task.start.year) % (task.repeat.count ?? 1) !== 0
-    ) return;
-
-    return task.start.month === date.month &&
-        task.start.date === date.date
-      ? newTask
-      : undefined;
-  }
-  if (task.repeat.type === "monthly") {
-    const diff = differenceInCalendarMonths(
-      toDate(date),
-      toDate(task.start),
-    );
-    if (diff % (task.repeat.count ?? 1) !== 0) return;
-
-    return task.start.date === date.date ? newTask : undefined;
-  }
-
-  const interval = task.repeat.type === "weekly" ? 7 : 1;
-  const diff = differenceInCalendarDays(toDate(date), toDate(task.start));
-  if (diff % ((task.repeat.count ?? 1) * interval) !== 0) return;
-
-  return newTask;
 };
