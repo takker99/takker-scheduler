@@ -1,0 +1,157 @@
+export const snapshot = {};
+
+snapshot[`parse() 1`] = `
+{
+  date: 30,
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@2023-*-30T12:30D45",
+  year: 2023,
+}
+`;
+
+snapshot[`parse() 2`] = `
+{
+  date: "*",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@2023-*-*T12:30D45",
+  year: 2023,
+}
+`;
+
+snapshot[`parse() 3`] = `
+{
+  date: "*",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-*T12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 4`] = `
+{
+  date: "Sun",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-SunT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 5`] = `
+{
+  date: "Mon",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-MonT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 6`] = `
+{
+  date: "Tue",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-TueT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 7`] = `
+{
+  date: "Wed",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-WedT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 8`] = `
+{
+  date: "Thu",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-ThuT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 9`] = `
+{
+  date: "Fri",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-FriT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 10`] = `
+{
+  date: "Sat",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる+3",
+  raw: "ごはんを食べる+3@*-*-SatT12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 11`] = `
+{
+  date: "*",
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: "*",
+  name: "ごはんを食べる",
+  raw: "ごはんを食べる@*-*-*T12:30D45",
+  year: "*",
+}
+`;
+
+snapshot[`parse() 12`] = `
+{
+  date: 11,
+  duration: 45,
+  hours: 12,
+  minutes: 30,
+  month: 12,
+  name: "ごはんを食べる",
+  raw: "ごはんを食べる@2023-12-11T12:30D45",
+  year: 2023,
+}
+`;
