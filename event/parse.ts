@@ -1,13 +1,14 @@
-import { addMinutes, isValid } from "../deps/date-fns.ts";
+import { addMinutes, differenceInCalendarDays, differenceInCalendarMonths, isValid } from "../deps/date-fns.ts";
 import { Result } from "../deps/scrapbox-std.ts";
 import { format, fromDate, LocalDateTime, toDate } from "../howm/localDate.ts";
 import {
-  getDuration,
+  getDuration as getDurationOfTask,
   InvalidDateError,
   parse as parseTask,
   Task,
   TaskRangeError,
 } from "../howm/parse.ts";
+import { Recurrence, toFrequency } from "./recurrence.ts";
 
 /** 予定 (開始日時と終了日時が確定したアイテム)を表す */
 export interface Event {
@@ -23,9 +24,12 @@ export interface Event {
   /** 解析した文字列がタスクでもあった場合は、そのデータを入れる */
   task?: Task;
 
+  recurrence?: Recurrence;
+
   /** 解析前の文字列 */
   raw: string;
 }
+
 
 export interface LackDateError {
   name: "LackDateError";
@@ -48,7 +52,7 @@ export const parse = (
 
   const taskName = task?.value?.name ?? text;
   const matched = taskName.match(
-    /@(?:(\d{2}):(\d{2})|(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)?(?:\/(\d{2}):(\d{2})|\/(?:(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)|D(\d+))?/i,
+    /@(?:(\d{2}):(\d{2})|(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)?(?:\/(\d{2}):(\d{2})|\/(?:(?:(?:(\d{4})-)?(\d{2})-)?(\d{2})(?:T(\d{2}):(\d{2}))?)|D(\d+))?(?:R([YMWD])?(\d+))?/i,
   );
   // eventでないとき
   if (!matched) return task;
@@ -70,12 +74,13 @@ export const parse = (
     ehours,
     eminutes,
     durationStr,
+    symbol,
+    countStr,
   ] = matched;
 
   /** task name */
-  const name = `${taskName.slice(0, matched.index).trim()}${
-    taskName.slice((matched.index ?? 0) + matchedText.length).trim()
-  }`;
+  const name = `${taskName.slice(0, matched.index).trim()}${taskName.slice((matched.index ?? 0) + matchedText.length).trim()
+    }`;
 
   const sresult = checkStart(
     shours2,
@@ -127,6 +132,11 @@ export const parse = (
 
   const event: Event = { name, start, end, raw: text };
   if (task?.value) event.task = task.value;
+  if (countStr) {
+    const count = parseInt(countStr);
+    const frequency = toFrequency(symbol) ?? "daily";
+    event.recurrence = { frequency, count };
+  }
 
   return { ok: true, value: event };
 };
@@ -170,24 +180,24 @@ const checkStart = (
   const hours = shours
     ? parseInt(shours)
     : task?.start && ("hours" in task.start)
-    ? task.start.hours
-    : undefined;
+      ? task.start.hours
+      : undefined;
   const minutes = sminutes
     ? parseInt(sminutes)
     : task?.start && ("minutes" in task.start)
-    ? task.start.minutes
-    : undefined;
+      ? task.start.minutes
+      : undefined;
   const target = year === undefined
     ? "year"
     : month === undefined
-    ? "month"
-    : date === undefined
-    ? "date"
-    : hours === undefined
-    ? "hours"
-    : minutes === undefined
-    ? "minutes"
-    : false;
+      ? "month"
+      : date === undefined
+        ? "date"
+        : hours === undefined
+          ? "hours"
+          : minutes === undefined
+            ? "minutes"
+            : false;
   if (target) {
     return {
       ok: false,
@@ -246,7 +256,7 @@ const checkEnd = (
   if (!edate) {
     // Taskから所要時間を取得できればそれを使う
     if (task) {
-      const duration = getDuration(task);
+      const duration = getDurationOfTask(task);
       if (duration !== undefined) {
         return {
           ok: true,
@@ -273,3 +283,65 @@ const checkEnd = (
 
   return { ok: true, value: { year, month, date, hours, minutes } };
 };
+
+/** 指定日に繰り返す繰り返しタスクか調べる。
+ *
+ * 繰り返す場合はそのタスクを指定日の日付で生成する。
+ * 繰り返さない場合は`undefined`を返す
+ */
+export const makeRepeat = (event: Event, date: Date): Task | Event | undefined => {
+  if (!event.recurrence) return;
+  const localDate = fromDate(date);
+
+  const recurrence = event.recurrence
+  // 繰り返す場合のみ通過させる
+  switch (event.recurrence.frequency) {
+    case "yearly": {
+      // 間隔があっているかチェック
+      if (
+        Math.abs(localDate.year - event.start.year) % (recurrence.count ?? 1) !== 0
+      ) return;
+
+      // 日と月が一致しているかチェック
+      if (event.start.month !== localDate.month ||
+        event.start.date !== localDate.date) return;
+
+      break;
+    }
+    case "monthly": {
+      /** 与えられた日付とeventの繰り返し起点との月差 */
+      const diff = differenceInCalendarMonths(
+        toDate(localDate),
+        toDate(event.start),
+      );
+      if (diff % (recurrence.count ?? 1) !== 0) return;
+
+      break;
+    }
+    case "weekly":
+    case "daily": {
+      const interval = recurrence.frequency === "weekly" ? 7 : 1;
+      const diff = differenceInCalendarDays(toDate(localDate), toDate(event.start));
+      if (diff % ((recurrence.count ?? 1) * interval) !== 0) return;
+
+      break;
+    }
+  }
+
+  // dateの日付を使ってTask or Eventを生成する
+  const newEvent = structuredClone(event);
+
+  newEvent.start.year = localDate.year;
+  const duration = getDuration(newEvent);
+  if (newEvent.task) {
+    const task = newEvent.task;
+    delete task.end;
+    task.duration = duration;
+    return task;
+  }
+  newEvent.end = fromDate(addMinutes(toDate(newEvent.start), duration));
+  return newEvent;
+}
+
+/** Eventの長さを分単位で返す */
+export const getDuration = (event: Event): number => Math.round((toDate(event.end).getTime() - toDate(event.start).getTime()) / 60 * 1000);
