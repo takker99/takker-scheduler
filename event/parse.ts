@@ -139,7 +139,7 @@ export const parse = (
   if (task?.value) event.task = task.value;
   if (countStr) {
     const count = parseInt(countStr);
-    const frequency = toFrequency(symbol??"D") ?? "daily";
+    const frequency = toFrequency(symbol ?? "D") ?? "daily";
     event.recurrence = { frequency, count };
   }
 
