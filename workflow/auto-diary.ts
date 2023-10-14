@@ -12,11 +12,10 @@ import { sleep, toTitleLc } from "../deps/scrapbox-std.ts";
 import { eachDayOfInterval, lightFormat } from "../deps/date-fns.ts";
 import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
-import { linkToTask } from "./linkToTask.ts";
+import { toTaskLine } from "./toTaskLine.ts";
 declare const scrapbox: Scrapbox;
 import { decode, load } from "../deps/storage.ts";
-import { makeRepeat, parse } from "./parse.ts";
-import { fromDate } from "./localDate.ts";
+import { makeRepeat, parse } from "../event/parse.ts";
 
 const project = "takker-memex";
 
@@ -90,16 +89,16 @@ export const main = async () => {
         if (titleLcs.has(titleLc)) continue;
         titleLcs.add(titleLc);
 
-        if (!result.value.repeat) {
-          const task = linkToTask(result.value);
+        if (!("recurrence" in result.value)) {
+          const task = toTaskLine(result.value);
           const key = toKey(task.base);
           if (!dayKeys.includes(key)) continue;
           tasks.set(key, [...(tasks.get(key) ?? []), task]);
         } else {
           for (const date of dates) {
-            const taskLink = makeRepeat(result.value, fromDate(date));
+            const taskLink = makeRepeat(result.value, date);
             if (!taskLink) continue;
-            const task = linkToTask(taskLink);
+            const task = toTaskLine(taskLink);
             const key = toKey(task.base);
             tasks.set(key, [...(tasks.get(key) ?? []), task]);
           }
