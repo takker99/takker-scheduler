@@ -107,8 +107,9 @@ export const parse = (
   ] = matched;
 
   /** task name */
-  const name = `${text.slice(0, matched.index).trim()}${text.slice((matched.index ?? 0) + matchedText.length).trim()
-    }`;
+  const name = `${text.slice(0, matched.index).trim()}${
+    text.slice((matched.index ?? 0) + matchedText.length).trim()
+  }`;
 
   const status_ = toStatus(statusSym);
   // /[\+\-!~.]/以外にマッチするはずがない
@@ -173,8 +174,9 @@ export const parse = (
         ok: false,
         value: {
           name: "TaskRangeError",
-          message: `The start of an task cannot be after its end.\n\nstart:${format(start)
-            }\nend:${format(end)}`,
+          message: `The start of an task cannot be after its end.\n\nstart:${
+            format(start)
+          }\nend:${format(end)}`,
         },
       };
     }
@@ -189,13 +191,16 @@ export const parse = (
  *
  * `start`に時刻が含まれていないタスクは全て終日タスクだとみなす
  */
-export const isAllDay = (task: Pick<Task, "start">): boolean => !("hours" in task.start);
+export const isAllDay = (task: Pick<Task, "start">): boolean =>
+  !("hours" in task.start);
 
 /** タスクの所要時間を分単位で得る
  *
  * 所要時間が設定されていない場合は`undefined`を返す
  */
-export const getDuration = (task: Pick<Task, "start" | "end" | "duration">): number | undefined =>
+export const getDuration = (
+  task: Pick<Task, "start" | "end" | "duration">,
+): number | undefined =>
   task.end
     ? isAllDay(task) ? undefined : Math.round(
       (toDate(task.end).getTime() - toDate(task.start).getTime()) / (60 * 1000),
@@ -229,6 +234,7 @@ export const getEnd = (task: Task): LocalDateTime => {
 export const toString = (task: Task): string => {
   const duration = getDuration(task);
 
-  return `${fromStatus(task.status)}${task.speed ?? ""}@${format(task.start)}${duration === undefined ? "" : `D${duration}`
-    }${task.name}`;
+  return `${fromStatus(task.status)}${task.speed ?? ""}@${format(task.start)}${
+    duration === undefined ? "" : `D${duration}`
+  }${task.name}`;
 };

@@ -1,4 +1,9 @@
-import { addMinutes, differenceInCalendarDays, differenceInCalendarMonths, isValid } from "../deps/date-fns.ts";
+import {
+  addMinutes,
+  differenceInCalendarDays,
+  differenceInCalendarMonths,
+  isValid,
+} from "../deps/date-fns.ts";
 import { Result } from "../deps/scrapbox-std.ts";
 import { format, fromDate, LocalDateTime, toDate } from "../howm/localDate.ts";
 import {
@@ -29,7 +34,6 @@ export interface Event {
   /** 解析前の文字列 */
   raw: string;
 }
-
 
 export interface LackDateError {
   name: "LackDateError";
@@ -79,8 +83,9 @@ export const parse = (
   ] = matched;
 
   /** task name */
-  const name = `${taskName.slice(0, matched.index).trim()}${taskName.slice((matched.index ?? 0) + matchedText.length).trim()
-    }`;
+  const name = `${taskName.slice(0, matched.index).trim()}${
+    taskName.slice((matched.index ?? 0) + matchedText.length).trim()
+  }`;
 
   const sresult = checkStart(
     shours2,
@@ -180,24 +185,24 @@ const checkStart = (
   const hours = shours
     ? parseInt(shours)
     : task?.start && ("hours" in task.start)
-      ? task.start.hours
-      : undefined;
+    ? task.start.hours
+    : undefined;
   const minutes = sminutes
     ? parseInt(sminutes)
     : task?.start && ("minutes" in task.start)
-      ? task.start.minutes
-      : undefined;
+    ? task.start.minutes
+    : undefined;
   const target = year === undefined
     ? "year"
     : month === undefined
-      ? "month"
-      : date === undefined
-        ? "date"
-        : hours === undefined
-          ? "hours"
-          : minutes === undefined
-            ? "minutes"
-            : false;
+    ? "month"
+    : date === undefined
+    ? "date"
+    : hours === undefined
+    ? "hours"
+    : minutes === undefined
+    ? "minutes"
+    : false;
   if (target) {
     return {
       ok: false,
@@ -289,22 +294,28 @@ const checkEnd = (
  * 繰り返す場合はそのタスクを指定日の日付で生成する。
  * 繰り返さない場合は`undefined`を返す
  */
-export const makeRepeat = (event: Event, date: Date): Task | Event | undefined => {
+export const makeRepeat = (
+  event: Event,
+  date: Date,
+): Task | Event | undefined => {
   if (!event.recurrence) return;
   const localDate = fromDate(date);
 
-  const recurrence = event.recurrence
+  const recurrence = event.recurrence;
   // 繰り返す場合のみ通過させる
   switch (event.recurrence.frequency) {
     case "yearly": {
       // 間隔があっているかチェック
       if (
-        Math.abs(localDate.year - event.start.year) % (recurrence.count ?? 1) !== 0
+        Math.abs(localDate.year - event.start.year) %
+            (recurrence.count ?? 1) !== 0
       ) return;
 
       // 日と月が一致しているかチェック
-      if (event.start.month !== localDate.month ||
-        event.start.date !== localDate.date) return;
+      if (
+        event.start.month !== localDate.month ||
+        event.start.date !== localDate.date
+      ) return;
 
       break;
     }
@@ -321,7 +332,10 @@ export const makeRepeat = (event: Event, date: Date): Task | Event | undefined =
     case "weekly":
     case "daily": {
       const interval = recurrence.frequency === "weekly" ? 7 : 1;
-      const diff = differenceInCalendarDays(toDate(localDate), toDate(event.start));
+      const diff = differenceInCalendarDays(
+        toDate(localDate),
+        toDate(event.start),
+      );
       if (diff % ((recurrence.count ?? 1) * interval) !== 0) return;
 
       break;
@@ -341,7 +355,10 @@ export const makeRepeat = (event: Event, date: Date): Task | Event | undefined =
   }
   newEvent.end = fromDate(addMinutes(toDate(newEvent.start), duration));
   return newEvent;
-}
+};
 
 /** Eventの長さを分単位で返す */
-export const getDuration = (event: Event): number => Math.round((toDate(event.end).getTime() - toDate(event.start).getTime()) / 60 * 1000);
+export const getDuration = (event: Event): number =>
+  Math.round(
+    (toDate(event.end).getTime() - toDate(event.start).getTime()) / 60 * 1000,
+  );

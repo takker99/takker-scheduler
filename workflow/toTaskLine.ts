@@ -1,4 +1,4 @@
-import { Task, getDuration, isAllDay, toString } from "../howm/parse.ts";
+import { getDuration, isAllDay, Task, toString } from "../howm/parse.ts";
 import { Event } from "../event/parse.ts";
 import { Task as TaskLine } from "../task.ts";
 import { toDate } from "../howm/localDate.ts";
