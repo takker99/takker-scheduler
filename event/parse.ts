@@ -352,6 +352,7 @@ export const makeRepeat = (
   if (newEvent.task) {
     const task = newEvent.task;
     delete task.end;
+    task.start = newEvent.start;
     task.duration = duration;
     return task;
   }
