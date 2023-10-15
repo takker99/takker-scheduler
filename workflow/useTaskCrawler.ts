@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "../deps/preact.tsx";
 import {
   InvalidDateError,
   parse,
-  Task as TaskBase,
+  Reminder as TaskBase,
   TaskRangeError,
 } from "../howm/parse.ts";
 import {

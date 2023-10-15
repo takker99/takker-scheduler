@@ -26,7 +26,7 @@ import {
 } from "../deps/date-fns.ts";
 import { format, fromDate, isBefore } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import { getDuration, getEnd, Task } from "../howm/parse.ts";
+import { getDuration, getEnd, Reminder } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 declare const scrapbox: Scrapbox;
@@ -62,7 +62,7 @@ interface Tree {
   /** タスクリンク */
   actions: Action[];
 }
-interface Action extends Task {
+interface Action extends Reminder {
   project: string;
   freshness: number;
 }

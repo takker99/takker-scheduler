@@ -1,5 +1,5 @@
 import { toDate } from "./localDate.ts";
-import { Task } from "./parse.ts";
+import { Reminder } from "./parse.ts";
 
 /** 1日をミリ秒単位で表したもの */
 const oneday = 60 * 60 * 24 * 1000;
@@ -12,7 +12,7 @@ const oneday = 60 * 60 * 24 * 1000;
  *  @param now 現在日時
  *  @return taskの旬度
  */
-export const calcFreshness = (task: Task, now: Date): number => {
+export const calcFreshness = (task: Reminder, now: Date): number => {
   const start = toDate(task.start);
   const priority = (now.getTime() - start.getTime()) / oneday;
   start.setHours(0);

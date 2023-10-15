@@ -163,7 +163,29 @@ snapshot[`parse() > type 5`] = `
 }
 `;
 
-snapshot[`parse() > type 6`] = `undefined`;
+snapshot[`parse() > type 6`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 11,
+      hours: 13,
+      minutes: 0,
+      month: 4,
+      year: 2023,
+    },
+    name: "指定子なしはタスクとみなさない",
+    raw: "指定子なしはタスクとみなさない@2023-04-11T13:00",
+    start: {
+      date: 11,
+      hours: 13,
+      minutes: 0,
+      month: 4,
+      year: 2023,
+    },
+  },
+}
+`;
 
 snapshot[`parse() > start datetime 1`] = `
 {
@@ -190,6 +212,13 @@ snapshot[`parse() > start datetime 4`] = `
 {
   ok: true,
   value: {
+    end: {
+      date: 30,
+      hours: 12,
+      minutes: 23,
+      month: 4,
+      year: 2023,
+    },
     name: "ごはんを食べる",
     raw: "ごはんを食べる+3@2023-04-30T12:23",
     speed: 3,
@@ -209,6 +238,13 @@ snapshot[`parse() > start datetime 5`] = `
 {
   ok: true,
   value: {
+    end: {
+      date: 30,
+      hours: 12,
+      minutes: 23,
+      month: 4,
+      year: 2023,
+    },
     name: "ごはんを食べる:45 ※秒は無視する",
     raw: "ごはんを食べる+3@2023-04-30T12:23:45 ※秒は無視する",
     speed: 3,
@@ -245,11 +281,6 @@ snapshot[`parse() > end datetime 1`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      month: 4,
-      year: 2023,
-    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/23D45",
     speed: 3,
@@ -267,11 +298,6 @@ snapshot[`parse() > end datetime 2`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      month: 5,
-      year: 2023,
-    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/05-23D45",
     speed: 3,
@@ -289,11 +315,6 @@ snapshot[`parse() > end datetime 3`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      month: 5,
-      year: 2024,
-    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/2024-05-23D45",
     speed: 3,
@@ -426,6 +447,8 @@ snapshot[`parse() > end datetime 9`] = `
   value: {
     end: {
       date: 23,
+      hours: 13,
+      minutes: 40,
       month: 4,
       year: 2023,
     },
@@ -450,6 +473,8 @@ snapshot[`parse() > end datetime 10`] = `
   value: {
     end: {
       date: 23,
+      hours: 13,
+      minutes: 40,
       month: 5,
       year: 2023,
     },
@@ -474,6 +499,8 @@ snapshot[`parse() > end datetime 11`] = `
   value: {
     end: {
       date: 23,
+      hours: 13,
+      minutes: 40,
       month: 5,
       year: 2025,
     },
@@ -574,6 +601,13 @@ snapshot[`parse() > end datetime 15`] = `
 {
   ok: true,
   value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 40,
+      month: 4,
+      year: 2023,
+    },
     name: "ごはんを食べる/T05:47D45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/T05:47D45",
     speed: 3,
@@ -635,13 +669,17 @@ snapshot[`parse() > end datetime 17`] = `
 
 snapshot[`parse() > errors 1`] = `
 {
-  ok: false,
+  ok: true,
   value: {
-    message: "The start of an task cannot be after its end.
-
-start:2023-04-30
-end:2023-04-23",
-    name: "TaskRangeError",
+    name: "D45 終了日時が開始日時より早まってはならない",
+    raw: "+3@2023-04-30/23D45 終了日時が開始日時より早まってはならない",
+    speed: 3,
+    start: {
+      date: 30,
+      month: 4,
+      year: 2023,
+    },
+    status: "todo",
   },
 }
 `;
@@ -662,6 +700,573 @@ snapshot[`parse() > errors 3`] = `
   value: {
     message: 'The end of the task "2023-04-13T05:67" is an invalid date.',
     name: "InvalidDateError",
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 1`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな@2023-09-12T12:50D10",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 2`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 14,
+      minutes: 20,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな@2023-09-12T12:50/14:20",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 3`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    name: "終了時刻がないのでエラーになる",
+    raw: "終了時刻がないのでエラーになる@2023-09-12T12:50",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 4`] = `
+{
+  ok: false,
+  value: {
+    message: "Task requires status to be spec",
+    name: "InvalidDateError",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 1`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10@13",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 2`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12D10@13T12:50",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 3`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@13T12:50D10",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 4`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 14,
+      minutes: 20,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@13T12:50/14:20",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 5`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 12,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@12-13T12:50D10",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 12,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 6`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 12,
+      year: 2024,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@2024-12-13T12:50D10",
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 12,
+      year: 2024,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 7`] = `
+{
+  ok: true,
+  value: {
+    name: "時刻がない",
+    raw: "時刻がない~@2023-09-12@13",
+    start: {
+      date: 13,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 8`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 45,
+      month: 9,
+      year: 2023,
+    },
+    name: "終了時刻がない",
+    raw: "終了時刻がない~@2023-09-12@13T13:45",
+    start: {
+      date: 13,
+      hours: 13,
+      minutes: 45,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 9`] = `
+{
+  ok: true,
+  value: {
+    duration: 45,
+    name: "開始時刻がない",
+    raw: "開始時刻がない~@2023-09-12@13D45",
+    start: {
+      date: 13,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskとeventの日付指定は順不同 1`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "@13ハイウェイ惑星 買おうかな",
+    raw: "@13ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > taskとeventの日付指定は順不同 2`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "←がTaskを指定し、~@09-24←がEventを指定する",
+    raw: "~@2023-09-12T12:50D10 ←がTaskを指定し、~@09-24←がEventを指定する",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 1`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R4@13",
+    recurrence: {
+      count: 4,
+      frequency: "daily",
+    },
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 2`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 13,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R47@13",
+    recurrence: {
+      count: 47,
+      frequency: "daily",
+    },
+    start: {
+      date: 13,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 3`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかなR",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R",
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 4`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RM8",
+    recurrence: {
+      count: 8,
+      frequency: "monthly",
+    },
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 5`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RY8",
+    recurrence: {
+      count: 8,
+      frequency: "yearly",
+    },
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 6`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RW8",
+    recurrence: {
+      count: 8,
+      frequency: "weekly",
+    },
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 7`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RD8",
+    recurrence: {
+      count: 8,
+      frequency: "daily",
+    },
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
+    status: "up-down",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 8`] = `
+{
+  ok: true,
+  value: {
+    end: {
+      date: 12,
+      hours: 13,
+      minutes: 0,
+      month: 9,
+      year: 2023,
+    },
+    name: "読書会",
+    raw: "読書会@2023-09-12T12:50D10RD8",
+    recurrence: {
+      count: 8,
+      frequency: "daily",
+    },
+    start: {
+      date: 12,
+      hours: 12,
+      minutes: 50,
+      month: 9,
+      year: 2023,
+    },
   },
 }
 `;

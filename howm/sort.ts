@@ -1,9 +1,9 @@
 import { isBefore } from "./localDate.ts";
-import { Task } from "./parse.ts";
+import { Reminder } from "./parse.ts";
 
 export const compareFn = (
-  a: Task & { freshness: number },
-  b: Task & { freshness: number },
+  a: Reminder & { freshness: number },
+  b: Reminder & { freshness: number },
 ): number => {
   if (b.freshness !== a.freshness) return b.freshness - a.freshness;
   const sa = sortType(a);
@@ -13,7 +13,7 @@ export const compareFn = (
   return isBefore(a.start, b.start) ? -1 : 1;
 };
 
-const sortType = (action: Task): number => {
+const sortType = (action: Reminder): number => {
   switch (action.status) {
     case "todo":
       return 3;

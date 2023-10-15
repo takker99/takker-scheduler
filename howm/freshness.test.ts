@@ -1,13 +1,13 @@
 /// <reference lib="deno.ns" />
 
 import { calcFreshness } from "./freshness.ts";
-import { parse, Task } from "./parse.ts";
+import { parse, Reminder } from "./parse.ts";
 import { assertEquals } from "../deps/testing.ts";
 
 Deno.test("calcFreshness()", async (t) => {
   await t.step("done", () => {
     const now = new Date("2023-04-10T00:20");
-    const task = parse("読書会.@2023-04-11T13:00")!.value as Task;
+    const task = parse("読書会.@2023-04-11T13:00")!.value as Reminder;
 
     assertEquals(calcFreshness(task, now), -Infinity);
     now.setDate(11);
@@ -20,7 +20,7 @@ Deno.test("calcFreshness()", async (t) => {
   });
   await t.step("deadline", () => {
     const now = new Date("2002-10-10T00:00");
-    const task = parse("ハイウェイ惑星 〆切!@2002-10-20")!.value as Task;
+    const task = parse("ハイウェイ惑星 〆切!@2002-10-20")!.value as Reminder;
 
     assertEquals(calcFreshness(task, now), -Infinity);
     now.setDate(12);
@@ -39,7 +39,8 @@ Deno.test("calcFreshness()", async (t) => {
   });
   await t.step("todo", () => {
     const now = new Date("2002-10-10T00:00");
-    const task = parse("ハイウェイ惑星+@2002-10-20 買うべし")!.value as Task;
+    const task = parse("ハイウェイ惑星+@2002-10-20 買うべし")!
+      .value as Reminder;
 
     assertEquals(calcFreshness(task, now), -Infinity);
     now.setDate(12);
@@ -62,7 +63,8 @@ Deno.test("calcFreshness()", async (t) => {
   await t.step("note", async (t) => {
     await t.step("-1", () => {
       const now = new Date("2002-10-10T00:00");
-      const task = parse("-@2002-10-20 ハイウェイ惑星 買おう")!.value as Task;
+      const task = parse("-@2002-10-20 ハイウェイ惑星 買おう")!
+        .value as Reminder;
 
       assertEquals(calcFreshness(task, now), -Infinity);
       now.setDate(12);
@@ -80,7 +82,8 @@ Deno.test("calcFreshness()", async (t) => {
     });
     await t.step("-3", () => {
       const now = new Date("2002-10-10T00:00");
-      const task = parse("-3@2002-10-20 ハイウェイ惑星 買おう")!.value as Task;
+      const task = parse("-3@2002-10-20 ハイウェイ惑星 買おう")!
+        .value as Reminder;
 
       assertEquals(calcFreshness(task, now), -Infinity);
       now.setDate(12);
@@ -99,7 +102,8 @@ Deno.test("calcFreshness()", async (t) => {
   });
   await t.step("up-down", () => {
     const now = new Date("2023-09-10T00:00");
-    const task = parse("ハイウェイ惑星 買おうかな~@2023-09-12")!.value as Task;
+    const task = parse("ハイウェイ惑星 買おうかな~@2023-09-12")!
+      .value as Reminder;
 
     assertEquals(calcFreshness(task, now), -Infinity);
     now.setDate(11);

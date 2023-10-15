@@ -15,7 +15,7 @@ import { format, toTitle } from "../diary.ts";
 import { toTaskLine } from "./toTaskLine.ts";
 declare const scrapbox: Scrapbox;
 import { decode, load } from "../deps/storage.ts";
-import { makeRepeat, parse } from "../event/parse.ts";
+import { makeRepeat, parse } from "../howm/parse.ts";
 
 const project = "takker-memex";
 
