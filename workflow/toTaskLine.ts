@@ -5,7 +5,7 @@ import { toDate } from "../howm/localDate.ts";
 
 export const toTaskLine = (event: Event | Task): TaskLine => {
   const start = toDate(event.start);
-  const duration = getDuration(event);
+  const durationMin = getDuration(event);
 
   return {
     // Taskの場合のみリンクにする
@@ -13,7 +13,7 @@ export const toTaskLine = (event: Event | Task): TaskLine => {
     base: start,
     plan: {
       start: isAllDay(event) ? undefined : start,
-      duration,
+      duration: durationMin !== undefined ? durationMin * 60 : undefined,
     },
     record: {},
   };
