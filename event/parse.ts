@@ -346,6 +346,8 @@ export const makeRepeat = (
   const newEvent = structuredClone(event);
 
   newEvent.start.year = localDate.year;
+  newEvent.start.month = localDate.month;
+  newEvent.start.date = localDate.date;
   const duration = getDuration(newEvent);
   if (newEvent.task) {
     const task = newEvent.task;
