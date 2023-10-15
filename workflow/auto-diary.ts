@@ -91,6 +91,8 @@ export const main = async () => {
 
         if (!("recurrence" in result.value)) {
           const task = toTaskLine(result.value);
+          // TODO: toTaskLineで済むようにしたい
+          task.title = `[${result.value.raw}]`;
           const key = toKey(task.base);
           if (!dayKeys.includes(key)) continue;
           tasks.set(key, [...(tasks.get(key) ?? []), task]);
