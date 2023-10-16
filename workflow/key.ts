@@ -1,4 +1,9 @@
-import { getWeek, setWeek, startOfWeek } from "../deps/date-fns.ts";
+import {
+  getWeek,
+  getWeekYear,
+  setWeek,
+  startOfWeek,
+} from "../deps/date-fns.ts";
 import { LocalDate } from "../howm/localDate.ts";
 
 export type Key = `${number}-${string}-${string}`;
@@ -14,7 +19,7 @@ export const toLocalDate = (key: Key): LocalDate => {
 
 /** 日付が属する週ごとに一意なkeyを生成する */
 export const toWeekKey = (date: Date): WeekKey =>
-  `${date.getFullYear()}-w${zero(getWeek(date))}`;
+  `${getWeekYear(date)}-w${zero(getWeek(date))}`;
 export const toStartOfWeek = (key: WeekKey): Date => {
   const [year, week] = key.split("-w").map((s) => parseInt(s, 10));
   return startOfWeek(setWeek(new Date(year, 0, 1), week));
