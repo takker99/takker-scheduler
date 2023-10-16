@@ -128,17 +128,15 @@ const App = ({ getController, projects }: Props) => {
             request reload
           </button>
           <button className="navi right" onClick={next}>{"->"}</button>
-            < button className="navi left" onClick={prev}>{"<-"}</button>
+          <button className="navi left" onClick={prev}>{"<-"}</button>
           <ProgressBar loading={loading} />
-          {pageNo}
+          <span>{pageNo}</span>
         </div>
-        <div className="result" onClick={stopPropagation}>
-          <ul>
-            {actions.map((action) => (
-              <TaskItem action={action} onPageChanged={close} />
-            ))}
-          </ul>
-        </div>
+        <ul className="result" onClick={stopPropagation}data-page-no={pageNo}>
+          {actions.map((action) => (
+            <TaskItem action={action} onPageChanged={close} />
+          ))}
+        </ul>
       </dialog>
     </>
   );
