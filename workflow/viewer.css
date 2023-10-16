@@ -42,12 +42,11 @@ dialog > * {
   width: calc(var(--item-width, 100%) - 10px);
 
   display: flex;
-  flex-direction: row-reverse;
   flex-wrap: wrap;
   gap: 0.2em;
 }
 .progress {
-  width: 100%;
+  flex-grow: 1;
 }
 .progress > *{
   padding: 0 2px;

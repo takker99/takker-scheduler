@@ -129,15 +129,15 @@ const App = ({ getController, projects }: Props) => {
       <style>{CSS}</style>
       <dialog ref={ref} onClick={close}>
         <div className="controller" onClick={stopPropagation}>
-          <button className="close" onClick={close}>X</button>
+          <Copy text={text} title="Copy All Tasks" />
+          <span>{pageNo}</span>
+          <ProgressBar loading={loading} />
+          <button className="navi left" onClick={prev}>{"<-"}</button>
+          <button className="navi right" onClick={next}>{"->"}</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
-          <button className="navi right" onClick={next}>{"->"}</button>
-          <button className="navi left" onClick={prev}>{"<-"}</button>
-          <ProgressBar loading={loading} />
-          <span>{pageNo}</span>
-          <Copy text={text} title="Copy All Tasks"/>
+          <button className="close" onClick={close}>X</button>
         </div>
         <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
           {actions.map((action, i) => (
