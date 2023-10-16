@@ -313,7 +313,7 @@ const EventItem: FunctionComponent<
   return (
     <li data-done={done}>
       <time className="label start">{start}</time>
-      <span className="label end">{end}</span>
+      <time className="label end">{end}</time>
       {href
         ? (
           <a
