@@ -132,7 +132,7 @@ const App = ({ getController, projects }: Props) => {
           <ProgressBar loading={loading} />
           <span>{pageNo}</span>
         </div>
-        <ul className="result" onClick={stopPropagation}data-page-no={pageNo}>
+        <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
           {actions.map((action) => (
             <TaskItem action={action} onPageChanged={close} />
           ))}
@@ -142,8 +142,10 @@ const App = ({ getController, projects }: Props) => {
   );
 };
 
-const TaskItem = (
-  { action, onPageChanged }: { action: Action; onPageChanged: () => void },
+const TaskItem: FunctionComponent<
+  { action: Action; onPageChanged: () => void }
+> = (
+  { action, onPageChanged },
 ) => {
   const href = useMemo(
     () =>
@@ -222,16 +224,16 @@ const TaskItem = (
   );
 };
 
+type PageNo = Key | "expired" | "error";
+
 const useNavigation = (
-  defaultPageNo: Key | "expired" | "error" = toKey(new Date()),
+  defaultPageNo: PageNo = toKey(new Date()),
 ) => {
   /** 日付の場合は現在表示しているタスクリストの基準点を表す
    * `expired`のときはやり残した予定を表示する
    * `error`のときはエラーを表示する
    */
-  const [pageNo, setPageNo] = useState<Key | "expired" | "error">(
-    defaultPageNo,
-  );
+  const [pageNo, setPageNo] = useState<PageNo>(defaultPageNo);
 
   const next = useCallback(() => {
     setPageNo((pageNo) => {
