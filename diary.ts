@@ -4,13 +4,12 @@ import {
   isAfter,
   isValid,
   lightFormat,
-  parse,
   subDays,
 } from "./deps/date-fns.ts";
 import { endDate, parseLines, startDate, TaskBlock, toString } from "./task.ts";
 
 const baseTitle = "日刊記録sheet";
-const diaryRegExp = /日刊記録sheet \d{4}-\d{2}-\d{2}/;
+const diaryRegExp = /日刊記録sheet (\d{4})-(\d{2})-(\d{2})/;
 const sections = [
   "[** 00:00 - 03:00] 未明",
   "[** 03:00 - 06:00] 明け方",
@@ -35,8 +34,11 @@ export const isDiaryPage = (title: string): boolean => diaryRegExp.test(title);
  * @param title 変換したいタイトル
  */
 export const toDate = (title: string): Date | undefined => {
-  const date = parse(title, `'${baseTitle}' yyyy-MM-dd`, new Date());
-  return isValid(date) ? date : undefined;
+  const matched = title.match(diaryRegExp);
+  if (!matched) return;
+  const [, year, month, date] = matched;
+  const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(date));
+  return isValid(d) ? d : undefined;
 };
 
 /** 日付から日付ページのタイトルを作る

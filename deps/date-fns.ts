@@ -6,8 +6,6 @@ export { default as addSeconds } from "https://deno.land/x/date_fns@v2.22.1/addS
 export { default as addHours } from "https://deno.land/x/date_fns@v2.22.1/addHours/index.ts";
 export { default as isAfter } from "https://deno.land/x/date_fns@v2.22.1/isAfter/index.ts";
 export { default as isBefore } from "https://deno.land/x/date_fns@v2.22.1/isBefore/index.ts";
-//@deno-types=./patch/parse.d.ts
-export { default as parse } from "https://deno.land/x/date_fns@v2.22.1/parse/index.js";
 //@deno-types=./patch/isValid.d.ts
 export { default as isValid } from "https://deno.land/x/date_fns@v2.22.1/isValid/index.js";
 //@deno-types=./patch/formatRFC3339.d.ts
@@ -22,6 +20,7 @@ export { default as addWeeks } from "https://deno.land/x/date_fns@v2.22.1/addWee
 export { default as addMonths } from "https://deno.land/x/date_fns@v2.22.1/addMonths/index.ts";
 export { default as addYears } from "https://deno.land/x/date_fns@v2.22.1/addYears/index.ts";
 export { default as getWeek } from "https://deno.land/x/date_fns@v2.22.1/getWeek/index.ts";
+export { default as getWeekYear } from "https://deno.land/x/date_fns@v2.22.1/getWeekYear/index.ts";
 //@deno-types=./patch/setWeek.d.ts
 export { default as setWeek } from "https://deno.land/x/date_fns@v2.22.1/setWeek/index.js";
 export { default as getHours } from "https://deno.land/x/date_fns@v2.22.1/getHours/index.ts";

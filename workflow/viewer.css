@@ -1,7 +1,7 @@
 @import "./font.css";
 
-dialog::backdrop{
-  background-color:#000c;
+dialog::backdrop {
+  background-color: #000c;
 }
 
 dialog {
@@ -16,21 +16,25 @@ dialog {
   border: unset;
   height: unset;
 }
+
 dialog[open] {
   display: flex;
 }
-dialog > * {
+
+dialog>* {
   color: var(--page-text-color, #4a4a4a);
   background-color: var(--dropdown-menu-bg, #fff);
-  border: 1px solid rgba(0,0,0,.2);
+  border: 1px solid rgba(0, 0, 0, .2);
   border-radius: 6px;
 }
+
 @media (min-width: 768px) {
   dialog {
     padding: 30px 0;
     --item-width: 600px;
   }
 }
+
 .result {
   padding: 15px;
   width: calc(var(--item-width, 100%) - 30px);
@@ -45,17 +49,20 @@ dialog > * {
   flex-wrap: wrap;
   gap: 0.2em;
 }
+
 .progress {
   flex-grow: 1;
 }
-.progress > *{
+
+.progress>* {
   padding: 0 2px;
 }
 
 a {
- text-decoration: none;
- color: var(--page-link-color, #5e8af7);
+  text-decoration: none;
+  color: var(--page-link-color, #5e8af7);
 }
+
 a:hover {
   color: var(--page-link-hover-color, #2d67f5);
 }
@@ -67,9 +74,12 @@ button {
   color: unset;
   border: unset;
 }
-.copy, .close {
+
+.copy,
+.close {
   font-family: "Font Awesome 5 Free";
 }
+
 .navi {
   font-family: "AppIcons";
   -webkit-font-smoothing: antialiased;
@@ -80,9 +90,11 @@ button {
   text-decoration: none;
   text-transform: none;
 }
+
 .close {
   font-weight: 900
 }
+
 .reload {
   border: 1px solid;
   border-radius: 3px;
@@ -94,11 +106,24 @@ ul {
 }
 
 /* 1.0以上 */
-li:not([data-freshness^="-"]):not([data-freshness="0"]) {
+.task-list li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
 }
+
+.scheduler details li[data-type="done"] {
+  opacity: 0.4;
+}
+
+.scheduler details li[data-type="expired"] {
+  font-weight: bold;
+}
+
 :is([data-page-no="expired"], [data-page-no="errors"]) li {
   opacity: 1.0 !important;
+}
+
+.scheduler {
+  --takker-scheduler-summary-meter-width: 10em;
 }
 
 .label {
@@ -106,20 +131,24 @@ li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-size: 90%;
   padding: 0 3px;
 }
+
 .type {
-  text-align:center;
+  text-align: center;
   width: 2.5em;
   border: 1px solid;
   border-radius: 3px;
 }
+
 .freshness {
   text-align: right;
   width: 2.5em;
 }
+
 .start {
   text-align: right;
   width: 3em;
 }
+
 .duration {
   text-align: right;
   width: 3em;

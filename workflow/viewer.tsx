@@ -32,6 +32,7 @@ import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 import { Key, toKey, toLocalDate } from "./key.ts";
+import { ProgressBar } from "./ProgressBar.tsx";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -57,14 +58,6 @@ export const setup = (projects: string[]): Promise<Controller> => {
   );
 };
 
-/** renderに使う、分類分けされたタスクリンクの情報 */
-interface Tree {
-  /** 分類名 */
-  summary: string;
-
-  /** タスクリンク */
-  actions: Action[];
-}
 interface Action extends Reminder {
   project: string;
   score: number;
@@ -140,7 +133,11 @@ const App = ({ getController, projects }: Props) => {
           </button>
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-        <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
+        <ul
+          className="result task-list"
+          onClick={stopPropagation}
+          data-page-no={pageNo}
+        >
           {actions.map((action, i) => (
             <TaskItem
               action={action}
@@ -289,15 +286,3 @@ const useNavigation = (
 
   return { pageNo, next, prev };
 };
-
-/** 読み込み状況を表示する部品 */
-const ProgressBar = (
-  { loading }: { loading: boolean },
-) => (loading
-  ? (
-    <div className="progress">
-      <i className="fa fa-spinner" />
-      <span>{"loading tasks..."}</span>
-    </div>
-  )
-  : <div className="progress" />);
