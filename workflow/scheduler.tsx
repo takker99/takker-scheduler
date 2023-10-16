@@ -388,8 +388,9 @@ const ScheduleSummary: FunctionComponent<
       <meter
         min={0}
         max={max}
-        optimum={480}
-        low={960}
+        optimum={560}
+        // 活動時間を16時間として計算。5時間20分がbuffer時間となる
+        low={1120}
         high={1440}
         value={value}
         style={{
