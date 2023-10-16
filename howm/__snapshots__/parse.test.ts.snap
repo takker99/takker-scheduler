@@ -4,14 +4,16 @@ snapshot[`parse() > compatibility 1`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 10,
+        month: 9,
+        year: 2023,
+      },
+      status: "todo",
+    },
     name: "⬜タスクリンク",
     raw: "⬜タスクリンク+@2023-09-10",
-    start: {
-      date: 10,
-      month: 9,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -20,14 +22,16 @@ snapshot[`parse() > compatibility 2`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 10,
+        month: 9,
+        year: 2023,
+      },
+      status: "done",
+    },
     name: "✅終了したリンク",
     raw: "✅終了したリンク+@2023-09-10",
-    start: {
-      date: 10,
-      month: 9,
-      year: 2023,
-    },
-    status: "done",
   },
 }
 `;
@@ -36,14 +40,16 @@ snapshot[`parse() > compatibility 3`] = `
 {
   ok: true,
   value: {
-    name: "📝やり途中のリンク",
-    raw: "📝やり途中の+@2023-09-10リンク",
-    start: {
-      date: 10,
-      month: 9,
-      year: 2023,
+    freshness: {
+      refDate: {
+        date: 10,
+        month: 9,
+        year: 2023,
+      },
+      status: "done",
     },
-    status: "todo",
+    name: "❌失敗したタスクも終了扱いとする",
+    raw: "❌失敗したタスクも終了扱いとする+@2023-09-10",
   },
 }
 `;
@@ -52,32 +58,54 @@ snapshot[`parse() > compatibility 4`] = `
 {
   ok: true,
   value: {
-    name: "先頭にない絵文字は✅タスク判定と関係ない",
-    raw: "先頭にない絵文字は✅タスク判定と関係ない+@2023-09-10",
-    start: {
-      date: 10,
-      month: 9,
-      year: 2023,
+    freshness: {
+      refDate: {
+        date: 10,
+        month: 9,
+        year: 2023,
+      },
+      status: "todo",
     },
-    status: "todo",
+    name: "📝やり途中のリンク",
+    raw: "📝やり途中の+@2023-09-10リンク",
   },
 }
 `;
 
-snapshot[`parse() > compatibility 5`] = `undefined`;
+snapshot[`parse() > compatibility 5`] = `
+{
+  ok: true,
+  value: {
+    freshness: {
+      refDate: {
+        date: 10,
+        month: 9,
+        year: 2023,
+      },
+      status: "todo",
+    },
+    name: "先頭にない絵文字は✅タスク判定と関係ない",
+    raw: "先頭にない絵文字は✅タスク判定と関係ない+@2023-09-10",
+  },
+}
+`;
+
+snapshot[`parse() > compatibility 6`] = `undefined`;
 
 snapshot[`parse() 1`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 11,
+        month: 9,
+        year: 2023,
+      },
+      status: "todo",
+    },
     name: "前後の 空白は無視される",
     raw: " 前後の 空白は　+@2023-09-11 無視される　  ",
-    start: {
-      date: 11,
-      month: 9,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -86,14 +114,16 @@ snapshot[`parse() > type 1`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 20,
+        month: 10,
+        year: 2002,
+      },
+      status: "deadline",
+    },
     name: "ハイウェイ惑星 〆切",
     raw: "!@2002-10-20 ハイウェイ惑星 〆切",
-    start: {
-      date: 20,
-      month: 10,
-      year: 2002,
-    },
-    status: "deadline",
   },
 }
 `;
@@ -102,15 +132,17 @@ snapshot[`parse() > type 2`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 20,
+        month: 10,
+        year: 2002,
+      },
+      speed: 4,
+      status: "deadline",
+    },
     name: "ハイウェイ惑星 〆切",
     raw: "ハイウェイ惑星 〆切!4@2002-10-20",
-    speed: 4,
-    start: {
-      date: 20,
-      month: 10,
-      year: 2002,
-    },
-    status: "deadline",
   },
 }
 `;
@@ -119,14 +151,16 @@ snapshot[`parse() > type 3`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 20,
+        month: 10,
+        year: 2002,
+      },
+      status: "note",
+    },
     name: "ハイウェイ惑星 買おう",
     raw: "-@2002-10-20 ハイウェイ惑星 買おう",
-    start: {
-      date: 20,
-      month: 10,
-      year: 2002,
-    },
-    status: "note",
   },
 }
 `;
@@ -135,14 +169,16 @@ snapshot[`parse() > type 4`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
     name: "ハイウェイ惑星 買おうかな",
     raw: "ハイウェイ惑星 買おうかな~@2023-09-12",
-    start: {
-      date: 12,
-      month: 9,
-      year: 2023,
-    },
-    status: "up-down",
   },
 }
 `;
@@ -151,33 +187,55 @@ snapshot[`parse() > type 5`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 20,
+        month: 10,
+        year: 2002,
+      },
+      status: "todo",
+    },
     name: "ハイウェイ惑星買おう",
     raw: "ハイウェイ惑星+@2002-10-20 買おう",
-    start: {
-      date: 20,
-      month: 10,
-      year: 2002,
-    },
-    status: "todo",
   },
 }
 `;
 
-snapshot[`parse() > type 6`] = `undefined`;
+snapshot[`parse() > type 6`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 60,
+      start: {
+        date: 11,
+        hours: 13,
+        minutes: 0,
+        month: 4,
+        year: 2023,
+      },
+    },
+    name: "指定子なしはEventとして扱う",
+    raw: "指定子なしはEventとして扱う@2023-04-11T13:00/14:00",
+  },
+}
+`;
 
 snapshot[`parse() > start datetime 1`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 30,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる",
     raw: "ごはんを食べる+3@2023-04-30",
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -190,17 +248,19 @@ snapshot[`parse() > start datetime 4`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 30,
+        hours: 12,
+        minutes: 23,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる",
     raw: "ごはんを食べる+3@2023-04-30T12:23",
-    speed: 3,
-    start: {
-      date: 30,
-      hours: 12,
-      minutes: 23,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -209,17 +269,19 @@ snapshot[`parse() > start datetime 5`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 30,
+        hours: 12,
+        minutes: 23,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる:45 ※秒は無視する",
     raw: "ごはんを食べる+3@2023-04-30T12:23:45 ※秒は無視する",
-    speed: 3,
-    start: {
-      date: 30,
-      hours: 12,
-      minutes: 23,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -228,15 +290,17 @@ snapshot[`parse() > start datetime 6`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 30,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる12:23:※区切り文字が必要",
     raw: "ごはんを食べる+3@2023-04-30 12:23:※区切り文字が必要",
-    speed: 3,
-    start: {
-      date: 30,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -245,20 +309,22 @@ snapshot[`parse() > end datetime 1`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 4,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -267,20 +333,22 @@ snapshot[`parse() > end datetime 2`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 5,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/05-23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -289,20 +357,22 @@ snapshot[`parse() > end datetime 3`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 5,
       year: 2024,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/2024-05-23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -311,22 +381,24 @@ snapshot[`parse() > end datetime 4`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       hours: 5,
       minutes: 47,
       month: 5,
       year: 2024,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/2024-05-23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -335,22 +407,24 @@ snapshot[`parse() > end datetime 5`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       hours: 5,
       minutes: 47,
       month: 5,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/05-23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -359,22 +433,24 @@ snapshot[`parse() > end datetime 6`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       hours: 5,
       minutes: 47,
       month: 4,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -383,15 +459,17 @@ snapshot[`parse() > end datetime 7`] = `
 {
   ok: true,
   value: {
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる/T05:47D45",
     raw: "ごはんを食べる+3@2023-04-13/T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -400,22 +478,24 @@ snapshot[`parse() > end datetime 8`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 13,
       hours: 5,
       minutes: 47,
       month: 4,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13/05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -424,22 +504,24 @@ snapshot[`parse() > end datetime 9`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 4,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -448,22 +530,24 @@ snapshot[`parse() > end datetime 10`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 5,
       year: 2023,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/05-23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -472,22 +556,24 @@ snapshot[`parse() > end datetime 11`] = `
 {
   ok: true,
   value: {
-    end: {
+    estimated: {
       date: 23,
       month: 5,
       year: 2025,
     },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/2025-05-23D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -496,24 +582,29 @@ snapshot[`parse() > end datetime 12`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      hours: 5,
-      minutes: 47,
-      month: 5,
-      year: 2025,
+    executed: {
+      duration: 1109767,
+      start: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
     },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/2025-05-23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -522,24 +613,29 @@ snapshot[`parse() > end datetime 13`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      hours: 5,
-      minutes: 47,
-      month: 5,
-      year: 2023,
+    executed: {
+      duration: 57127,
+      start: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
     },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/05-23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -548,24 +644,29 @@ snapshot[`parse() > end datetime 14`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 23,
-      hours: 5,
-      minutes: 47,
-      month: 4,
-      year: 2023,
+    executed: {
+      duration: 13927,
+      start: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
     },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/23T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -574,17 +675,19 @@ snapshot[`parse() > end datetime 15`] = `
 {
   ok: true,
   value: {
-    name: "ごはんを食べる/T05:47D45",
-    raw: "ごはんを食べる+3@2023-04-13T13:40/T05:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
     },
-    status: "todo",
+    name: "ごはんを食べる/T05:47D45※終了時刻のみを指定する場合はTをつけない",
+    raw: "ごはんを食べる+3@2023-04-13T13:40/T05:47D45※終了時刻のみを指定する場合はTをつけない",
   },
 }
 `;
@@ -593,24 +696,29 @@ snapshot[`parse() > end datetime 16`] = `
 {
   ok: true,
   value: {
-    end: {
-      date: 13,
-      hours: 14,
-      minutes: 47,
-      month: 4,
-      year: 2023,
+    executed: {
+      duration: 67,
+      start: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
     },
     name: "ごはんを食べるD45",
     raw: "ごはんを食べる+3@2023-04-13T13:40/14:47D45",
-    speed: 3,
-    start: {
-      date: 13,
-      hours: 13,
-      minutes: 40,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -619,16 +727,49 @@ snapshot[`parse() > end datetime 17`] = `
 {
   ok: true,
   value: {
-    duration: 45,
+    executed: {
+      duration: 67,
+      start: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 13,
+        hours: 13,
+        minutes: 40,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
+    name: "ごはんを食べる",
+    raw: "ごはんを食べる+3@2023-04-13T13:40/14:47",
+  },
+}
+`;
+
+snapshot[`parse() > end datetime 18`] = `
+{
+  ok: true,
+  value: {
+    estimated: 45,
+    freshness: {
+      refDate: {
+        date: 13,
+        month: 4,
+        year: 2023,
+      },
+      speed: 3,
+      status: "todo",
+    },
     name: "ごはんを食べる/05:47",
     raw: "ごはんを食べる+3@2023-04-13D45/05:47",
-    speed: 3,
-    start: {
-      date: 13,
-      month: 4,
-      year: 2023,
-    },
-    status: "todo",
   },
 }
 `;
@@ -637,10 +778,10 @@ snapshot[`parse() > errors 1`] = `
 {
   ok: false,
   value: {
-    message: "The start of an task cannot be after its end.
+    message: "The reference point of an task cannot be after its estimated end.
 
-start:2023-04-30
-end:2023-04-23",
+reference point:2023-04-30
+estimated end:2023-04-23",
     name: "TaskRangeError",
   },
 }
@@ -650,7 +791,7 @@ snapshot[`parse() > errors 2`] = `
 {
   ok: false,
   value: {
-    message: 'The start of the task "2023-04-33" is an invalid date.',
+    message: 'The reference point of the task "2023-04-33" is an invalid date.',
     name: "InvalidDateError",
   },
 }
@@ -660,8 +801,580 @@ snapshot[`parse() > errors 3`] = `
 {
   ok: false,
   value: {
-    message: 'The end of the task "2023-04-13T05:67" is an invalid date.',
+    message: "The estimated end of the task is an invalid date.",
     name: "InvalidDateError",
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 1`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな@2023-09-12T12:50D10",
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 2`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 90,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな@2023-09-12T12:50/14:20",
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 3`] = `
+{
+  ok: false,
+  value: {
+    message: "Task requires freshness to be spec",
+    name: "InvalidDateError",
+  },
+}
+`;
+
+snapshot[`parse() > taskがないときは終了時刻まで明記する 4`] = `
+{
+  ok: false,
+  value: {
+    message: "Task requires freshness to be spec",
+    name: "InvalidDateError",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 1`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10@13",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 2`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12D10@13T12:50",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 3`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@13T12:50D10",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 4`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 90,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@13T12:50/14:20",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 5`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 12,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@12-13T12:50D10",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 6`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 12,
+        year: 2024,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12@2024-12-13T12:50D10",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 7`] = `
+{
+  ok: true,
+  value: {
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "時刻がない",
+    raw: "時刻がない~@2023-09-12@13",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 8`] = `
+{
+  ok: true,
+  value: {
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "終了時刻がない",
+    raw: "終了時刻がない~@2023-09-12@13T13:45",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 9`] = `
+{
+  ok: true,
+  value: {
+    freshness: {
+      refDate: {
+        date: 12,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "開始時刻がない",
+    raw: "開始時刻がない~@2023-09-12@13D45",
+  },
+}
+`;
+
+snapshot[`parse() > taskの日付情報から継承する 10`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "@13順序を逆にすると認識されない",
+    raw: "@13順序を逆にすると認識されない~@2023-09-12T12:50D10",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 1`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R4@13",
+    recurrence: {
+      count: 4,
+      frequency: "daily",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 2`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 13,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R47@13",
+    recurrence: {
+      count: 47,
+      frequency: "daily",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 3`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかなR",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10R",
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 4`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RM8",
+    recurrence: {
+      count: 8,
+      frequency: "monthly",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 5`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RY8",
+    recurrence: {
+      count: 8,
+      frequency: "yearly",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 6`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RW8",
+    recurrence: {
+      count: 8,
+      frequency: "weekly",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 7`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    freshness: {
+      refDate: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+      status: "up-down",
+    },
+    name: "ハイウェイ惑星 買おうかな",
+    raw: "ハイウェイ惑星 買おうかな~@2023-09-12T12:50D10RD8",
+    recurrence: {
+      count: 8,
+      frequency: "daily",
+    },
+  },
+}
+`;
+
+snapshot[`parse() > 繰り返し 8`] = `
+{
+  ok: true,
+  value: {
+    executed: {
+      duration: 10,
+      start: {
+        date: 12,
+        hours: 12,
+        minutes: 50,
+        month: 9,
+        year: 2023,
+      },
+    },
+    name: "読書会",
+    raw: "読書会@2023-09-12T12:50D10RD8",
+    recurrence: {
+      count: 8,
+      frequency: "daily",
+    },
   },
 }
 `;

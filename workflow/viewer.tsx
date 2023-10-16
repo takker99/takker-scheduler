@@ -26,7 +26,7 @@ import {
 } from "../deps/date-fns.ts";
 import { format, fromDate, isBefore } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import { getDuration, getEnd, Task } from "../howm/parse.ts";
+import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 declare const scrapbox: Scrapbox;
@@ -62,9 +62,9 @@ interface Tree {
   /** タスクリンク */
   actions: Action[];
 }
-interface Action extends Task {
+interface Action extends Reminder {
   project: string;
-  freshness: number;
+  score: number;
 }
 
 interface Props {
@@ -83,10 +83,11 @@ const App = ({ getController, projects }: Props) => {
         const isNow = isSameDay(now, date);
         const summary = lightFormat(date, "yyyy-MM-dd");
         const actions: Action[] = tasks.flatMap((task) => {
-          const freshness = calcFreshness(task, date);
-          return freshness > -999 &&
-              (isNow || task.status === "deadline")
-            ? [{ ...task, freshness } as Action]
+          if (!task.freshness) return [];
+          const score = calcFreshness(task.freshness, date);
+          return score > -999 &&
+              (isNow || task.freshness.status === "deadline")
+            ? [{ ...task, score } as Action]
             : [];
         });
 
@@ -99,11 +100,14 @@ const App = ({ getController, projects }: Props) => {
     {
       // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
       /** やり残した予定 */
-      const restActions = tasks.filter((task) =>
+      const restActions: Action[] = tasks.filter((task) =>
         isBefore(getEnd(task), fromDate(now))
       )
-        .sort((a, b) => isBefore(a.start, b.start) ? -1 : 0)
-        .map((task) => ({ ...task, freshness: -Infinity }));
+        .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
+        .flatMap((task) => {
+          if (!task.freshness || task.freshness.status === "done") return [];
+          return [{ ...task, score: -Infinity }] as Action[];
+        });
 
       const summary = "やり残した予定";
       trees.unshift({
@@ -118,10 +122,12 @@ const App = ({ getController, projects }: Props) => {
       const actions = errors.map((error) => ({
         name: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
         raw: error.title,
-        start: { year: 9999, month: 1, date: 1 },
+        freshness: {
+          refDate: { year: 9999, month: 1, date: 1 },
+          status: "todo" as Status,
+        },
         project: error.project,
-        status: "todo" as Status,
-        freshness: -Infinity,
+        score: -Infinity,
       }));
       trees.push({
         summary,
@@ -215,7 +221,7 @@ const TaskItem = (
   }, []);
 
   const type = useMemo(() => {
-    switch (action.status) {
+    switch (action.freshness.status) {
       case "todo":
         return "ToDo";
       case "note":
@@ -227,25 +233,25 @@ const TaskItem = (
       case "done":
         return "完了";
     }
-  }, [action.status]);
+  }, [action.freshness]);
   const start = useMemo(() => {
-    const time = format(action.start).slice(11);
+    const time = format(getStart(action)).slice(11);
     return time || "     ";
-  }, [action.start]);
+  }, [getStart(action)]);
   const duration = useMemo(() => getDuration(action), [action]);
-  const freshnessLevel = Math.floor(Math.round(action.freshness) / 7);
+  const freshnessLevel = Math.floor(Math.round(action.score) / 7);
 
   return (
     <li
       data-type={type}
-      data-freshness={action.freshness.toFixed(0)}
+      data-freshness={action.score.toFixed(0)}
       data-level={freshnessLevel}
       {...(freshnessLevel < 0
         ? {
           style: {
             opacity: Math.max(
               // 旬度0で70%, 旬度-7で60%になるよう調節した
-              0.8 * Math.exp(Math.log(8 / 7) / 7 * action.freshness),
+              0.8 * Math.exp(Math.log(8 / 7) / 7 * action.score),
               0.05,
             ).toFixed(2),
           },
@@ -253,7 +259,7 @@ const TaskItem = (
         : {})}
     >
       <span className="label type">{type}</span>
-      <span className="label freshness">{action.freshness.toFixed(0)}</span>
+      <span className="label freshness">{action.score.toFixed(0)}</span>
       <time className="label start">{start}</time>
       <span className="label duration">{duration}m</span>
       {href

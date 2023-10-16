@@ -8,6 +8,10 @@ export interface LocalDateTime extends LocalDate {
   minutes: number;
 }
 
+export const isLocalDateTime = (
+  date: LocalDate | LocalDateTime,
+): date is LocalDateTime => "hours" in date;
+
 export const isBefore = (
   first: LocalDate | LocalDateTime,
   second: LocalDate | LocalDateTime,
