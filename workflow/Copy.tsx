@@ -12,7 +12,9 @@ import {
 import { sleep } from "../deps/scrapbox-std.ts";
 
 /** コピーボタン */
-export const Copy: FunctionComponent<{ text: string }> = ({ text }) => {
+export const Copy: FunctionComponent<{ text: string; title?: string }> = (
+  { text, title },
+) => {
   const [buttonLabel, setButtonLabel] = useState("\uf0c5");
   const handleClick = useCallback(
     async (e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) => {
@@ -31,7 +33,7 @@ export const Copy: FunctionComponent<{ text: string }> = ({ text }) => {
   );
 
   return (
-    <button className="copy" title="Copy" onClick={handleClick}>
+    <button className="copy" title={title ?? "Copy"} onClick={handleClick}>
       {buttonLabel}
     </button>
   );

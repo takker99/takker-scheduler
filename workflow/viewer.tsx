@@ -118,6 +118,12 @@ const App = ({ getController, projects }: Props) => {
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
 
+  /** コピー用テキスト */
+  const text = useMemo(
+    () => [pageNo, ...actions.map((action) => ` [${action.raw}]`)].join("\n"),
+    [actions, pageNo],
+  );
+
   return (
     <>
       <style>{CSS}</style>
@@ -131,10 +137,15 @@ const App = ({ getController, projects }: Props) => {
           <button className="navi left" onClick={prev}>{"<-"}</button>
           <ProgressBar loading={loading} />
           <span>{pageNo}</span>
+          <Copy text={text} title="Copy All Tasks"/>
         </div>
         <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
-          {actions.map((action) => (
-            <TaskItem action={action} onPageChanged={close} />
+          {actions.map((action, i) => (
+            <TaskItem
+              action={action}
+              pActions={actions.slice(0, i)}
+              onPageChanged={close}
+            />
           ))}
         </ul>
       </dialog>
@@ -143,9 +154,9 @@ const App = ({ getController, projects }: Props) => {
 };
 
 const TaskItem: FunctionComponent<
-  { action: Action; onPageChanged: () => void }
+  { action: Action; onPageChanged: () => void; pActions: Action[] }
 > = (
-  { action, onPageChanged },
+  { action, onPageChanged, pActions },
 ) => {
   const href = useMemo(
     () =>
@@ -183,6 +194,11 @@ const TaskItem: FunctionComponent<
   const duration = useMemo(() => getDuration(action), [action]);
   const freshnessLevel = Math.floor(Math.round(action.score) / 7);
 
+  /** コピー用テキスト */
+  const text = useMemo(
+    () => [...pActions, action].map((action) => `[${action.raw}]`).join("\n"),
+    [pActions, action],
+  );
   return (
     <li
       data-type={type}
@@ -200,6 +216,7 @@ const TaskItem: FunctionComponent<
         }
         : {})}
     >
+      <Copy text={text} title="ここまでコピー" />
       <span className="label type">{type}</span>
       <span className="label freshness">{action.score.toFixed(0)}</span>
       <time className="label start">{start}</time>
