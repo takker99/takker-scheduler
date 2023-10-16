@@ -106,6 +106,7 @@ const App = ({ getController, projects }: Props) => {
     const date = toDate(toLocalDate(pageNo))!;
     return tasks.flatMap((task) => {
       if (!task.freshness) return [];
+      if ("recurrence" in task) return [];
       const score = calcFreshness(task.freshness, date);
       return score > -999 ? [{ ...task, score } as Action] : [];
     }).sort(compareFn);
