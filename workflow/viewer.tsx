@@ -22,17 +22,26 @@ import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import {
   addDays,
+  addMinutes,
   eachDayOfInterval,
+  isAfter,
   isSameDay,
   lightFormat,
 } from "../deps/date-fns.ts";
 import { format, fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
+import {
+  getDuration,
+  getEnd,
+  getStart,
+  Period,
+  Reminder,
+} from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 import { Key, toKey, toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
+import { useMinutes } from "./useMinutes.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -59,6 +68,7 @@ export const setup = (projects: string[]): Promise<Controller> => {
 };
 
 interface Action extends Reminder {
+  executed?: Period;
   project: string;
   score: number;
 }
@@ -192,6 +202,17 @@ const TaskItem: FunctionComponent<
   const duration = useMemo(() => getDuration(action), [action]);
   const freshnessLevel = Math.floor(Math.round(action.score) / 7);
 
+  const now = useMinutes();
+  const scheduled = useMemo(
+    () =>
+      action.executed &&
+      isAfter(
+        addMinutes(toDate(action.executed.start), action.executed.duration),
+        now,
+      ),
+    [action.executed?.start, action.executed?.duration, now],
+  );
+
   /** コピー用テキスト */
   const text = useMemo(
     () => [...pActions, action].map((action) => `[${action.raw}]`).join("\n"),
@@ -216,6 +237,7 @@ const TaskItem: FunctionComponent<
     >
       <Copy text={text} title="ここまでコピー" />
       <span className="label type">{type}</span>
+      <i className={`label far fa-fw${scheduled ? " fa-bookmark" : ""}`} />
       <span className="label freshness">{action.score.toFixed(0)}</span>
       <time className="label start">{start}</time>
       <span className="label duration">{duration}m</span>

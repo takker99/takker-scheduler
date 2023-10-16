@@ -1,5 +1,6 @@
 /* derived from Font Awesome 5 */
-.fa {
+.fa,
+.far {
   font-weight: 900;
   font-family: "Font Awesome 5 Free";
   -moz-osx-font-smoothing: grayscale;
@@ -10,23 +11,37 @@
   text-rendering: auto;
   line-height: 1;
 }
+
+.far {
+  font-weight: 400;
+}
+
 .fa-spinner {
   animation: spin 2s infinite linear;
 }
+
 @keyframes spin {
- from {
-  transform:rotate(0deg)
- }
- to {
-  transform:rotate(359deg)
- }
+  from {
+    transform: rotate(0deg)
+  }
+
+  to {
+    transform: rotate(359deg)
+  }
 }
+
 .fa-spinner::before {
   content: "\f110";
 }
+
 .fa-sync:before {
   content: "\f021";
 }
+
+.fa-bookmark:before {
+  content: "\f02e";
+}
+
 .fa-fw {
   text-align: center;
   width: 1.25em;
@@ -42,6 +57,7 @@
   text-decoration: none;
   text-transform: none;
 }
+
 .kamon-check-circle::before {
   content: "\E018";
 }
