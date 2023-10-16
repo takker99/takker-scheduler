@@ -127,7 +127,11 @@ const App = ({ getController, projects, mainProject }: Props) => {
           </button>
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-        <ul className="result scheduler" onClick={stopPropagation} data-page-no={pageNo}>
+        <ul
+          className="result scheduler"
+          onClick={stopPropagation}
+          data-page-no={pageNo}
+        >
           {dateList.map((date) => (
             <li key={toKey(date)}>
               <DailySchedule

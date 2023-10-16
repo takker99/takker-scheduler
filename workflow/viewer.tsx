@@ -133,7 +133,11 @@ const App = ({ getController, projects }: Props) => {
           </button>
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-        <ul className="result task-list" onClick={stopPropagation} data-page-no={pageNo}>
+        <ul
+          className="result task-list"
+          onClick={stopPropagation}
+          data-page-no={pageNo}
+        >
           {actions.map((action, i) => (
             <TaskItem
               action={action}
