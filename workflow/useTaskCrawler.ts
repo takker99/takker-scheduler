@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "../deps/preact.tsx";
 import {
   InvalidDateError,
   parse,
-  Reminder as TaskBase,
+  Task as TaskBase,
   TaskRangeError,
 } from "../howm/parse.ts";
 import {
@@ -14,10 +14,10 @@ import {
 import { toTitleLc } from "../deps/scrapbox-std.ts";
 
 export type { InvalidDateError, TaskBase, TaskRangeError };
-export interface Task extends TaskBase {
+export type Task = TaskBase & {
   project: string;
   title: string;
-}
+};
 
 export type TaskError =
   & { project: string; title: string }

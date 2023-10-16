@@ -90,9 +90,7 @@ export const main = async () => {
         titleLcs.add(titleLc);
 
         // 一部のステータスのタスクを除外する
-        if ("status" in result.value && result.value.status === "done") {
-          continue;
-        }
+        if (result.value.freshness?.status === "done") continue;
 
         if (!("recurrence" in result.value)) {
           const task = toTaskLine(result.value);

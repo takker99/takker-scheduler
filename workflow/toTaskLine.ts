@@ -1,18 +1,18 @@
-import { getDuration, isAllDay, Reminder, toString } from "../howm/parse.ts";
-import { Event } from "../event/parse.ts";
+import { getDuration, isAllDay, Task, toString } from "../howm/parse.ts";
 import { Task as TaskLine } from "../task.ts";
 import { toDate } from "../howm/localDate.ts";
 
-export const toTaskLine = (event: Event | Reminder): TaskLine => {
-  const start = toDate(event.start);
-  const durationMin = getDuration(event);
+export const toTaskLine = (task: Task): TaskLine => {
+  const start = toDate(
+    "executed" in task ? task.executed.start : task.freshness.refDate,
+  );
+  const durationMin = getDuration(task);
 
   return {
-    // Taskの場合のみリンクにする
-    title: "status" in event ? `[${toString(event)}]` : event.name,
+    title: task.freshness ? `[${toString(task)}]` : task.name,
     base: start,
     plan: {
-      start: isAllDay(event) ? undefined : start,
+      start: isAllDay(task) ? undefined : start,
       duration: durationMin !== undefined ? durationMin * 60 : undefined,
     },
     record: {},
