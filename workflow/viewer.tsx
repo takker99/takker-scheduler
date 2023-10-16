@@ -57,14 +57,6 @@ export const setup = (projects: string[]): Promise<Controller> => {
   );
 };
 
-/** renderに使う、分類分けされたタスクリンクの情報 */
-interface Tree {
-  /** 分類名 */
-  summary: string;
-
-  /** タスクリンク */
-  actions: Action[];
-}
 interface Action extends Reminder {
   project: string;
   score: number;
