@@ -79,6 +79,9 @@ ul {
 li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
 }
+:is([data-page-no="expired"], [data-page-no="error"]) li {
+  opacity: 1.0 !important;
+}
 
 .label {
   display: inline-block;
