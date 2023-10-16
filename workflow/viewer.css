@@ -42,12 +42,11 @@ dialog > * {
   width: calc(var(--item-width, 100%) - 10px);
 
   display: flex;
-  flex-direction: row-reverse;
   flex-wrap: wrap;
   gap: 0.2em;
 }
 .progress {
-  width: 100%;
+  flex-grow: 1;
 }
 .progress > *{
   padding: 0 2px;
@@ -61,13 +60,32 @@ a:hover {
   color: var(--page-link-hover-color, #2d67f5);
 }
 
-.copy {
-  font-family: "Font Awesome 5 Free";
+button {
   cursor: pointer;
   /* <button>のdefault styleを消す */
   background: unset;
   color: unset;
   border: unset;
+}
+.copy, .close {
+  font-family: "Font Awesome 5 Free";
+}
+.navi {
+  font-family: "AppIcons";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  text-decoration: none;
+  text-transform: none;
+}
+.close {
+  font-weight: 900
+}
+.reload {
+  border: 1px solid;
+  border-radius: 3px;
 }
 
 ul {
@@ -78,6 +96,9 @@ ul {
 /* 1.0以上 */
 li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
+}
+:is([data-page-no="expired"], [data-page-no="errors"]) li {
+  opacity: 1.0 !important;
 }
 
 .label {

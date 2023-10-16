@@ -6,11 +6,13 @@
 
 import {
   Fragment,
+  FunctionComponent,
   h,
   render,
   useCallback,
   useEffect,
   useMemo,
+  useState,
 } from "../deps/preact.tsx";
 import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
@@ -24,11 +26,12 @@ import {
   isSameDay,
   lightFormat,
 } from "../deps/date-fns.ts";
-import { format, fromDate, isBefore } from "../howm/localDate.ts";
+import { format, fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
 import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
+import { Key, toKey, toLocalDate } from "./key.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -73,53 +76,12 @@ interface Props {
 }
 const App = ({ getController, projects }: Props) => {
   const { tasks, errors, load, loading } = useTaskCrawler(projects);
+  const { pageNo, next, prev } = useNavigation();
 
-  // 当日から4週間分のタスクのみ抽出する
-  const trees: Tree[] = useMemo(() => {
-    const now = new Date();
-
-    const trees = eachDayOfInterval({ start: now, end: addDays(now, 28) })
-      .map((date) => {
-        const isNow = isSameDay(now, date);
-        const summary = lightFormat(date, "yyyy-MM-dd");
-        const actions: Action[] = tasks.flatMap((task) => {
-          if (!task.freshness) return [];
-          const score = calcFreshness(task.freshness, date);
-          return score > -999 &&
-              (isNow || task.freshness.status === "deadline")
-            ? [{ ...task, score } as Action]
-            : [];
-        });
-
-        return {
-          summary,
-          actions,
-        };
-      });
-
-    {
-      // 締め切りタスクはずっと未来に残り続けるので、やり残しを探す必要はない
-      /** やり残した予定 */
-      const restActions: Action[] = tasks.filter((task) =>
-        isBefore(getEnd(task), fromDate(now))
-      )
-        .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
-        .flatMap((task) => {
-          if (!task.freshness || task.freshness.status === "done") return [];
-          return [{ ...task, score: -Infinity }] as Action[];
-        });
-
-      const summary = "やり残した予定";
-      trees.unshift({
-        summary,
-        actions: restActions,
-      });
-    }
-
-    // エラーがあれば、それも表示する
-    if (errors.length > 0) {
-      const summary = "error";
-      const actions = errors.map((error) => ({
+  /** 表示するタスク */
+  const actions: Action[] = useMemo(() => {
+    if (pageNo === "errors") {
+      return errors.map((error) => ({
         name: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
         raw: error.title,
         freshness: {
@@ -129,14 +91,26 @@ const App = ({ getController, projects }: Props) => {
         project: error.project,
         score: -Infinity,
       }));
-      trees.push({
-        summary,
-        actions,
-      });
     }
 
-    return trees;
-  }, [tasks, errors]);
+    if (pageNo === "expired") {
+      const now = new Date();
+      return tasks.filter((task) => isBefore(getEnd(task), fromDate(now)))
+        .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
+        .flatMap((task) => {
+          if (!task.freshness || task.freshness.status === "done") return [];
+          return [{ ...task, score: -Infinity }] as Action[];
+        });
+    }
+
+    const date = toDate(toLocalDate(pageNo))!;
+    return tasks.flatMap((task) => {
+      if (!task.freshness) return [];
+      if ("recurrence" in task) return [];
+      const score = calcFreshness(task.freshness, date);
+      return score > -999 ? [{ ...task, score } as Action] : [];
+    }).sort(compareFn);
+  }, [tasks, errors, pageNo]);
 
   // UIの開閉
   const { ref, open, close, toggle } = useDialog();
@@ -145,65 +119,45 @@ const App = ({ getController, projects }: Props) => {
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
 
+  /** コピー用テキスト */
+  const text = useMemo(
+    () => [pageNo, ...actions.map((action) => ` [${action.raw}]`)].join("\n"),
+    [actions, pageNo],
+  );
+
   return (
     <>
       <style>{CSS}</style>
       <dialog ref={ref} onClick={close}>
         <div className="controller" onClick={stopPropagation}>
-          <button className="close" onClick={close}>X</button>
+          <Copy text={text} title="Copy All Tasks" />
+          <span>{pageNo}</span>
+          <ProgressBar loading={loading} />
+          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+          <button className="navi right" onClick={next}>{"\ue02d"}</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
-          <ProgressBar loading={loading} />
+          <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-        <div className="result" onClick={stopPropagation}>
-          {trees.map((tree) => (
-            <TreeComponent
-              tree={tree}
-              key={tree.summary}
+        <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
+          {actions.map((action, i) => (
+            <TaskItem
+              action={action}
+              pActions={actions.slice(0, i)}
               onPageChanged={close}
             />
           ))}
-        </div>
+        </ul>
       </dialog>
     </>
   );
 };
 
-const TreeComponent = (
-  { tree, onPageChanged }: { tree: Tree; onPageChanged: () => void },
-) => {
-  const actions = useMemo(() => tree.actions.sort(compareFn), [
-    tree.actions,
-  ]);
-  const copyText = useMemo(() =>
-    [
-      tree.summary,
-      ...actions.map((action) => ` [${action.raw}]`),
-    ].join("\n"), [tree.summary, actions]);
-
-  return tree.actions.length === 0
-    ? <div key={tree.summary}>{tree.summary}</div>
-    : (
-      // 一部のカテゴリだけ最初から開いておく
-      <details
-        open={lightFormat(new Date(), "yyyy-MM-dd") === tree.summary}
-      >
-        <summary>
-          {tree.summary}
-          <Copy text={copyText} />
-        </summary>
-        <ul>
-          {actions.map((action) => (
-            <TaskItem action={action} onPageChanged={onPageChanged} />
-          ))}
-        </ul>
-      </details>
-    );
-};
-
-const TaskItem = (
-  { action, onPageChanged }: { action: Action; onPageChanged: () => void },
+const TaskItem: FunctionComponent<
+  { action: Action; onPageChanged: () => void; pActions: Action[] }
+> = (
+  { action, onPageChanged, pActions },
 ) => {
   const href = useMemo(
     () =>
@@ -241,6 +195,11 @@ const TaskItem = (
   const duration = useMemo(() => getDuration(action), [action]);
   const freshnessLevel = Math.floor(Math.round(action.score) / 7);
 
+  /** コピー用テキスト */
+  const text = useMemo(
+    () => [...pActions, action].map((action) => `[${action.raw}]`).join("\n"),
+    [pActions, action],
+  );
   return (
     <li
       data-type={type}
@@ -258,6 +217,7 @@ const TaskItem = (
         }
         : {})}
     >
+      <Copy text={text} title="ここまでコピー" />
       <span className="label type">{type}</span>
       <span className="label freshness">{action.score.toFixed(0)}</span>
       <time className="label start">{start}</time>
@@ -280,6 +240,54 @@ const TaskItem = (
         : action.name}
     </li>
   );
+};
+
+type PageNo = Key | "expired" | "errors";
+
+const useNavigation = (
+  defaultPageNo: PageNo = toKey(new Date()),
+) => {
+  /** 日付の場合は現在表示しているタスクリストの基準点を表す
+   * `expired`のときはやり残した予定を表示する
+   * `error`のときはエラーを表示する
+   */
+  const [pageNo, setPageNo] = useState<PageNo>(defaultPageNo);
+
+  const next = useCallback(() => {
+    setPageNo((pageNo) => {
+      switch (pageNo) {
+        case "errors":
+          return "expired";
+        case "expired":
+          return toKey(new Date());
+        default: {
+          const date = toDate(toLocalDate(pageNo));
+          date.setDate(date.getDate() + 1);
+          return toKey(date);
+        }
+      }
+    });
+  }, []);
+  const prev = useCallback(() => {
+    setPageNo((pageNo) => {
+      const nowKey = toKey(new Date());
+      switch (pageNo) {
+        case "errors":
+          return "errors";
+        case "expired":
+          return "errors";
+        case nowKey:
+          return "expired";
+        default: {
+          const date = toDate(toLocalDate(pageNo));
+          date.setDate(date.getDate() - 1);
+          return toKey(date);
+        }
+      }
+    });
+  }, []);
+
+  return { pageNo, next, prev };
 };
 
 /** 読み込み状況を表示する部品 */
