@@ -302,16 +302,19 @@ const EventItem: FunctionComponent<
   }, [localEnd]);
 
   const now = useMinutes();
-  const done = useMemo(
+  const type = useMemo(
     () =>
-      event.freshness?.status === "done" ||
-      // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
-      (!event.raw && isBefore(localEnd, fromDate(now))),
+      isBefore(localEnd, fromDate(now))
+        // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
+        ? event.raw ? "expired" : "done"
+        : event.freshness?.status === "done"
+        ? "done"
+        : "",
     [event.freshness?.status, event.raw, localEnd, now],
   );
 
   return (
-    <li data-done={done}>
+    <li data-type={type}>
       <time className="label start">{start}</time>
       <time className="label end">{end}</time>
       {href
