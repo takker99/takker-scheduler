@@ -60,13 +60,19 @@ a:hover {
   color: var(--page-link-hover-color, #2d67f5);
 }
 
-.copy {
-  font-family: "Font Awesome 5 Free";
+button {
   cursor: pointer;
   /* <button>のdefault styleを消す */
   background: unset;
   color: unset;
   border: unset;
+}
+.copy, .navi, .reload, .close {
+  font-family: "Font Awesome 5 Free";
+}
+.reload {
+  border: 1px solid;
+  border-radius: 3px;
 }
 
 ul {

@@ -132,12 +132,12 @@ const App = ({ getController, projects }: Props) => {
           <Copy text={text} title="Copy All Tasks" />
           <span>{pageNo}</span>
           <ProgressBar loading={loading} />
-          <button className="navi left" onClick={prev}>{"<-"}</button>
-          <button className="navi right" onClick={next}>{"->"}</button>
+          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+          <button className="navi right" onClick={next}>{"\ue02d"}</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
-          <button className="close" onClick={close}>X</button>
+          <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
         <ul className="result" onClick={stopPropagation} data-page-no={pageNo}>
           {actions.map((action, i) => (
