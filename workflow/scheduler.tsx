@@ -377,8 +377,8 @@ const ScheduleSummary: FunctionComponent<
 > = (
   { date, now, remains },
 ) => {
-  const value = (isAfter(date, now) ? 0 : differenceInMinutes(now, date)) +
-    remains;
+  const used = isAfter(date, now) ? 0 : differenceInMinutes(now, date);
+  const value = used+ remains;
   const max = Math.max(value, 1440);
   const scale = Math.max(1.0, max / 1440);
 
@@ -393,8 +393,9 @@ const ScheduleSummary: FunctionComponent<
       style={{
         width: `calc(${
           scale.toFixed(2)
-        } * var(--takker-scheduler-summary-meter-width, 20em));`,
+        } * var(--takker-scheduler-summary-meter-width, 10em))`,
       }}
+      title={`${remains}min undone, ${1440-used}min remains`}
     />
   );
 };
