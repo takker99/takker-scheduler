@@ -98,7 +98,7 @@ ul {
   font-weight: bold;
 }
 .scheduler details li[data-done] {
-  opacity: 0.8;
+  opacity: 0.4;
 }
 .scheduler details li:not([data-done]):has(a) {
   font-weight: bold;
