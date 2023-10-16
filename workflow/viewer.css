@@ -67,8 +67,21 @@ button {
   color: unset;
   border: unset;
 }
-.copy, .navi, .reload, .close {
+.copy, .close {
   font-family: "Font Awesome 5 Free";
+}
+.navi {
+  font-family: "AppIcons";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  text-decoration: none;
+  text-transform: none;
+}
+.close {
+  font-weight: 900
 }
 .reload {
   border: 1px solid;
