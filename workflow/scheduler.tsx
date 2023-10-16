@@ -159,16 +159,8 @@ const DailySchedule: FunctionComponent<
 
   const summary = useMemo(() => toKey(date), [date]);
 
-  /** まだ実行していないタスクとその所要時間
-   *
-   * リンクにしていないtask lineは、現在時刻を過ぎていたら実行したものとして扱う。
-   * それ以外はここに計上する。
-   *
-   * 重複は省く。キーはタスク名もしくはtask.rawとする。
-   */
-  const remains = new Map<string, number>();
   /** 表示する予定 */
-  const events: Event[] = useMemo(() => {
+  const events_: Event[] = useMemo(() => {
     // 日刊記録sheetから取得する
     // 実際に使った時間を優先して使う
     const events: Event[] = [];
@@ -233,6 +225,45 @@ const DailySchedule: FunctionComponent<
     }).sort((a, b) => isBefore(a.executed.start, b.executed.start) ? -1 : 0);
   }, [tasks, lines]);
 
+  const now = useMinutes();
+  /** タスクの完了状況を付与した予定
+   *
+   * 現在時刻で変化するので、別に計算する
+   *
+   * remainsはやることの総量 (min)
+   */
+  const [events, remains]: [
+    (Event & { type: "done" | "expired" | "" })[],
+    number,
+  ] = useMemo(
+    () => {
+      let remains = 0;
+      const events = events_.map((event) => {
+        const end = fromDate(
+          addMinutes(toDate(event.executed.start), event.executed.duration),
+        );
+        const localNow = fromDate(now);
+        const type: "done" | "expired" | "" = isBefore(end, localNow)
+          // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
+          ? event.raw ? "expired" : "done"
+          : event.freshness?.status === "done"
+          ? "done"
+          : "";
+        remains += type === "expired"
+          ? event.executed.duration
+          : type === "done"
+          ? 0
+          : isBefore(localNow, event.executed.start)
+          ? event.executed.duration
+          : differenceInMinutes(now, toDate(event.executed.start));
+        return { ...event, type };
+      });
+
+      return [events, remains];
+    },
+    [events_, now],
+  );
+
   /** 当日の折り畳みがあれば、defaultで開いておく */
   const open = useMemo(() => summary === toKey(new Date()), [summary]);
 
@@ -249,6 +280,7 @@ const DailySchedule: FunctionComponent<
       <summary>
         {summary}
         <Copy text={copyText} />
+        <ScheduleSummary now={now} remains={remains} />
       </summary>
       <ul>
         {events.map((event, i) => (
@@ -292,14 +324,17 @@ const EventItem: FunctionComponent<
       ),
     [event.executed.start, event.executed.duration],
   );
-  const start = useMemo(() => {
-    const time = format(event.executed.start).slice(11);
-    return time || "     ";
-  }, [event.executed.start]);
-  const end = useMemo(() => {
-    const time = format(localEnd).slice(11);
-    return time || "     ";
-  }, [localEnd]);
+  const start = useMemo(
+    () =>
+      `${zero(event.executed.start.hours)}:${
+        zero(event.executed.start.minutes)
+      }` || "     ",
+    [event.executed.start],
+  );
+  const end = useMemo(
+    () => `${zero(localEnd.hours)}:${zero(localEnd.minutes)}` || "     ",
+    [localEnd],
+  );
 
   const now = useMinutes();
   const type = useMemo(
@@ -337,6 +372,30 @@ const EventItem: FunctionComponent<
   );
 };
 
+const ScheduleSummary: FunctionComponent<{ now: Date; remains: number }> = (
+  { now, remains },
+) => {
+  const value = now.getHours() * 60 + now.getMinutes() + remains;
+  const max = Math.max(value, 1440);
+  const scale = Math.max(1.0, max / 1440);
+
+  return (
+    <meter
+      min={0}
+      max={max}
+      optimum={480}
+      low={960}
+      high={1440}
+      value={value}
+      style={{
+        width: `calc(${
+          scale.toFixed(2)
+        } * var(--takker-scheduler-summary-meter-width, 20em));`,
+      }}
+    />
+  );
+};
+
 const useNavigation = (
   defaultPageNo: WeekKey = toWeekKey(new Date()),
 ) => {
@@ -352,3 +411,5 @@ const useNavigation = (
 
   return { pageNo, next, prev };
 };
+
+const zero = (n: number): string => `${n}`.padStart(2, "0");
