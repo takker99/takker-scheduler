@@ -407,7 +407,9 @@ const useNavigation = (
   const [pageNo, setPageNo] = useState<WeekKey>(defaultPageNo);
 
   const next = useCallback(() => {
-    setPageNo((pageNo) => toWeekKey(addWeeks(toStartOfWeek(pageNo), 1)));
+    setPageNo((pageNo) =>
+      toWeekKey(addDays(addWeeks(toStartOfWeek(pageNo), 1), 6))
+    );
   }, []);
   const prev = useCallback(() => {
     setPageNo((pageNo) => toWeekKey(subWeeks(toStartOfWeek(pageNo), 1)));
