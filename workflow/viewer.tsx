@@ -127,8 +127,8 @@ const App = ({ getController, projects }: Props) => {
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
-          <button className="navi right" onClick={next}>-></button>
-          <button className="navi left" onClick={prev}><-</button>
+          <button className="navi right" onClick={next}>{"->"}</button>
+            < button className="navi left" onClick={prev}>{"<-"}</button>
           <ProgressBar loading={loading} />
           {pageNo}
         </div>
