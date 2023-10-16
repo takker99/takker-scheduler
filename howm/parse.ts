@@ -422,7 +422,7 @@ export const makeRepeat = (
     raw: event.raw,
   };
   if (event.freshness) generated.freshness = event.freshness;
-  return event;
+  return generated;
 };
 
 /** 開始日時補正データから最終的な開始日時を決定する
