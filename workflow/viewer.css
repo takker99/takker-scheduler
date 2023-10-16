@@ -123,7 +123,7 @@ ul {
 }
 
 .scheduler {
-  --takker-scheduler-summary-meter-width: 20em;
+  --takker-scheduler-summary-meter-width: 10em;
 }
 
 .label {

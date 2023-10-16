@@ -381,22 +381,25 @@ const ScheduleSummary: FunctionComponent<
   const value = used + remains;
   const max = Math.max(value, 1440);
   const scale = Math.max(1.0, max / 1440);
+  const legend = `${remains}min undone, ${1440 - used - remains}min remains`;
 
   return (
-    <meter
-      min={0}
-      max={max}
-      optimum={480}
-      low={960}
-      high={1440}
-      value={value}
-      style={{
-        width: `calc(${
-          scale.toFixed(2)
-        } * var(--takker-scheduler-summary-meter-width, 10em))`,
-      }}
-      title={`${remains}min undone, ${1440 - used}min remains`}
-    />
+    <>
+      <meter
+        min={0}
+        max={max}
+        optimum={480}
+        low={960}
+        high={1440}
+        value={value}
+        style={{
+          width: `calc(${
+            scale.toFixed(2)
+          } * var(--takker-scheduler-summary-meter-width, 10em))`,
+        }}
+      />
+      {legend}
+    </>
   );
 };
 
