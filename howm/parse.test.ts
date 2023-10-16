@@ -137,18 +137,18 @@ Deno.test("makeRepeat()", () => {
   {
     const task = "爪切り@2023-10-09T12:00D5RW1";
     assertEquals(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2023, month: 10, date: 10 }),
-        ),
-        undefined,
+      makeRepeat(
+        parse(task)!.value as unknown as Event,
+        toDate({ year: 2023, month: 10, date: 10 }),
+      ),
+      undefined,
     );
     assertEquals(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2023, month: 10, date: 15 }),
-        ),
-        undefined,
+      makeRepeat(
+        parse(task)!.value as unknown as Event,
+        toDate({ year: 2023, month: 10, date: 15 }),
+      ),
+      undefined,
     );
     assertEquals(
       toString(
