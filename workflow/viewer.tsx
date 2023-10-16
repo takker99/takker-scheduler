@@ -105,7 +105,7 @@ const App = ({ getController, projects }: Props) => {
       )
         .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
         .flatMap((task) => {
-          if (task.freshness) return [];
+          if (!task.freshness) return [];
           return [{ ...task, score: -Infinity }] as Action[];
         });
 
