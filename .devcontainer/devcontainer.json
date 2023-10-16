@@ -3,7 +3,6 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -17,16 +16,33 @@
         "deno.codeLens.implementations": true,
         "deno.codeLens.references": true,
         "deno.codeLens.referencesAllFunctions": true,
-        // Sets Deno as the default formatter for the project
-        "editor.defaultFormatter": "denoland.vscode-deno"
+        "[javascript]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[javascriptreact]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        }
       },
-
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
         "denoland.vscode-deno"
       ]
     }
   },
-
   "remoteUser": "vscode"
 }
