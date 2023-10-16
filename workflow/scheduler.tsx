@@ -175,7 +175,9 @@ const DailySchedule: FunctionComponent<
     for (const task of parseLines(lines)) {
       if (isString(task)) continue;
 
-      const result = parse(task.title);
+      // []分を外して解析する
+      // 解析できなかった場合は[]を外す前のを使うので問題ない
+      const result = parse(task.title.slice(1, -1));
       const name = result?.ok ? result.value.name : task.title;
       // rawが空文字のものは自動生成されたタスクだというルールにする
       const raw = result?.ok ? result.value.raw : "";
