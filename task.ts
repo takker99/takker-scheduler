@@ -1,10 +1,4 @@
-import {
-  addDays,
-  addSeconds,
-  isAfter,
-  lightFormat,
-  parse,
-} from "./deps/date-fns.ts";
+import { addSeconds, isAfter, lightFormat } from "./deps/date-fns.ts";
 import { isNone, isString } from "./utils.ts";
 import { getIndentLineCount } from "./deps/scrapbox-std.ts";
 
@@ -25,45 +19,67 @@ export interface Task {
   record: Interval;
 }
 
-/** タスクの書式 */
-const taskReg =
-  /^`(\d{4}-\d{2}-\d{2}) ( {5}|\d{2}:\d{2}) ( {4}|\d{4}) ( {8}|\d{2}:\d{2}:\d{2}) ( {8}|\d{2}:\d{2}:\d{2})`([^\n]*)$/;
-
 const parseTask = (text: string): Task | undefined => {
-  if (!isTask(text)) return undefined;
+  const matched = text.match(
+    /^`(\d{4})-(\d{2})-(\d{2}) (?: {5}|(\d{2}):(\d{2})) (?: {4}|(\d{4})) (?: {8}|(\d{2}):(\d{2}):(\d{2})) (?: {8}|(\d{2}):(\d{2}):(\d{2}))`([^\n]*)$/,
+  );
+  if (!matched) return;
 
   // タスクが書き込まれた行を解析する
-  const [, base, plan, duration, start, end, title] = text.match(taskReg) ?? [];
+  const [
+    ,
+    year,
+    month,
+    date,
+    phours,
+    pminutes,
+    duration,
+    shours,
+    sminutes,
+    sseconds,
+    ehours,
+    eminutes,
+    eseconds,
+    title,
+  ] = matched;
   const task: Task = {
     title,
-    base: parse(base, "yyyy-MM-dd", new Date(), undefined),
+    base: new Date(parseInt(year), parseInt(month) - 1, parseInt(date)),
     plan: {},
     record: {},
   };
 
-  if (plan.trim() !== "") {
-    task.plan.start = parse(plan, "HH:mm", task.base);
+  if (phours) {
+    const start = new Date(task.base);
+    start.setHours(parseInt(phours));
+    start.setMinutes(parseInt(pminutes));
+    task.plan.start = start;
   }
-  if (duration.trim() !== "") {
-    task.plan.duration = parseInt(duration) * 60;
-  }
+  if (duration) task.plan.duration = parseInt(duration) * 60;
   // 実績時刻を解析する
   // 開始時刻より終了時刻の方が前だったら、日付を越えているとみなす
-  if (start.trim() !== "") {
-    task.record.start = parse(start, "HH:mm:ss", task.base);
+  if (shours) {
+    const start = new Date(task.base);
+    start.setHours(parseInt(shours));
+    start.setMinutes(parseInt(sminutes));
+    start.setSeconds(parseInt(sseconds));
+    task.record.start = start;
   }
-  if (end.trim() !== "") {
-    let rEnd = parse(end, "HH:mm:ss", task.base);
-    if (task.record?.start && rEnd && isAfter(task.record.start, rEnd)) {
-      rEnd = addDays(rEnd, 1);
+  if (ehours) {
+    const end = new Date(task.base);
+    end.setHours(parseInt(ehours));
+    end.setMinutes(parseInt(eminutes));
+    end.setSeconds(parseInt(eseconds));
+    if (task.record.start && isAfter(task.record.start, end)) {
+      end.setDate(end.getDate() + 1);
     }
-    task.record.end = rEnd;
+    task.record.end = end;
   }
 
   return task;
 };
 export { parseTask as parse };
-export const isTask = (text: string): boolean => taskReg.test(text);
+export const isTask = (text: string): boolean => parseTask(text) !== undefined;
 
 /** 比較用の開始日時を取得する */
 export const startDate = (task: Task): Date =>

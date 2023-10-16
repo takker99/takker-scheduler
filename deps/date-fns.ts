@@ -6,8 +6,6 @@ export { default as addSeconds } from "https://deno.land/x/date_fns@v2.22.1/addS
 export { default as addHours } from "https://deno.land/x/date_fns@v2.22.1/addHours/index.ts";
 export { default as isAfter } from "https://deno.land/x/date_fns@v2.22.1/isAfter/index.ts";
 export { default as isBefore } from "https://deno.land/x/date_fns@v2.22.1/isBefore/index.ts";
-//@deno-types=./patch/parse.d.ts
-export { default as parse } from "https://deno.land/x/date_fns@v2.22.1/parse/index.js";
 //@deno-types=./patch/isValid.d.ts
 export { default as isValid } from "https://deno.land/x/date_fns@v2.22.1/isValid/index.js";
 //@deno-types=./patch/formatRFC3339.d.ts
