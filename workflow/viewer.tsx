@@ -80,7 +80,7 @@ const App = ({ getController, projects }: Props) => {
 
   /** 表示するタスク */
   const actions: Action[] = useMemo(() => {
-    if (pageNo === "error") {
+    if (pageNo === "errors") {
       return errors.map((error) => ({
         name: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
         raw: error.title,
@@ -241,7 +241,7 @@ const TaskItem: FunctionComponent<
   );
 };
 
-type PageNo = Key | "expired" | "error";
+type PageNo = Key | "expired" | "errors";
 
 const useNavigation = (
   defaultPageNo: PageNo = toKey(new Date()),
@@ -255,7 +255,7 @@ const useNavigation = (
   const next = useCallback(() => {
     setPageNo((pageNo) => {
       switch (pageNo) {
-        case "error":
+        case "errors":
           return "expired";
         case "expired":
           return toKey(new Date());
@@ -271,10 +271,10 @@ const useNavigation = (
     setPageNo((pageNo) => {
       const nowKey = toKey(new Date());
       switch (pageNo) {
-        case "error":
-          return "error";
+        case "errors":
+          return "errors";
         case "expired":
-          return "error";
+          return "errors";
         case nowKey:
           return "expired";
         default: {
