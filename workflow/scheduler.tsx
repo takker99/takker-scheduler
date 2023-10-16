@@ -56,6 +56,7 @@ import { toTitle } from "../diary.ts";
 import { usePages } from "./usePages.ts";
 import { endDate, parseLines } from "../task.ts";
 import { isString } from "../utils.ts";
+import { useMinutes } from "./useMinutes.ts";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -282,21 +283,33 @@ const EventItem: FunctionComponent<
     setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
   }, []);
 
+  const localEnd = useMemo(
+    () =>
+      fromDate(
+        addMinutes(toDate(event.executed.start), event.executed.duration),
+      ),
+    [event.executed.start, event.executed.duration],
+  );
   const start = useMemo(() => {
     const time = format(event.executed.start).slice(11);
     return time || "     ";
   }, [event.executed.start]);
   const end = useMemo(() => {
-    const time = format(
-      fromDate(
-        addMinutes(toDate(event.executed.start), event.executed.duration),
-      ),
-    ).slice(11);
+    const time = format(localEnd).slice(11);
     return time || "     ";
-  }, [event.executed.start, event.executed.duration]);
+  }, [localEnd]);
+
+  const now = useMinutes();
+  const done = useMemo(
+    () =>
+      event.freshness?.status === "done" ||
+      // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
+      (!event.raw && isBefore(localEnd, fromDate(now))),
+    [event.freshness?.status, event.raw, localEnd, now],
+  );
 
   return (
-    <li data-done={event.freshness?.status === "done"}>
+    <li data-done={done}>
       <time className="label start">{start}</time>
       <span className="label end">{end}</span>
       {href
