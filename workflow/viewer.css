@@ -97,10 +97,10 @@ ul {
 .task-list li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
 }
-.scheduler li[data-done] {
+.scheduler details li[data-done] {
   opacity: 0.8;
 }
-.scheduler li:not([data-done]):has(a) {
+.scheduler details li:not([data-done]):has(a) {
   font-weight: bold;
 }
 :is([data-page-no="expired"], [data-page-no="errors"]) li {
