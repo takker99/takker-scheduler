@@ -32,6 +32,7 @@ import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 import { Key, toKey, toLocalDate } from "./key.ts";
+import { ProgressBar } from "./ProgressBar.tsx";
 declare const scrapbox: Scrapbox;
 
 export interface Controller {
@@ -281,15 +282,3 @@ const useNavigation = (
 
   return { pageNo, next, prev };
 };
-
-/** 読み込み状況を表示する部品 */
-const ProgressBar = (
-  { loading }: { loading: boolean },
-) => (loading
-  ? (
-    <div className="progress">
-      <i className="fa fa-spinner" />
-      <span>{"loading tasks..."}</span>
-    </div>
-  )
-  : <div className="progress" />);

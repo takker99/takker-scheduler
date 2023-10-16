@@ -97,6 +97,12 @@ ul {
 li:not([data-freshness^="-"]):not([data-freshness="0"]) {
   font-weight: bold;
 }
+li[data-done] {
+  opacity: 0.8;
+}
+li:not([data-done]):has(a) {
+  font-weight: bold;
+}
 :is([data-page-no="expired"], [data-page-no="errors"]) li {
   opacity: 1.0 !important;
 }
