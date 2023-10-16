@@ -16,15 +16,9 @@ import { toTaskLine } from "./toTaskLine.ts";
 declare const scrapbox: Scrapbox;
 import { decode, load } from "../deps/storage.ts";
 import { makeRepeat, parse } from "../howm/parse.ts";
+import { Key, toKey } from "./key.ts";
 
 const project = "takker-memex";
-
-type Key = `${number}-${string}-${string}`;
-/** 日付ごとに一意なkeyを生成する */
-const toKey = (date: Date): Key =>
-  `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${
-    `${date.getDate()}`.padStart(2, "0")
-  }`;
 
 /** 現在日までの日刊記録sheetを生成する */
 export const main = async () => {
