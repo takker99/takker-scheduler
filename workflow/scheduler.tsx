@@ -280,7 +280,7 @@ const DailySchedule: FunctionComponent<
       <summary>
         {summary}
         <Copy text={copyText} />
-        <ScheduleSummary now={now} remains={remains} />
+        <ScheduleSummary date={date} now={now} remains={remains} />
       </summary>
       <ul>
         {events.map((event, i) => (
@@ -372,10 +372,13 @@ const EventItem: FunctionComponent<
   );
 };
 
-const ScheduleSummary: FunctionComponent<{ now: Date; remains: number }> = (
-  { now, remains },
+const ScheduleSummary: FunctionComponent<
+  { date: Date; now: Date; remains: number }
+> = (
+  { date, now, remains },
 ) => {
-  const value = now.getHours() * 60 + now.getMinutes() + remains;
+  const value = (isAfter(date, now) ? 0 : differenceInMinutes(now, date)) +
+    remains;
   const max = Math.max(value, 1440);
   const scale = Math.max(1.0, max / 1440);
 
