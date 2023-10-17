@@ -339,11 +339,11 @@ const EventItem: FunctionComponent<
   const now = useMinutes();
   const type = useMemo(
     () =>
-      isBefore(localEnd, fromDate(now))
+      event.freshness?.status === "done"
+        ? "done"
+        : isBefore(localEnd, fromDate(now))
         // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
         ? event.raw ? "expired" : "done"
-        : event.freshness?.status === "done"
-        ? "done"
         : "",
     [event.freshness?.status, event.raw, localEnd, now],
   );
