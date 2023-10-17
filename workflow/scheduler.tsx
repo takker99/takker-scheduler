@@ -382,7 +382,9 @@ const ScheduleSummary: FunctionComponent<
 > = (
   { date, now, remains },
 ) => {
-  const used = isAfter(date, now) ? 0 : differenceInMinutes(now, date);
+  const used = isAfter(date, now)
+    ? 0
+    : Math.min(differenceInMinutes(now, date), 1440);
   const value = used + remains;
   const max = Math.max(value, 1440);
   const scale = Math.max(1.0, max / 1440);
