@@ -222,7 +222,7 @@ const DailySchedule: FunctionComponent<
       if (!isSameDay(toDate(task.executed.start), date)) return [];
 
       return [task];
-    }).sort((a, b) => isBefore(a.executed.start, b.executed.start) ? -1 : 0);
+    });
   }, [tasks, lines]);
 
   const now = useMinutes();
@@ -259,7 +259,12 @@ const DailySchedule: FunctionComponent<
         return { ...event, type };
       });
 
-      return [events, remains];
+      return [
+        events.sort((a, b) =>
+          isBefore(a.executed.start, b.executed.start) ? -1 : 0
+        ),
+        remains,
+      ];
     },
     [events_, now],
   );
