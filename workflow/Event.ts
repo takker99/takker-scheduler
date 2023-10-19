@@ -58,9 +58,11 @@ export const getEventStatus = (
   now: Date,
 ): EventStatus => {
   if (event.status === "done") return event.status;
-  if (isLink(event) && isLogged(event)) {
-    // リンクが未完了状態のタスクリンクは、現在時刻以降に開始日時がずらされているならmovedとする
-    return isBefore(fromDate(now), event.executed.start) ? "moved" : "expired";
+  if (isLogged(event)) {
+    return isLink(event)
+      // リンクが未完了状態のタスクリンクは、現在時刻以降に開始日時がずらされているならmovedとする
+      ? isBefore(fromDate(now), event.executed.start) ? "moved" : "expired"
+      : "done";
   }
   return isBefore(getEnd(event.plan), fromDate(now))
     // リンクなしタスクは、実行したかどうかに関わらず、終了日時が過ぎていればdoneとする
