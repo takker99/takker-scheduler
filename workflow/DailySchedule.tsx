@@ -81,7 +81,6 @@ export const DailySchedule: FunctionComponent<
           return [{
             name: generated.name,
             project: task.project,
-            executed: generated.executed,
             plan: generated.executed,
             status: generated.freshness?.status,
           }];
