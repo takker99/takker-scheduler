@@ -40,7 +40,7 @@ export const split = (
 ): [Period, undefined] | [Period, Period] | [undefined, Period] => {
   const start = toDate(period.start);
   const partition = date.getTime();
-  const forwordMin = partition - start.getTime();
+  const forwordMin = Math.round((partition - start.getTime()) / (60 * 1000));
 
   if (forwordMin <= 0) return [undefined, period];
   if (period.duration <= forwordMin) return [period, undefined];
