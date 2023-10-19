@@ -54,7 +54,7 @@ export const EventItem: FunctionComponent<
     <li data-type={type}>
       <time className="label start">{start}</time>
       <time className="label end">{end}</time>
-      <time className="label">{`${getRemains(event,now)}`.padStart(4, "0")}</time>
+      <time className="label duration">{`${event.plan.duration}`.padStart(4, "0")}</time>
       {href
         ? (
           <a
