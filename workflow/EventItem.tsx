@@ -6,11 +6,9 @@
 
 import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
-import { addMinutes } from "../deps/date-fns.ts";
-import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { scrapbox, zero } from "./scheduler.tsx";
-import { Event, getEventStatus, isLink } from "./Event.ts";
+import { scrapbox } from "./scheduler.tsx";
+import { Event, getEventStatus, getRemains, isLink } from "./Event.ts";
 import { getEnd } from "../howm/Period.ts";
 
 export const EventItem: FunctionComponent<
@@ -56,6 +54,7 @@ export const EventItem: FunctionComponent<
     <li data-type={type}>
       <time className="label start">{start}</time>
       <time className="label end">{end}</time>
+      <time className="label">{`${getRemains(event,now)}`.padStart(4, "0")}</time>
       {href
         ? (
           <a
@@ -75,3 +74,6 @@ export const EventItem: FunctionComponent<
     </li>
   );
 };
+
+
+const zero = (n: number): string => `${n}`.padStart(2, "0");

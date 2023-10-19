@@ -159,4 +159,3 @@ const useNavigation = (
   return { pageNo, next, prev };
 };
 
-export const zero = (n: number): string => `${n}`.padStart(2, "0");
