@@ -87,9 +87,10 @@ export const DailySchedule: FunctionComponent<
         });
       }
       const start = toDate(task.executed.start);
-      if (!isSameDay(start, yesterday)) return [];
-      if (!isSameDay(start, date)) return [];
-      if (!isSameDay(start, tomorrow)) return [];
+      if (
+        !isSameDay(start, yesterday) && !isSameDay(start, date) &&
+        !isSameDay(start, tomorrow)
+      ) return [];
       return [{
         name: task.name,
         project: task.project,
