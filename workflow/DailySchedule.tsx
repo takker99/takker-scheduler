@@ -34,77 +34,29 @@ export const DailySchedule: FunctionComponent<
 > = (
   { date, tasks, project, onPageChanged },
 ) => {
+  // 日刊記録sheetから、前日・当日・翌日の予定を取得する
+  // 日をまたぐ予定に対応するため、前後日の予定も取得する
+  // 当日の予定個数判定を後でやるので、別々に予定を取り出しておく
   const ylines = useLines(project, toTitle(subDays(date, 1)));
-  const plines = useLines(project, toTitle(date));
-  const tlines = useLines(project, toTitle(addDays(date, 1)));
-  /** 対応する日刊記録sheetのテキスト。なければ空になる
-   *
-   * 日をまたぐタスクに対応するために、前日と翌日の日刊記録sheetからも取得する
-   */
-  const lines = useMemo(() => [...ylines, ...plines, ...tlines], [
+  const eventsFromyLine: Event[] = useMemo(() => getEventsFromLines(ylines), [
     ylines,
+  ]);
+  const plines = useLines(project, toTitle(date));
+  const eventsFrompLine: Event[] = useMemo(() => getEventsFromLines(plines), [
     plines,
+  ]);
+  const tlines = useLines(project, toTitle(addDays(date, 1)));
+  const eventsFromtLine: Event[] = useMemo(() => getEventsFromLines(tlines), [
     tlines,
   ]);
 
   const summary = useMemo(() => toKey(date), [date]);
 
-  /** 日刊記録sheetから取り出した予定
-   *
-   * 前後日の予定も含む
-   */
-  const eventsFromLine: Event[] = useMemo(() => {
-    // 日刊記録sheetから取得する
-    // 実際に使った時間を優先して使う
-    const events: Event[] = [];
-    for (const task of parseLines(lines)) {
-      if (isString(task)) continue;
-
-      // []分を外して解析する
-      // 解析できなかった場合は[]を外す前のを使うので問題ない
-      const result = parse(task.title.slice(1, -1));
-
-      // 予定開始日時があるもののみ対象とする
-      if (!task.plan.start) continue;
-
-      const event: Event = {
-        name: result?.ok ? result.value.name : task.title,
-        project,
-        plan: {
-          start: fromDate(task.plan.start),
-          duration: (task.plan.duration ?? 0) / 60,
-        },
-      };
-      // optional parametersを埋めていく
-      if (task.record.start) {
-        event.record = {
-          start: fromDate(task.record.start),
-        };
-        if (task.record.end) {
-          event.record.duration = differenceInMinutes(
-            task.record.end,
-            task.record.start,
-          );
-        }
-      }
-      if (result?.ok) {
-        if (result.value.freshness) {
-          event.status = result?.value.freshness.status;
-        }
-        if ("executed" in result.value) {
-          event.executed = result.value.executed;
-        }
-      }
-      events.push(event);
-    }
-    return events;
-  }, [lines]);
-
   const now = useMinutes();
 
-  /**  日刊記録sheetから一つも取得できなかった場合は、タスクリンクから生成する*/
+  /**  当日の日刊記録sheetから一つも取得できなかった場合は、タスクリンクから生成する*/
   const eventsFromLink: Event[] = useMemo(() => {
-    if (eventsFromLine.length > 0) return [];
+    if (eventsFrompLine.length > 0) return [];
 
     const yesterday = subDays(date, 1);
     const tomorrow = addDays(date, 1);
@@ -135,7 +87,7 @@ export const DailySchedule: FunctionComponent<
         status: task.freshness?.status,
       }];
     });
-  }, [tasks, eventsFromLine, date]);
+  }, [tasks, eventsFrompLine, date]);
 
   /** 表示する予定
    *
@@ -149,7 +101,12 @@ export const DailySchedule: FunctionComponent<
     // 当日内の予定だけ切り出す
     const sPartition = startOfDay(date);
     const ePartition = endOfDay(date);
-    const events: Event[] = [...eventsFromLine, ...eventsFromLink].flatMap(
+    const events: Event[] = [
+      ...eventsFromyLine,
+      ...eventsFrompLine,
+      ...eventsFromtLine,
+      ...eventsFromLink,
+    ].flatMap(
       (event) => {
         const [, backward] = split(event.plan, sPartition);
         if (!backward) return [];
@@ -163,7 +120,15 @@ export const DailySchedule: FunctionComponent<
     ).sort((a, b) => isBefore(a.plan.start, b.plan.start) ? -1 : 0);
 
     return [events, remains];
-  }, [eventsFromLine, eventsFromLink, now, date, tasks]);
+  }, [
+    eventsFromyLine,
+    eventsFrompLine,
+    eventsFromtLine,
+    eventsFromLink,
+    now,
+    date,
+    tasks,
+  ]);
 
   /** 当日の折り畳みがあれば、defaultで開いておく */
   const open = useMemo(() => summary === toKey(new Date()), [summary]);
@@ -194,4 +159,51 @@ export const DailySchedule: FunctionComponent<
       </ul>
     </details>
   );
+};
+
+/** 日刊記録sheetから、Eventsを生成する */
+const getEventsFromLines = (lines: string[]): Event[] => {
+  // 実際に使った時間を優先して使う
+  const events: Event[] = [];
+  for (const task of parseLines(lines)) {
+    if (isString(task)) continue;
+
+    // []分を外して解析する
+    // 解析できなかった場合は[]を外す前のを使うので問題ない
+    const result = parse(task.title.slice(1, -1));
+
+    // 予定開始日時があるもののみ対象とする
+    if (!task.plan.start) continue;
+
+    const event: Event = {
+      name: result?.ok ? result.value.name : task.title,
+      project,
+      plan: {
+        start: fromDate(task.plan.start),
+        duration: (task.plan.duration ?? 0) / 60,
+      },
+    };
+    // optional parametersを埋めていく
+    if (task.record.start) {
+      event.record = {
+        start: fromDate(task.record.start),
+      };
+      if (task.record.end) {
+        event.record.duration = differenceInMinutes(
+          task.record.end,
+          task.record.start,
+        );
+      }
+    }
+    if (result?.ok) {
+      if (result.value.freshness) {
+        event.status = result?.value.freshness.status;
+      }
+      if ("executed" in result.value) {
+        event.executed = result.value.executed;
+      }
+    }
+    events.push(event);
+  }
+  return events;
 };
