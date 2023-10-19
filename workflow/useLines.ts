@@ -46,7 +46,7 @@ const get = (project: string, title: string): string[] => {
 };
 
 /** scrapboxのページテキストを格納・参照するhooks */
-export const usePages = (project: string, title: string): string[] => {
+export const useLines = (project: string, title: string): string[] => {
   const [lines, setLines] = useState<string[]>(get(project, title));
 
   useEffect(() => {

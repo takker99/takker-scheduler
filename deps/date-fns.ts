@@ -34,6 +34,9 @@ export { default as isSameMonth } from "https://deno.land/x/date_fns@v2.22.1/isS
 export { default as isSameYear } from "https://deno.land/x/date_fns@v2.22.1/isSameYear/index.ts";
 export { default as compareAsc } from "https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts";
 export { default as startOfWeek } from "https://deno.land/x/date_fns@v2.22.1/startOfWeek/index.ts";
+
+export { default as startOfDay } from "https://deno.land/x/date_fns@v2.22.1/startOfDay/index.ts";
+export { default as endOfDay } from "https://deno.land/x/date_fns@v2.22.1/endOfDay/index.ts";
 export { default as intervalToDuration } from "./patch/intervalToDuration.ts";
 export { default as areIntervalsOverlapping } from "./patch/areIntervalsOverlapping.ts";
 export { default as differenceInMinutes } from "https://deno.land/x/date_fns@v2.22.1/differenceInMinutes/index.js";

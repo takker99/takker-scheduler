@@ -30,13 +30,8 @@ import {
 } from "../deps/date-fns.ts";
 import { format, fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import {
-  getDuration,
-  getEnd,
-  getStart,
-  Period,
-  Reminder,
-} from "../howm/parse.ts";
+import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
+import { Period } from "../howm/Period.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 import { Key, toKey, toLocalDate } from "./key.ts";
