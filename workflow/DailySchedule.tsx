@@ -163,7 +163,7 @@ export const DailySchedule: FunctionComponent<
     ).sort((a, b) => isBefore(a.plan.start, b.plan.start) ? -1 : 0);
 
     return [events, remains];
-  }, [eventsFromLine, eventsFromLink, now,date, tasks]);
+  }, [eventsFromLine, eventsFromLink, now, date, tasks]);
 
   /** 当日の折り畳みがあれば、defaultで開いておく */
   const open = useMemo(() => summary === toKey(new Date()), [summary]);

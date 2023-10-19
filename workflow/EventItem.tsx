@@ -54,7 +54,9 @@ export const EventItem: FunctionComponent<
     <li data-type={type}>
       <time className="label start">{start}</time>
       <time className="label end">{end}</time>
-      <time className="label duration">{`${event.plan.duration}`.padStart(4, "0")}</time>
+      <time className="label duration">
+        {`${event.plan.duration}`.padStart(4, "0")}
+      </time>
       {href
         ? (
           <a
@@ -74,6 +76,5 @@ export const EventItem: FunctionComponent<
     </li>
   );
 };
-
 
 const zero = (n: number): string => `${n}`.padStart(2, "0");
