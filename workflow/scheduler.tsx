@@ -6,7 +6,6 @@
 
 import {
   Fragment,
-  FunctionComponent,
   h,
   render,
   useCallback,
@@ -14,48 +13,13 @@ import {
   useMemo,
   useState,
 } from "../deps/preact.tsx";
-import { Task, useTaskCrawler } from "./useTaskCrawler.ts";
+import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
-import { Copy } from "./Copy.tsx";
-import { makeError } from "../deps/scrapbox-std.ts";
-import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
-import {
-  addDays,
-  addWeeks,
-  differenceInMinutes,
-  eachDayOfInterval,
-  isAfter,
-  isSameDay,
-  lightFormat,
-  subWeeks,
-} from "../deps/date-fns.ts";
-import { format } from "../howm/localDate.ts";
-import { calcFreshness } from "../howm/freshness.ts";
-import {
-  getDuration,
-  getEnd,
-  getStart,
-  makeRepeat,
-  parse,
-} from "../howm/parse.ts";
-import { compareFn } from "../howm/sort.ts";
-import { Status } from "../howm/status.ts";
-import {
-  Key,
-  toKey,
-  toLocalDate,
-  toStartOfWeek,
-  toWeekKey,
-  WeekKey,
-} from "./key.ts";
+import { addDays, addWeeks, subWeeks } from "../deps/date-fns.ts";
+import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
-import { toTitle } from "../diary.ts";
-import { useLines } from "./useLines.ts";
-import { endDate, parseLines } from "../task.ts";
-import { isString } from "../utils.ts";
 import { DailySchedule } from "./DailySchedule.tsx";
-export declare const scrapbox: Scrapbox;
 
 export interface Controller {
   open: () => void;

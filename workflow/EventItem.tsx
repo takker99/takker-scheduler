@@ -7,9 +7,10 @@
 import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { scrapbox } from "./scheduler.tsx";
 import { Event, getEventStatus, isLink } from "./Event.ts";
 import { getEnd } from "../howm/Period.ts";
+import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
+declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
   { event: Event; onPageChanged: () => void }
