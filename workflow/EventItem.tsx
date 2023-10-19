@@ -7,7 +7,7 @@
 import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { Event, getEventStatus, isLink } from "./Event.ts";
+import { Event, getEventStatus, isLink } from "./event.ts";
 import { getEnd } from "../howm/Period.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
