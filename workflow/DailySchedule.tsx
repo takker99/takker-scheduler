@@ -11,7 +11,9 @@ import {
   addDays,
   addMinutes,
   differenceInMinutes,
+  endOfDay,
   isSameDay,
+  startOfDay,
   subDays,
 } from "../deps/date-fns.ts";
 import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
@@ -24,8 +26,6 @@ import { isString } from "../utils.ts";
 import { useMinutes } from "./useMinutes.ts";
 import { Event, getRemains, isLink } from "./Event.ts";
 import { split } from "../howm/Period.ts";
-import startOfDay from "https://deno.land/x/date_fns@v2.22.1/startOfDay/index.ts";
-import endOfDay from "https://deno.land/x/date_fns@v2.22.1/endOfDay/index.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
 
@@ -146,8 +146,8 @@ export const DailySchedule: FunctionComponent<
     let remains = 0;
 
     // 当日内の予定だけ切り出す
-    const sPartition = startOfDay(now);
-    const ePartition = endOfDay(now);
+    const sPartition = startOfDay(date);
+    const ePartition = endOfDay(date);
     const events: Event[] = [...eventsFromLine, ...eventsFromLink].flatMap(
       (event) => {
         const [, backward] = split(event.plan, sPartition);
@@ -162,7 +162,7 @@ export const DailySchedule: FunctionComponent<
     ).sort((a, b) => isBefore(a.plan.start, b.plan.start) ? -1 : 0);
 
     return [events, remains];
-  }, [eventsFromLine, eventsFromLink, now, tasks]);
+  }, [eventsFromLine, eventsFromLink, now,date, tasks]);
 
   /** 当日の折り畳みがあれば、defaultで開いておく */
   const open = useMemo(() => summary === toKey(new Date()), [summary]);
