@@ -1,5 +1,5 @@
 import { addMinutes } from "../deps/date-fns.ts";
-import { fromDate, isBefore, LocalDateTime, toDate } from "./localDate.ts";
+import { fromDate, LocalDateTime, toDate } from "./localDate.ts";
 
 /* いずれ実装する
 /** 曜日指定情報を加えたDate *
