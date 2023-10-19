@@ -1,78 +1,77 @@
-import {
-  FunctionComponent,
-  h, useCallback, useMemo
-} from "../deps/preact.tsx";
+/// <reference no-default-lib="true" />
+/// <reference lib="esnext" />
+/// <reference lib="dom" />
+/** @jsx h */
+/** @jsxFrag Fragment */
+
+import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { addMinutes } from "../deps/date-fns.ts";
 import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { Event, scrapbox, zero } from "./scheduler.tsx";
+import { scrapbox, zero } from "./scheduler.tsx";
+import { Event, getEventStatus, isLink } from "./Event.ts";
+import { getEnd } from "../howm/Period.ts";
 
-const EventItem: FunctionComponent<
-  { event: Event; onPageChanged: () => void; }
+export const EventItem: FunctionComponent<
+  { event: Event; onPageChanged: () => void }
 > = (
-  { event, onPageChanged }
+  { event, onPageChanged },
 ) => {
-    const href = useMemo(
-      () => event.raw
-        ? `https://${location.hostname}/${event.project}/${encodeTitleURI(event.raw)}`
+  const href = useMemo(
+    () =>
+      isLink(event)
+        ? `https://${location.hostname}/${event.project}/${
+          encodeTitleURI(event.name)
+        }`
         : "",
-      [event.project, event.raw]
-    );
+    [event.project, isLink(event), event.name],
+  );
 
-    // 同じタブで別のページに遷移したときはmodalを閉じる
-    const handleClick = useCallback(() => {
-      scrapbox.once("page:changed", onPageChanged);
-      // 2秒以内に遷移しなかったら何もしない
-      setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
-    }, []);
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  const handleClick = useCallback(() => {
+    scrapbox.once("page:changed", onPageChanged);
+    // 2秒以内に遷移しなかったら何もしない
+    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
+  }, []);
 
-    const localEnd = useMemo(
-      () => fromDate(
-        addMinutes(toDate(event.executed.start), event.executed.duration)
-      ),
-      [event.executed.start, event.executed.duration]
-    );
-    const start = useMemo(
-      () => `${zero(event.executed.start.hours)}:${zero(event.executed.start.minutes)}` || "     ",
-      [event.executed.start]
-    );
-    const end = useMemo(
-      () => `${zero(localEnd.hours)}:${zero(localEnd.minutes)}` || "     ",
-      [localEnd]
-    );
+  const start = useMemo(
+    () =>
+      `${zero(event.plan.start.hours)}:${zero(event.plan.start.minutes)}` ||
+      "     ",
+    [event.plan.start],
+  );
+  const end = useMemo(
+    () => {
+      const end = getEnd(event.plan);
+      return `${zero(end.hours)}:${zero(end.minutes)}` || "     ";
+    },
+    [event.plan.start, event.plan.duration],
+  );
 
-    const now = useMinutes();
-    const type = useMemo(
-      () => event.freshness?.status === "done"
-        ? "done"
-        : isBefore(localEnd, fromDate(now))
-          // リンクなしタスクは、予定開始時刻が過ぎていたら実行したものとして扱う
-          ? event.raw ? "expired" : "done"
-          : "",
-      [event.freshness?.status, event.raw, localEnd, now]
-    );
+  const now = useMinutes();
+  const type = useMemo(() => getEventStatus(event, now), [event, now]);
 
-    return (
-      <li data-type={type}>
-        <time className="label start">{start}</time>
-        <time className="label end">{end}</time>
-        {href
-          ? (
-            <a
-              href={href}
-              {...(event.project === scrapbox.Project.name ? ({}) : (
-                {
-                  rel: "noopener noreferrer",
-                  target: "_blank",
-                }
-              ))}
-              onClick={handleClick}
-            >
-              {event.name}
-            </a>
-          )
-          : event.name}
-      </li>
-    );
-  };
+  return (
+    <li data-type={type}>
+      <time className="label start">{start}</time>
+      <time className="label end">{end}</time>
+      {href
+        ? (
+          <a
+            href={href}
+            {...(event.project === scrapbox.Project.name ? ({}) : (
+              {
+                rel: "noopener noreferrer",
+                target: "_blank",
+              }
+            ))}
+            onClick={handleClick}
+          >
+            {event.name}
+          </a>
+        )
+        : event.name}
+    </li>
+  );
+};

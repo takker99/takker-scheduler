@@ -5,6 +5,7 @@ import {
   isValid,
 } from "../deps/date-fns.ts";
 import { isNumber, Result } from "../deps/scrapbox-std.ts";
+import { Period } from "./Period.ts";
 import { Freshness } from "./freshness.ts";
 import {
   format,
@@ -17,23 +18,6 @@ import {
 } from "./localDate.ts";
 import { Recurrence, toFrequency } from "./recurrence.ts";
 import { fromStatus, toStatus } from "./status.ts";
-
-/* いずれ実装する
-/** 曜日指定情報を加えたDate *
-export interface ExDate {
-  base: Date;
-  startOfDay: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  weekNum: number;
-}
-*/
-
-export interface Period {
-  /** 開始日時 */
-  start: LocalDateTime;
-
-  /** 所要時間 (min) */
-  duration: number;
-}
 
 export interface Reminder {
   /** task name */

@@ -33,7 +33,6 @@ import {
 import { format } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
 import {
-  Event as EventBase,
   getDuration,
   getEnd,
   getStart,
@@ -52,7 +51,7 @@ import {
 } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { toTitle } from "../diary.ts";
-import { usePages } from "./usePages.ts";
+import { useLines } from "./useLines.ts";
 import { endDate, parseLines } from "../task.ts";
 import { isString } from "../utils.ts";
 import { DailySchedule } from "./DailySchedule.tsx";
@@ -81,10 +80,6 @@ export const setup = (projects: string[]): Promise<Controller> => {
       ),
   );
 };
-
-export interface Event extends EventBase {
-  project: string;
-}
 
 interface Props {
   getController: (controller: Controller) => void;
