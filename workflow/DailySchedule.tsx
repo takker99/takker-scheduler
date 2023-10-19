@@ -23,7 +23,7 @@ import { useLines } from "./useLines.ts";
 import { parseLines } from "../task.ts";
 import { isString } from "../utils.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { Event, getRemains, isLink } from "./Event.ts";
+import { Event, getRemains, isLink } from "./event.ts";
 import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
