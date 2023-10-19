@@ -72,6 +72,7 @@ export const DailySchedule: FunctionComponent<
     const yesterday = subDays(date, 1);
     const tomorrow = addDays(date, 1);
     return tasks.flatMap((task) => {
+      if (task.freshness?.status === "done") return [];
       if (!("executed" in task)) return [];
       if (task.recurrence) {
         return [yesterday, date, tomorrow].flatMap((d) => {
@@ -86,9 +87,10 @@ export const DailySchedule: FunctionComponent<
         });
       }
       const start = toDate(task.executed.start);
-      if (!isSameDay(start, yesterday)) return [];
-      if (!isSameDay(start, date)) return [];
-      if (!isSameDay(start, tomorrow)) return [];
+      if (
+        !isSameDay(start, yesterday) && !isSameDay(start, date) &&
+        !isSameDay(start, tomorrow)
+      ) return [];
       return [{
         name: task.name,
         project: task.project,
@@ -171,7 +173,10 @@ export const DailySchedule: FunctionComponent<
   );
 };
 
-/** 日刊記録sheetから、Eventsを生成する */
+/** 日刊記録sheetから、Eventsを生成する
+ *
+ * 予定開始日時があるもののみ対象とする。完了未完了は考慮しない
+ */
 const getEventsFromLines = (lines: string[], project: string): Event[] => {
   // 実際に使った時間を優先して使う
   const events: Event[] = [];
