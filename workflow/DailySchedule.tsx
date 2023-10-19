@@ -159,7 +159,7 @@ export const DailySchedule: FunctionComponent<
         remains += getRemains(result, now);
         return [result];
       },
-    );
+    ).sort((a, b) => isBefore(a.plan.start, b.plan.start) ? -1 : 0);
 
     return [events, remains];
   }, [eventsFromLine, eventsFromLink, now, tasks]);
