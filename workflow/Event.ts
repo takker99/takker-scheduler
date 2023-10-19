@@ -1,7 +1,6 @@
 import { Period } from "../howm/Period.ts";
 import { getEnd, Log } from "../howm/Period.ts";
-import { fromDate, isBefore, LocalDateTime } from "../howm/localDate.ts";
-import { Event as EventBase, getStart } from "../howm/parse.ts";
+import { fromDate, isBefore } from "../howm/localDate.ts";
 import { Status } from "../howm/status.ts";
 
 /** 予定表用に修正したEvent object */

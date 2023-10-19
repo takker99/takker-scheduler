@@ -8,7 +8,7 @@ import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { useMinutes } from "./useMinutes.ts";
 import { scrapbox } from "./scheduler.tsx";
-import { Event, getEventStatus, getRemains, isLink } from "./Event.ts";
+import { Event, getEventStatus, isLink } from "./Event.ts";
 import { getEnd } from "../howm/Period.ts";
 
 export const EventItem: FunctionComponent<

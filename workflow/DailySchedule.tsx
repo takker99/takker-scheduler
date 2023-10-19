@@ -38,17 +38,29 @@ export const DailySchedule: FunctionComponent<
   // 日をまたぐ予定に対応するため、前後日の予定も取得する
   // 当日の予定個数判定を後でやるので、別々に予定を取り出しておく
   const ylines = useLines(project, toTitle(subDays(date, 1)));
-  const eventsFromyLine: Event[] = useMemo(() => getEventsFromLines(ylines), [
-    ylines,
-  ]);
+  const eventsFromyLine: Event[] = useMemo(
+    () => getEventsFromLines(ylines, project),
+    [
+      ylines,
+      project,
+    ],
+  );
   const plines = useLines(project, toTitle(date));
-  const eventsFrompLine: Event[] = useMemo(() => getEventsFromLines(plines), [
-    plines,
-  ]);
+  const eventsFrompLine: Event[] = useMemo(
+    () => getEventsFromLines(plines, project),
+    [
+      plines,
+      project,
+    ],
+  );
   const tlines = useLines(project, toTitle(addDays(date, 1)));
-  const eventsFromtLine: Event[] = useMemo(() => getEventsFromLines(tlines), [
-    tlines,
-  ]);
+  const eventsFromtLine: Event[] = useMemo(
+    () => getEventsFromLines(tlines, project),
+    [
+      tlines,
+      project,
+    ],
+  );
 
   const summary = useMemo(() => toKey(date), [date]);
 
@@ -162,7 +174,7 @@ export const DailySchedule: FunctionComponent<
 };
 
 /** 日刊記録sheetから、Eventsを生成する */
-const getEventsFromLines = (lines: string[]): Event[] => {
+const getEventsFromLines = (lines: string[], project: string): Event[] => {
   // 実際に使った時間を優先して使う
   const events: Event[] = [];
   for (const task of parseLines(lines)) {
