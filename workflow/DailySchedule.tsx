@@ -95,6 +95,7 @@ export const DailySchedule: FunctionComponent<
           event.executed = result.value.executed;
         }
       }
+      events.push(event);
     }
     return events;
   }, [lines]);
