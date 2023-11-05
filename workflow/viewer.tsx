@@ -6,7 +6,6 @@
 
 import {
   Fragment,
-  FunctionComponent,
   h,
   render,
   useCallback,
@@ -18,26 +17,23 @@ import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
 import { Copy } from "./Copy.tsx";
-import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import {
   addDays,
-  addMinutes,
   eachDayOfInterval,
-  isAfter,
   isSameDay,
   lightFormat,
 } from "../deps/date-fns.ts";
-import { format, fromDate, isBefore, toDate } from "../howm/localDate.ts";
+import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import { getDuration, getEnd, getStart, Reminder } from "../howm/parse.ts";
+import { getEnd, getStart, Reminder } from "../howm/parse.ts";
 import { Period } from "../howm/Period.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
 import { Key, toKey, toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
-import { useMinutes } from "./useMinutes.ts";
-declare const scrapbox: Scrapbox;
+import { TaskItem } from "./TaskItem.tsx";
+export declare const scrapbox: Scrapbox;
 
 export interface Controller {
   open: () => void;
@@ -62,7 +58,7 @@ export const setup = (projects: string[]): Promise<Controller> => {
   );
 };
 
-interface Action extends Reminder {
+export interface Action extends Reminder {
   executed?: Period;
   project: string;
   score: number;
@@ -153,106 +149,6 @@ const App = ({ getController, projects }: Props) => {
         </ul>
       </dialog>
     </>
-  );
-};
-
-const TaskItem: FunctionComponent<
-  { action: Action; onPageChanged: () => void; pActions: Action[] }
-> = (
-  { action, onPageChanged, pActions },
-) => {
-  const href = useMemo(
-    () =>
-      `https://${location.hostname}/${action.project}/${
-        encodeTitleURI(action.raw)
-      }`,
-    [action.project, action.raw],
-  );
-
-  // 同じタブで別のページに遷移したときはmodalを閉じる
-  const handleClick = useCallback(() => {
-    scrapbox.once("page:changed", onPageChanged);
-    // 2秒以内に遷移しなかったら何もしない
-    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
-  }, []);
-
-  const type = useMemo(() => {
-    switch (action.freshness.status) {
-      case "todo":
-        return "ToDo";
-      case "note":
-        return "覚書";
-      case "deadline":
-        return "締切";
-      case "up-down":
-        return "浮遊";
-      case "done":
-        return "完了";
-    }
-  }, [action.freshness]);
-  const start = useMemo(() => {
-    const time = format(getStart(action)).slice(11);
-    return time || "     ";
-  }, [getStart(action)]);
-  const duration = useMemo(() => getDuration(action), [action]);
-  const freshnessLevel = Math.floor(Math.round(action.score) / 7);
-
-  const now = useMinutes();
-  const scheduled = useMemo(
-    () =>
-      action.executed &&
-      isAfter(
-        addMinutes(toDate(action.executed.start), action.executed.duration),
-        now,
-      ),
-    [action.executed?.start, action.executed?.duration, now],
-  );
-
-  /** コピー用テキスト */
-  const text = useMemo(
-    () => [...pActions, action].map((action) => `[${action.raw}]`).join("\n"),
-    [pActions, action],
-  );
-  return (
-    <li
-      data-type={type}
-      data-freshness={action.score.toFixed(0)}
-      data-level={freshnessLevel}
-      {...(freshnessLevel < 0
-        ? {
-          style: {
-            opacity: Math.max(
-              // 旬度0で70%, 旬度-7で60%になるよう調節した
-              0.8 * Math.exp(Math.log(8 / 7) / 7 * action.score),
-              0.05,
-            ).toFixed(2),
-          },
-        }
-        : {})}
-    >
-      <Copy text={text} title="ここまでコピー" />
-      <span className="label type">{type}</span>
-      <i className={`label far fa-fw${scheduled ? " fa-bookmark" : ""}`} />
-      <span className="label freshness">{action.score.toFixed(0)}</span>
-      <time className="label start">{start}</time>
-      <span className="label duration">{duration}m</span>
-      {href
-        ? (
-          <a
-            href={href}
-            {...(action.project === scrapbox.Project.name ? ({}) : (
-              {
-                rel: "noopener noreferrer",
-                target: "_blank",
-              }
-            ))}
-            onClick={handleClick}
-          >
-            {action.name}
-          </a>
-        )
-        : action.name}
-    </li>
   );
 };
 
