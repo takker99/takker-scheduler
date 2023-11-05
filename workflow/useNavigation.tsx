@@ -5,7 +5,7 @@ import { Key, toKey, toLocalDate } from "./key.ts";
 export type PageNo = Key | "expired" | "errors";
 
 export const useNavigation = (
-  defaultPageNo: PageNo = toKey(new Date())
+  defaultPageNo: PageNo = toKey(new Date()),
 ) => {
   /** 日付の場合は現在表示しているタスクリストの基準点を表す
    * `expired`のときはやり残した予定を表示する
@@ -15,7 +15,7 @@ export const useNavigation = (
 
   const next = useCallback(() => {
     setPageNo((pageNo) => {
-      switch(pageNo) {
+      switch (pageNo) {
         case "errors":
           return "expired";
         case "expired":
@@ -31,7 +31,7 @@ export const useNavigation = (
   const prev = useCallback(() => {
     setPageNo((pageNo) => {
       const nowKey = toKey(new Date());
-      switch(pageNo) {
+      switch (pageNo) {
         case "errors":
           return "errors";
         case "expired":
