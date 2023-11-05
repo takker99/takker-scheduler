@@ -24,12 +24,21 @@ export type TaskError =
   & (InvalidDateError | TaskRangeError);
 
 export interface UseTaskCrawlerResult {
+  /** 読み込んだ予定とタスク */
   tasks: Task[];
+  /** 構文エラーが生じたタスクのエラー情報 */
   errors: TaskError[];
+  /** タスクを読み込む */
   load: () => Promise<void>;
+  /** 予定・タスクを読み込み中なら`true` */
   loading: boolean;
 }
 
+/** 指定されたprojectsから予定とタスクをすべて読み込むhook
+ *
+ * @param projects 読み込むプロジェクト名の配列
+ * @return 読み込んだデータと操作函数
+ */
 export const useTaskCrawler = (projects: string[]): UseTaskCrawlerResult => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<
