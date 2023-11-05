@@ -16,7 +16,6 @@ import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
 import { Copy } from "./Copy.tsx";
-import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
 import { getEnd, getStart, isReminder, Reminder } from "../howm/parse.ts";
@@ -27,7 +26,6 @@ import { toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
-export declare const scrapbox: Scrapbox;
 
 export interface Controller {
   open: () => void;
