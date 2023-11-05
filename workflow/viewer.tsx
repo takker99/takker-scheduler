@@ -88,7 +88,7 @@ const App = ({ getController, projects }: Props) => {
       const now = new Date();
       return tasks.flatMap<Action>((task) =>
         !isReminder(task) && isBefore(getEnd(task), fromDate(now)) &&
-          task.freshness?.status !== "done"
+          task.freshness === undefined && task.recurrence === undefined
           ? [
             {
               ...task,
