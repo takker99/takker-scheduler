@@ -78,7 +78,7 @@ const App = ({ getController, projects }: Props) => {
           status: "todo" as Status,
         },
         project: error.project,
-        score: -Infinity,
+        score: 0,
       }));
     }
 
@@ -92,7 +92,7 @@ const App = ({ getController, projects }: Props) => {
           ? [
             {
               ...task,
-              score: -Infinity,
+              score: 0,
               freshness: { refDate: task.executed.start, status: "todo" },
             },
           ]
