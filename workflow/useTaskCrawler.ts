@@ -12,25 +12,32 @@ import {
   subscribe,
 } from "../deps/storage.ts";
 import { toTitleLc } from "../deps/scrapbox-std.ts";
+import { Path } from "./path.ts";
 
 export type { InvalidDateError, TaskBase, TaskRangeError };
-export type Task = TaskBase & {
-  project: string;
-  title: string;
-};
+export type Task = TaskBase & Path;
 
 export type TaskError =
   & { project: string; title: string }
   & (InvalidDateError | TaskRangeError);
 
-export interface UseTaskCrawler {
+export interface UseTaskCrawlerResult {
+  /** 読み込んだ予定とタスク */
   tasks: Task[];
+  /** 構文エラーが生じたタスクのエラー情報 */
   errors: TaskError[];
+  /** タスクを読み込む */
   load: () => Promise<void>;
+  /** 予定・タスクを読み込み中なら`true` */
   loading: boolean;
 }
 
-export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
+/** 指定されたprojectsから予定とタスクをすべて読み込むhook
+ *
+ * @param projects 読み込むプロジェクト名の配列
+ * @return 読み込んだデータと操作函数
+ */
+export const useTaskCrawler = (projects: string[]): UseTaskCrawlerResult => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<
     TaskError[]

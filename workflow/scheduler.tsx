@@ -53,7 +53,7 @@ interface Props {
   mainProject: string;
 }
 const App = ({ getController, projects, mainProject }: Props) => {
-  const { tasks, errors, load, loading } = useTaskCrawler(projects);
+  const { tasks, load, loading } = useTaskCrawler(projects);
   const { pageNo, next, prev } = useNavigation();
 
   /** 表示対象の日付 */

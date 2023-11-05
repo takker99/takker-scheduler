@@ -52,7 +52,7 @@ export const EventItem: FunctionComponent<
   const type = useMemo(() => getEventStatus(event, now), [event, now]);
 
   return (
-    <li data-type={type}>
+    <li data-status={type}>
       <time className="label start">{start}</time>
       <time className="label end">{end}</time>
       <time className="label duration">
