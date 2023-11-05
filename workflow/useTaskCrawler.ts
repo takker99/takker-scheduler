@@ -12,12 +12,10 @@ import {
   subscribe,
 } from "../deps/storage.ts";
 import { toTitleLc } from "../deps/scrapbox-std.ts";
+import { Path } from "./path.ts";
 
 export type { InvalidDateError, TaskBase, TaskRangeError };
-export type Task = TaskBase & {
-  project: string;
-  title: string;
-};
+export type Task = TaskBase & Path;
 
 export type TaskError =
   & { project: string; title: string }
