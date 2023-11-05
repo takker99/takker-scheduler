@@ -110,11 +110,11 @@ ul {
   font-weight: bold;
 }
 
-.scheduler details li[data-type="done"] {
+.scheduler details li[data-status="done"] {
   opacity: 0.4;
 }
 
-.scheduler details li[data-type="expired"] {
+.scheduler details li[data-status="expired"] {
   font-weight: bold;
 }
 
