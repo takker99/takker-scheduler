@@ -267,6 +267,10 @@ export const parse = (
   return { ok: true, value: executed ? { ...task, executed } : task };
 };
 
+/** Reminderかどうか調べる */
+export const isReminder = <R extends Reminder>(task: Task): task is R =>
+  task.freshness !== undefined && !("executed" in task);
+
 /** 終日タスクかどうか判定する
  *
  * `start`に時刻が含まれていないタスクは全て終日タスクだとみなす
@@ -295,14 +299,14 @@ export const getDuration = (
     : undefined;
 
 export const getStart = (task: Task): LocalDate | LocalDateTime =>
-  "executed" in task ? task.executed.start : task.freshness.refDate;
+  !isReminder(task) ? task.executed.start : task.freshness.refDate;
 
 /** タスクの終了日時を得る
  *
  * 終日の場合は、最終日の翌日0時を終了日時とする
  */
 export const getEnd = (task: Task): LocalDateTime => {
-  if ("executed" in task) {
+  if (!isReminder(task)) {
     const end = toDate(task.executed.start);
     end.setMinutes(end.getMinutes() + task.executed.duration);
     return fromDate(end);
@@ -331,11 +335,7 @@ export const toString = (task: Task): string => {
     ? `${fromStatus(task.freshness.status)}${task.freshness.speed ?? ""}`
     : "";
   const base = `${format(getStart(task))}`;
-  const duration = "executed" in task
-    ? task.executed.duration
-    : isNumber(task.estimated)
-    ? task.estimated
-    : undefined;
+  const duration = getDuration(task);
 
   return `${status}@${base}${
     duration === undefined ? "" : `D${duration}`
