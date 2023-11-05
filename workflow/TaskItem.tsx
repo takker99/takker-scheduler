@@ -50,9 +50,13 @@ export const TaskItem: FunctionComponent<
   const freshnessLevel = Math.floor(Math.round(action.score) / 7);
 
   const now = useMinutes();
+  /** 現在時刻以降に実行日時が設定されていれば`true`
+   *
+   * 再配置したタスクかどうかを表している
+   */
   const scheduled = useMemo(
     () =>
-      action.executed &&
+      action.executed !== undefined &&
       isAfter(
         addMinutes(toDate(action.executed.start), action.executed.duration),
         now,
