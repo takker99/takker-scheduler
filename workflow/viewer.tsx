@@ -17,19 +17,13 @@ import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
 import { Copy } from "./Copy.tsx";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
-import {
-  addDays,
-  eachDayOfInterval,
-  isSameDay,
-  lightFormat,
-} from "../deps/date-fns.ts";
 import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
 import { calcFreshness } from "../howm/freshness.ts";
-import { getEnd, getStart, Reminder } from "../howm/parse.ts";
+import { getEnd, getStart, isReminder, Reminder } from "../howm/parse.ts";
 import { Period } from "../howm/Period.ts";
 import { compareFn } from "../howm/sort.ts";
 import { Status } from "../howm/status.ts";
-import { Key, toLocalDate } from "./key.ts";
+import { toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
@@ -92,11 +86,19 @@ const App = ({ getController, projects }: Props) => {
       // 期限切れの予定を表示
       // タスクは表示しない
       const now = new Date();
-      return tasks.filter((task) =>
-        !task.freshness && isBefore(getEnd(task), fromDate(now))
+      return tasks.flatMap<Action>((task) =>
+        !isReminder(task) && isBefore(getEnd(task), fromDate(now)) &&
+          task.freshness?.status !== "done"
+          ? [
+            {
+              ...task,
+              score: -Infinity,
+              freshness: { refDate: task.executed.start, status: "todo" },
+            },
+          ]
+          : []
       )
-        .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
-        .map((task) => ({ ...task, score: -Infinity }) as Action);
+        .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0);
     }
 
     const date = toDate(toLocalDate(pageNo))!;
