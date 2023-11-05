@@ -23,14 +23,14 @@ export type TaskError =
   & { project: string; title: string }
   & (InvalidDateError | TaskRangeError);
 
-export interface UseTaskCrawler {
+export interface UseTaskCrawlerResult {
   tasks: Task[];
   errors: TaskError[];
   load: () => Promise<void>;
   loading: boolean;
 }
 
-export const useTaskCrawler = (projects: string[]): UseTaskCrawler => {
+export const useTaskCrawler = (projects: string[]): UseTaskCrawlerResult => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<
     TaskError[]
