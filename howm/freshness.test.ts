@@ -24,9 +24,9 @@ Deno.test("calcFreshness()", async (t) => {
     const task = parse("ハイウェイ惑星 〆切!@2002-10-20")!.value as Reminder;
     const freshness = task.freshness;
 
-    assertEquals(calcFreshness(freshness, now), -Infinity);
+    assertEquals(calcFreshness(freshness, now), -10);
     now.setDate(12);
-    assertEquals(calcFreshness(freshness, now), -Infinity);
+    assertEquals(calcFreshness(freshness, now), -8);
     now.setDate(20 - 7);
     assertEquals(calcFreshness(freshness, now), -7);
     now.setHours(12);
@@ -45,17 +45,17 @@ Deno.test("calcFreshness()", async (t) => {
       .value as Reminder;
     const freshness = task.freshness;
 
-    assertEquals(calcFreshness(freshness, now), -Infinity);
+    assertEquals(calcFreshness(freshness, now), -10);
     now.setDate(12);
-    assertEquals(calcFreshness(freshness, now), -Infinity);
+    assertEquals(calcFreshness(freshness, now), -8);
     now.setDate(20 - 7);
-    assertEquals(calcFreshness(freshness, now), -Infinity);
+    assertEquals(calcFreshness(freshness, now), -7);
     now.setDate(20);
     now.setHours(12);
-    assertEquals(calcFreshness(freshness, now), -6.5);
+    assertEquals(calcFreshness(freshness, now), 0);
     now.setHours(0);
     for (const day of [20, 21, 22, 23, 24, 25, 26, 27]) {
-      now.setDate(day);
+      now.setDate(day - 7);
       assertEquals(calcFreshness(freshness, now), day - 27);
     }
     for (const day of [28, 29, 30]) {
@@ -106,20 +106,17 @@ Deno.test("calcFreshness()", async (t) => {
     });
   });
   await t.step("up-down", () => {
-    const now = new Date("2023-09-10T00:00");
-    const task = parse("ハイウェイ惑星 買おうかな~@2023-09-12")!
+    const now = new Date("2023-09-01T00:00");
+    const task = parse("ハイウェイ惑星 買おうかな~@2023-09-16")!
       .value as Reminder;
     const freshness = task.freshness;
 
-    assertEquals(calcFreshness(freshness, now), -Infinity);
-    now.setDate(11);
-    assertEquals(calcFreshness(freshness, now), -Infinity);
-
-    now.setDate(12);
-    assertEquals(calcFreshness(freshness, now), 0);
-    now.setDate(27);
     assertEquals(calcFreshness(freshness, now), -60);
-    now.setDate(42);
+    now.setDate(16);
+    assertEquals(calcFreshness(freshness, now), 0);
+    now.setDate(31);
+    assertEquals(calcFreshness(freshness, now), -60);
+    now.setDate(46);
     assertEquals(calcFreshness(freshness, now), 0);
   });
 });

@@ -35,14 +35,10 @@ export const calcFreshness = (freshness: Freshness, now: Date): number => {
       return -Infinity;
     case "deadline":
       // 当日0になるよう上昇
-      return now.getTime() + oneday * (freshness.speed ?? 7) < start.getTime()
-        ? -Infinity
-        : priority;
+      return priority / (freshness.speed ?? 1);
     case "todo":
-      // 当日から上昇
-      return now.getTime() < start.getTime()
-        ? -Infinity
-        : Math.min(priority - (freshness.speed ?? 7), 0);
+      // 当日まで上昇
+      return Math.min(priority / (freshness.speed ?? 1), 0);
     case "note":
       // 当日から下降
       return now.getTime() < start.getTime()
@@ -51,9 +47,7 @@ export const calcFreshness = (freshness: Freshness, now: Date): number => {
     case "up-down": {
       const period = freshness.speed ?? 30;
       // 当日から下降と上昇を繰り返す
-      return now.getTime() < start.getTime()
-        ? -Infinity
-        : period * (-1 + Math.cos(Math.PI * 2 * priority / period));
+      return period * (-1 + Math.cos(Math.PI * 2 * priority / period));
     }
   }
 };
