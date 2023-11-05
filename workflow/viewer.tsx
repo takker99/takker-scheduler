@@ -75,6 +75,7 @@ const App = ({ getController, projects }: Props) => {
   /** 表示するタスク */
   const actions: Action[] = useMemo(() => {
     if (pageNo === "errors") {
+      // エラーになったタスクを表示
       return errors.map((error) => ({
         name: `${error.title}\nname:${error.name}\nmessage:${error.message}`,
         raw: error.title,
@@ -88,16 +89,19 @@ const App = ({ getController, projects }: Props) => {
     }
 
     if (pageNo === "expired") {
+      // 期限切れの予定を表示
+      // タスクは表示しない
       const now = new Date();
-      return tasks.filter((task) => isBefore(getEnd(task), fromDate(now)))
+      return tasks.filter((task) =>
+        !task.freshness && isBefore(getEnd(task), fromDate(now))
+      )
         .sort((a, b) => isBefore(getStart(a), getStart(b)) ? -1 : 0)
-        .flatMap((task) => {
-          if (!task.freshness || task.freshness.status === "done") return [];
-          return [{ ...task, score: -Infinity }] as Action[];
-        });
+        .map((task) => ({ ...task, score: -Infinity }) as Action);
     }
 
     const date = toDate(toLocalDate(pageNo))!;
+    // 指定された日付を起点に計算した旬度に基づいてソートする
+    // 一応、一定未満の旬度のタスクは表示しないが、正直この制限はいらないように思う
     return tasks.flatMap((task) => {
       if (!task.freshness) return [];
       if ("recurrence" in task) return [];
