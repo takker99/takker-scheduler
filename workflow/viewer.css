@@ -118,6 +118,19 @@ ul {
   font-weight: bold;
 }
 
+.task-list li[data-type="deadline"] .label.type {
+  color: var(--takker-scheduler-label-deadline-color, rgb(255,75,0));
+}
+.task-list li[data-type="todo"] .label.type {
+  color: var(--takker-scheduler-label-todo-color, rgb(246,170,0));
+}
+.task-list li[data-type="note"] .label.type {
+  color: var(--takker-scheduler-label-note-color, rgb(200,200,203));
+}
+.task-list li[data-type="up-down"] .label.type {
+  color: var(--takker-scheduler-label-up-down-color, rgb(77,196,255));
+}
+
 :is([data-page-no="expired"], [data-page-no="errors"]) li {
   opacity: 1.0 !important;
 }

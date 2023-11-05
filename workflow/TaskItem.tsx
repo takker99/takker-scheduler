@@ -71,7 +71,7 @@ export const TaskItem: FunctionComponent<
   );
   return (
     <li
-      data-type={type}
+      data-type={action.freshness.status}
       data-freshness={action.score.toFixed(0)}
       data-level={freshnessLevel}
       {...(freshnessLevel < 0
