@@ -10,8 +10,10 @@ import { addMinutes, isAfter } from "../deps/date-fns.ts";
 import { format, toDate } from "../howm/localDate.ts";
 import { getDuration, getStart } from "../howm/parse.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { Action, scrapbox } from "./viewer.tsx";
+import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
+import { Action } from "./viewer.tsx";
 import { toStatusLabel } from "./toStatusLabel.ts";
+declare const scrapbox: Scrapbox;
 
 /** タスクの情報を1行に表示する部品
  *
