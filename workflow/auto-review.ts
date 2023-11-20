@@ -29,9 +29,8 @@ export const main = async (
   project: string,
   dailyTemplate: [string, string, string],
   weeklyTemplate: [string, string, string],
-): Promise<void> => {
-  // 一回のみ実行する
-  if (scrapbox.Project.name !== project) return;
+): Promise<() => void | Promise<void>> => {
+  if (scrapbox.Project.name !== project) return () => {};
 
   // scrapbox.Project.pagesが生成されるまで待つ
   // 生成したpagesはcacheしておく
@@ -47,81 +46,94 @@ export const main = async (
     }, 2000);
   });
 
-  const start = new Date(2023, 1, 3);
-  const now = new Date();
-  const interval = { start, end: addDays(now, 1) };
+  let start = new Date(2023, 1, 3);
+  const callback = async () => {
+    const now = new Date();
+    const interval = { start, end: addDays(now, 1) };
 
-  const { render, dispose } = useStatusBar();
-  let socket: Socket | undefined;
-  try {
-    // テンプレートを取得
-    const dailyTemplateText = await fetchTemplate(dailyTemplate);
-    const weeklyTemplateText = await fetchTemplate(weeklyTemplate);
+    const { render, dispose } = useStatusBar();
+    let socket: Socket | undefined;
+    try {
+      // テンプレートを取得
+      const dailyTemplateText = await fetchTemplate(dailyTemplate);
+      const weeklyTemplateText = await fetchTemplate(weeklyTemplate);
 
-    /* 生成する振り返りページの日付リスト */
-    const dates = eachDayOfInterval(interval).filter((date) => {
-      const title = template(date, dailyTemplateText)[0];
-      const page = pages.find((page) => page.title === title);
-      return !page || !page.exists;
-    });
-    /* 生成する1週間の振り返りページの日付リスト */
-    const weeklyDates = eachWeekOfInterval(interval).filter((date) => {
-      const title = template(date, weeklyTemplateText)[0];
-      const page = pages.find((page) => page.title === title);
-      return !page || !page.exists;
-    });
+      /* 生成する振り返りページの日付リスト */
+      const dates = eachDayOfInterval(interval).filter((date) => {
+        const title = template(date, dailyTemplateText)[0];
+        const page = pages.find((page) => page.title === title);
+        return !page || !page.exists;
+      });
+      /* 生成する1週間の振り返りページの日付リスト */
+      const weeklyDates = eachWeekOfInterval(interval).filter((date) => {
+        const title = template(date, weeklyTemplateText)[0];
+        const page = pages.find((page) => page.title === title);
+        return !page || !page.exists;
+      });
 
-    if (dates.length === 0 && weeklyDates.length === 0) return;
+      if (dates.length === 0 && weeklyDates.length === 0) return;
 
-    // 今日以外の日付ページを外す
-    let counter = dates.length + weeklyDates.length;
-    render(
-      { type: "spinner" },
-      { type: "text", text: `create ${counter} review pages...` },
-    );
-
-    socket = await makeSocket();
-    for (
-      const lines of [
-        ...dates.map((date) => template(date, dailyTemplateText)),
-        ...weeklyDates.map((date) => template(date, weeklyTemplateText)),
-      ]
-    ) {
-      await patch(
-        project,
-        lines[0],
-        (_, metadata) => metadata.persistent ? undefined : lines,
-        socket ? { socket } : {},
-      );
-      counter--;
+      // 今日以外の日付ページを外す
+      let counter = dates.length + weeklyDates.length;
       render(
         { type: "spinner" },
         { type: "text", text: `create ${counter} review pages...` },
       );
+
+      socket = await makeSocket();
+      for (
+        const lines of [
+          ...dates.map((date) => template(date, dailyTemplateText)),
+          ...weeklyDates.map((date) => template(date, weeklyTemplateText)),
+        ]
+      ) {
+        await patch(
+          project,
+          lines[0],
+          (_, metadata) => metadata.persistent ? undefined : lines,
+          socket ? { socket } : {},
+        );
+        counter--;
+        render(
+          { type: "spinner" },
+          { type: "text", text: `create ${counter} review pages...` },
+        );
+      }
+      render(
+        { type: "check-circle" },
+        {
+          type: "text",
+          text: `created ${dates.length + weeklyDates.length} review pages.`,
+        },
+      );
+      start = now;
+    } catch (e: unknown) {
+      render(
+        { type: "exclamation-triangle" },
+        {
+          type: "text",
+          text: e instanceof Error
+            ? `${e.name} ${e.message}`
+            : `Unknown error! (see developper console)`,
+        },
+      );
+      console.error(e);
+    } finally {
+      if (socket) await disconnect(socket);
+      await sleep(1000);
+      dispose();
     }
-    render(
-      { type: "check-circle" },
-      {
-        type: "text",
-        text: `created ${dates.length + weeklyDates.length} review pages.`,
-      },
-    );
-  } catch (e: unknown) {
-    render(
-      { type: "exclamation-triangle" },
-      {
-        type: "text",
-        text: e instanceof Error
-          ? `${e.name} ${e.message}`
-          : `Unknown error! (see developper console)`,
-      },
-    );
-    console.error(e);
-  } finally {
-    if (socket) await disconnect(socket);
-    await sleep(1000);
-    dispose();
-  }
+  };
+  let job = callback();
+  // 1日ごとに実行する
+  const timer = setInterval(async () => {
+    await job;
+    job = callback();
+  }, 1000 * 60 * 60 * 24);
+  return () => {
+    clearInterval(timer);
+    return job;
+  };
 };
 
 const fetchTemplate = async (path: [string, string, string]) => {
