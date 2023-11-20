@@ -43,6 +43,7 @@ export { default as differenceInMinutes } from "https://deno.land/x/date_fns@v2.
 export { default as differenceInCalendarDays } from "https://deno.land/x/date_fns@v2.22.1/differenceInCalendarDays/index.ts";
 export { default as differenceInCalendarMonths } from "https://deno.land/x/date_fns@v2.22.1/differenceInCalendarMonths/index.ts";
 export { default as eachDayOfInterval } from "./patch/eachDayOfInterval.ts";
+export { default as eachWeekOfInterval } from "./patch/eachWeekOfInterval.ts";
 export type {
   DateValues,
   Duration,
