@@ -124,15 +124,20 @@ export const main = async (
       dispose();
     }
   };
-  let job = callback();
-  // 1日ごとに実行する
-  const timer = setInterval(async () => {
-    await job;
-    job = callback();
-  }, 1000 * 60 * 60 * 24);
+  // 日付変更線を越えるたびに実行
+  let done = Promise.resolve();
+  let timer = 0;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const job = async () => {
+    await done;
+    done = callback();
+    timer = setTimeout(job, oneDay - Date.now() % oneDay);
+  };
+  await job();
+
   return () => {
-    clearInterval(timer);
-    return job;
+    clearTimeout(timer);
+    return done;
   };
 };
 
