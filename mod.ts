@@ -9,8 +9,6 @@ export { moveToday } from "./commands/moveToday.ts";
 export { format } from "./commands/format.ts";
 export { transport } from "./commands/transport.ts";
 export { makeJudgeTimeFromSelection } from "./commands/makeJudgeTimeFromSelection.ts";
-export { makePlan } from "./commands/makePlan.ts";
-export { makePlanFromSelection } from "./commands/makePlanFromSelection.ts";
 
 // TODO: implement blow
 // - transport()
