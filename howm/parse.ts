@@ -269,7 +269,7 @@ export const parse = (
 
 /** Reminderかどうか調べる */
 export const isReminder = <R extends Reminder>(task: Task): task is R =>
-  task.freshness !== undefined && !("executed" in task);
+  !("executed" in task);
 
 /** 終日タスクかどうか判定する
  *

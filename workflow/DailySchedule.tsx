@@ -16,7 +16,7 @@ import {
   subDays,
 } from "../deps/date-fns.ts";
 import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
-import { makeRepeat, parse } from "../howm/parse.ts";
+import { isReminder, makeRepeat, parse } from "../howm/parse.ts";
 import { toKey } from "./key.ts";
 import { toTitle } from "../diary.ts";
 import { useLines } from "./useLines.ts";
@@ -79,7 +79,7 @@ export const DailySchedule: FunctionComponent<
     const tomorrow = addDays(date, 1);
     return tasks.flatMap((task) => {
       if (task.freshness?.status === "done") return [];
-      if (!("executed" in task)) return [];
+      if (isReminder(task)) return [];
       if (task.recurrence) {
         return [yesterday, date, tomorrow].flatMap((d) => {
           const generated = makeRepeat(task, d);
@@ -223,7 +223,7 @@ const getEventsFromLines = (lines: string[], project: string): Event[] => {
       if (result.value.freshness) {
         event.status = result?.value.freshness.status;
       }
-      if ("executed" in result.value) {
+      if (!isReminder(result.value)) {
         event.executed = result.value.executed;
       }
     }
