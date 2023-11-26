@@ -37,6 +37,7 @@ export const DailySchedule: FunctionComponent<
   // 日をまたぐ予定に対応するため、前後日の予定も取得する
   // 当日の予定個数判定を後でやるので、別々に予定を取り出しておく
   const ylines = useLines(project, toTitle(subDays(date, 1)));
+  /** 前日の日刊記録sheetから取得したevents */
   const eventsFromyLine: Event[] = useMemo(
     () => getEventsFromLines(ylines, project),
     [
@@ -45,6 +46,7 @@ export const DailySchedule: FunctionComponent<
     ],
   );
   const plines = useLines(project, toTitle(date));
+  /** 当日の日刊記録sheetから取得したevents */
   const eventsFrompLine: Event[] = useMemo(
     () => getEventsFromLines(plines, project),
     [
@@ -53,6 +55,7 @@ export const DailySchedule: FunctionComponent<
     ],
   );
   const tlines = useLines(project, toTitle(addDays(date, 1)));
+  /** 翌日の日刊記録sheetから取得したevents */
   const eventsFromtLine: Event[] = useMemo(
     () => getEventsFromLines(tlines, project),
     [
@@ -65,7 +68,10 @@ export const DailySchedule: FunctionComponent<
 
   const now = useMinutes();
 
-  /**  当日の日刊記録sheetから一つも取得できなかった場合は、タスクリンクから生成する*/
+  /**  リンクから生成したevents
+   *
+   * 当日の日刊記録sheetから一つも取得できなかった場合は、タスクリンクから生成する
+   */
   const eventsFromLink: Event[] = useMemo(() => {
     if (eventsFrompLine.length > 0) return [];
 
@@ -108,10 +114,13 @@ export const DailySchedule: FunctionComponent<
    * remainsはやることの総量 (min)
    */
   const [events, remains]: [Event[], number] = useMemo(() => {
+    /** この日にやることの総量 (min) */
     let remains = 0;
 
     // 当日内の予定だけ切り出す
+    /** この時刻以降の予定だけ表示する */
     const sPartition = startOfDay(date);
+    /** この時刻以前の予定だけ表示する */
     const ePartition = endOfDay(date);
     const events: Event[] = [
       ...eventsFromyLine,
