@@ -1,6 +1,6 @@
-import { getDuration, isAllDay, isReminder, Task, toString } from "../howm/parse.ts";
+import { getDuration, isAllDay, isReminder, Task, toString } from "./parse.ts";
 import { Task as TaskLine } from "../task.ts";
-import { toDate } from "../howm/localDate.ts";
+import { toDate } from "./localDate.ts";
 
 export const toTaskLine = (task: Task): TaskLine => {
   const start = toDate(
