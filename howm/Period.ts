@@ -10,6 +10,7 @@ export interface ExDate {
 }
 */
 
+/** 特定の時間帯 */
 export interface Period {
   /** 開始日時 */
   start: LocalDateTime;
@@ -18,6 +19,7 @@ export interface Period {
   duration: number;
 }
 
+/** 終了時刻が未定の記録 */
 export interface Log {
   /** 開始日時 */
   start: LocalDateTime;

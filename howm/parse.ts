@@ -298,6 +298,7 @@ export const getDuration = (
     ? task.estimated
     : undefined;
 
+/** タスクの開始日時を得る */
 export const getStart = (task: Task): LocalDate | LocalDateTime =>
   !isReminder(task) ? task.executed.start : task.freshness.refDate;
 
