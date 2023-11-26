@@ -1,6 +1,14 @@
 /// <reference lib="deno.ns" />
 
-import { isTask, parse, parseBlock, Task, toString } from "./task.ts";
+import {
+  isDone,
+  isRunning,
+  isTask,
+  parse,
+  parseBlock,
+  Task,
+  toString,
+} from "./task.ts";
 import { assert, assertEquals } from "./deps/testing.ts";
 
 const testData: [string, Task][] = [
@@ -219,5 +227,61 @@ Deno.test("parseBlock()", () => {
       "  indent line",
       "  indent line",
     ],
+  });
+});
+Deno.test("isRunning()", async (t) => {
+  await t.step("should return true if task is running", () => {
+    const task: Task = {
+      title: "sample task",
+      base: new Date(2021, 8, 23),
+      plan: {},
+      record: {
+        start: new Date(2021, 8, 23, 12, 8, 27),
+      },
+    };
+    const result = isRunning(task);
+    assertEquals(result, true);
+  });
+
+  await t.step("should return false if task is not running", () => {
+    const task: Task = {
+      title: "sample task",
+      base: new Date(2021, 8, 23),
+      plan: {},
+      record: {
+        start: new Date(2021, 8, 23, 12, 8, 27),
+        end: new Date(2021, 8, 23, 12, 11, 52),
+      },
+    };
+    const result = isRunning(task);
+    assertEquals(result, false);
+  });
+});
+
+Deno.test("isDone()", async (t) => {
+  await t.step("should return true if task is done", () => {
+    const task: Task = {
+      title: "sample task",
+      base: new Date(2021, 8, 23),
+      plan: {},
+      record: {
+        start: new Date(2021, 8, 23, 12, 8, 27),
+        end: new Date(2021, 8, 23, 12, 11, 52),
+      },
+    };
+    const result = isDone(task);
+    assertEquals(result, true);
+  });
+  await t.step("should return false if task is not done", () => {
+    const task: Task = {
+      title: "sample task",
+      base: new Date(2021, 8, 23),
+      plan: {},
+      record: {
+        start: new Date(2021, 8, 23, 12, 8, 27),
+      },
+    };
+    const result = isDone(task);
+    assertEquals(result, false);
   });
 });
