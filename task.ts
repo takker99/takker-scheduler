@@ -92,6 +92,14 @@ export const endDate = (task: Task): Date =>
       ? addSeconds(startDate(task), task.plan.duration)
       : task.base);
 
+/** 実行中か判定する */
+export const isRunning = (task: Task): boolean =>
+  task.record.start !== undefined && task.record.end === undefined;
+
+/** 完了したか判定する */
+export const isDone = (task: Task): boolean =>
+  task.record.start !== undefined && task.record.end !== undefined;
+
 /** Taskを文字列に直す */
 export const toString = ({ title, base, plan, record }: Task): string =>
   [
