@@ -4,7 +4,7 @@ import { toDate } from "./localDate.ts";
 
 export const toTaskLine = (task: Task): TaskLine => {
   const start = toDate(
-    !isReminder(task)? task.executed.start : task.freshness.refDate,
+    !isReminder(task) ? task.executed.start : task.freshness.refDate,
   );
   const durationMin = getDuration(task);
 

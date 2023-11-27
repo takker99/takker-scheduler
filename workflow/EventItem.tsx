@@ -24,7 +24,7 @@ export const EventItem: FunctionComponent<
           encodeTitleURI(event.name)
         }`
         : "",
-    [event.project, isLink(event), event.name],
+    [isLink(event), ...(isLink(event) ? [event.project, event.name] : [])],
   );
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
@@ -58,7 +58,7 @@ export const EventItem: FunctionComponent<
       <time className="label duration">
         {`${event.plan.duration}`.padStart(4, "0")}
       </time>
-      {href
+      {isLink(event) && href
         ? (
           <a
             href={href}
