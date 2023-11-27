@@ -21,10 +21,10 @@ export const EventItem: FunctionComponent<
     () =>
       isLink(event)
         ? `https://${location.hostname}/${event.project}/${
-          encodeTitleURI(event.name)
+          encodeTitleURI(event.title)
         }`
         : "",
-    [isLink(event), ...(isLink(event) ? [event.project, event.name] : [])],
+    [isLink(event), ...(isLink(event) ? [event.project, event.title] : [])],
   );
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
