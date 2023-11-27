@@ -4,7 +4,13 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
+import {
+  Fragment,
+  FunctionComponent,
+  h,
+  useCallback,
+  useMemo,
+} from "../deps/preact.tsx";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { useMinutes } from "./useMinutes.ts";
 import { Event, getEventStatus, isLink } from "./event.ts";
@@ -17,22 +23,38 @@ export const EventItem: FunctionComponent<
 > = (
   { event, onPageChanged },
 ) => {
-  const href = useMemo(
-    () =>
-      isLink(event)
-        ? `https://${location.hostname}/${event.project}/${
-          encodeTitleURI(event.name)
-        }`
-        : "",
-    [event.project, isLink(event), event.name],
-  );
-
   // 同じタブで別のページに遷移したときはmodalを閉じる
   const handleClick = useCallback(() => {
     scrapbox.once("page:changed", onPageChanged);
     // 2秒以内に遷移しなかったら何もしない
     setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
   }, []);
+
+  const EventName = useMemo(
+    () => {
+      if (isLink(event)) {
+        const href = `https://${location.hostname}/${event.project}/${
+          encodeTitleURI(event.title)
+        }`;
+        return (
+          <a
+            href={href}
+            {...(event.project === scrapbox.Project.name ? ({}) : (
+              {
+                rel: "noopener noreferrer",
+                target: "_blank",
+              }
+            ))}
+            onClick={handleClick}
+          >
+            {event.name}
+          </a>
+        );
+      }
+      return <>{event.name}</>;
+    },
+    [event],
+  );
 
   const start = useMemo(
     () =>
@@ -58,22 +80,7 @@ export const EventItem: FunctionComponent<
       <time className="label duration">
         {`${event.plan.duration}`.padStart(4, "0")}
       </time>
-      {href
-        ? (
-          <a
-            href={href}
-            {...(event.project === scrapbox.Project.name ? ({}) : (
-              {
-                rel: "noopener noreferrer",
-                target: "_blank",
-              }
-            ))}
-            onClick={handleClick}
-          >
-            {event.name}
-          </a>
-        )
-        : event.name}
+      {EventName}
     </li>
   );
 };

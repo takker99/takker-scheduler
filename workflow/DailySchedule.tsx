@@ -9,21 +9,26 @@ import { Task } from "./useTaskCrawler.ts";
 import { Copy } from "./Copy.tsx";
 import {
   addDays,
-  differenceInMinutes,
   endOfDay,
   isSameDay,
   startOfDay,
   subDays,
 } from "../deps/date-fns.ts";
-import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
-import { makeRepeat, parse } from "../howm/parse.ts";
+import { isBefore, toDate } from "../howm/localDate.ts";
+import { isReminder, makeRepeat, toString } from "../howm/parse.ts";
 import { toKey } from "./key.ts";
 import { toTitle } from "../diary.ts";
 import { useLines } from "./useLines.ts";
 import { parseLines } from "../task.ts";
 import { isString } from "../utils.ts";
 import { useMinutes } from "./useMinutes.ts";
-import { Event, getRemains, isLink } from "./event.ts";
+import {
+  Event,
+  fromHowmEvent,
+  fromTaskLine,
+  getRemains,
+  isLink,
+} from "./event.ts";
 import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
@@ -79,17 +84,18 @@ export const DailySchedule: FunctionComponent<
     const tomorrow = addDays(date, 1);
     return tasks.flatMap((task) => {
       if (task.freshness?.status === "done") return [];
-      if (!("executed" in task)) return [];
+      if (isReminder(task)) return [];
       if (task.recurrence) {
         return [yesterday, date, tomorrow].flatMap((d) => {
           const generated = makeRepeat(task, d);
           if (!generated) return [];
-          return [{
-            name: generated.name,
-            project: task.project,
-            plan: generated.executed,
-            status: generated.freshness?.status,
-          }];
+          return [
+            fromHowmEvent({
+              ...generated,
+              project: task.project,
+              title: toString(generated),
+            }),
+          ];
         });
       }
       const start = toDate(task.executed.start);
@@ -97,13 +103,7 @@ export const DailySchedule: FunctionComponent<
         !isSameDay(start, yesterday) && !isSameDay(start, date) &&
         !isSameDay(start, tomorrow)
       ) return [];
-      return [{
-        name: task.name,
-        project: task.project,
-        executed: task.executed,
-        plan: task.executed,
-        status: task.freshness?.status,
-      }];
+      return [fromHowmEvent(task)];
     });
   }, [tasks, eventsFrompLine, date]);
 
@@ -187,46 +187,13 @@ export const DailySchedule: FunctionComponent<
  * 予定開始日時があるもののみ対象とする。完了未完了は考慮しない
  */
 const getEventsFromLines = (lines: string[], project: string): Event[] => {
-  // 実際に使った時間を優先して使う
   const events: Event[] = [];
   for (const task of parseLines(lines)) {
     if (isString(task)) continue;
 
-    // []分を外して解析する
-    // 解析できなかった場合は[]を外す前のを使うので問題ない
-    const result = parse(task.title.slice(1, -1));
+    const event = fromTaskLine(task, project);
+    if (!event) continue;
 
-    // 予定開始日時があるもののみ対象とする
-    if (!task.plan.start) continue;
-
-    const event: Event = {
-      name: result?.ok ? result.value.name : task.title,
-      project,
-      plan: {
-        start: fromDate(task.plan.start),
-        duration: (task.plan.duration ?? 0) / 60,
-      },
-    };
-    // optional parametersを埋めていく
-    if (task.record.start) {
-      event.record = {
-        start: fromDate(task.record.start),
-      };
-      if (task.record.end) {
-        event.record.duration = differenceInMinutes(
-          task.record.end,
-          task.record.start,
-        );
-      }
-    }
-    if (result?.ok) {
-      if (result.value.freshness) {
-        event.status = result?.value.freshness.status;
-      }
-      if ("executed" in result.value) {
-        event.executed = result.value.executed;
-      }
-    }
     events.push(event);
   }
   return events;

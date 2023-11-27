@@ -12,7 +12,7 @@ import { sleep, toTitleLc } from "../deps/scrapbox-std.ts";
 import { eachDayOfInterval, lightFormat } from "../deps/date-fns.ts";
 import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
-import { toTaskLine } from "./toTaskLine.ts";
+import { toTaskLine } from "../howm/toTaskLine.ts";
 declare const scrapbox: Scrapbox;
 import { decode, load } from "../deps/storage.ts";
 import { makeRepeat, parse } from "../howm/parse.ts";
