@@ -9,7 +9,7 @@ import {
 } from "../deps/scrapbox-websocket.ts";
 import { Scrapbox, useStatusBar } from "../deps/scrapbox-std-dom.ts";
 import { sleep, toTitleLc } from "../deps/scrapbox-std.ts";
-import { eachDayOfInterval, lightFormat } from "../deps/date-fns.ts";
+import { eachDayOfInterval, isSameDay, lightFormat } from "../deps/date-fns.ts";
 import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
 import { toTaskLine } from "../howm/toTaskLine.ts";
@@ -167,16 +167,18 @@ export const main = async (): Promise<() => void | Promise<void>> => {
       dispose();
     }
   };
+
+  let done = callback();
+
   // 日付変更線を越えるたびに実行
-  let done = Promise.resolve();
-  let timer = 0;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const job = async () => {
-    await done;
-    done = callback();
-    timer = setTimeout(job, oneDay - Date.now() % oneDay);
-  };
-  await job();
+  // 端末がスリープするとタイマーが止まるので、10秒ごとにチェックする
+  let checked = new Date();
+  const timer = setInterval(() => {
+    const now = new Date();
+    if (isSameDay(checked, now)) return;
+    checked = now;
+    done.then(() => done = callback());
+  }, 10000);
 
   return () => {
     clearTimeout(timer);

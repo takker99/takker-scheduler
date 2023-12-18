@@ -13,6 +13,7 @@ import {
   addDays,
   eachDayOfInterval,
   eachWeekOfInterval,
+  isSameDay,
 } from "../deps/date-fns.ts";
 import { template } from "./template.ts";
 declare const scrapbox: Scrapbox;
@@ -124,16 +125,18 @@ export const main = async (
       dispose();
     }
   };
+
+  let done = callback();
+
   // 日付変更線を越えるたびに実行
-  let done = Promise.resolve();
-  let timer = 0;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const job = async () => {
-    await done;
-    done = callback();
-    timer = setTimeout(job, oneDay - Date.now() % oneDay);
-  };
-  await job();
+  // 端末がスリープするとタイマーが止まるので、10秒ごとにチェックする
+  let checked = new Date();
+  const timer = setInterval(() => {
+    const now = new Date();
+    if (isSameDay(checked, now)) return;
+    checked = now;
+    done.then(() => done = callback());
+  }, 10000);
 
   return () => {
     clearTimeout(timer);
