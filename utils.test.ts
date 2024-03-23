@@ -1,4 +1,4 @@
-/// <reference lib="deno.unstable" />
+/// <reference lib="deno.ns" />
 import { oneByOne } from "./utils.ts";
 import { sleep } from "./deps/scrapbox-std.ts";
 import { assertEquals } from "./deps/testing.ts";

@@ -1,2 +1,2 @@
-//@deno-types=https://cdn.jsdelivr.net/npm/esbuild-wasm@0.14.10/esm/browser.d.ts
-export * from "https://cdn.jsdelivr.net/npm/esbuild-wasm@0.14.10/esm/browser.js";
+export * from "https://deno.land/x/esbuild@v0.20.2/mod.js";
+export * from "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts";

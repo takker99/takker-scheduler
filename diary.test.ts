@@ -1,4 +1,3 @@
-/// <reference lib="deno.unstable" />
 import { format, isDiaryPage, toDate, toTitle } from "./diary.ts";
 import { assert, assertEquals } from "./deps/testing.ts";
 

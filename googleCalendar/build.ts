@@ -1,26 +1,21 @@
-/// <reference lib="deno.unstable" />
-import { generate } from "https://esm.sh/gas-entry-generator@2.1.0";
-import { build, stop } from "https://deno.land/x/esbuild@v0.14.18/mod.js";
-
-const bundled = await Deno.emit(new URL("./main.ts", import.meta.url), {
-  bundle: "module",
-  check: false,
-});
-const bundledCode = bundled.files["deno:///bundle.js"];
+/// <reference lib="deno.ns" />
+/// <reference lib="dom.iterable" />
+import { generate } from "../deps/gas-entry-generator.ts";
+import { build, denoPlugins, stop } from "../deps/esbuild.ts";
 
 const { outputFiles } = await build({
-  stdin: {
-    contents: bundledCode,
-    loader: "js",
-  },
+  entryPoints: [new URL("./main.ts", import.meta.url).href],
   // GASが対応していない記法を変換しておく
   target: "es2017",
+  bundle: true,
+  minify: true,
   write: false,
+  plugins: [...denoPlugins()],
 });
-stop();
-const babeledCode = outputFiles[0].text;
+await stop();
+const code = outputFiles[0].text;
 
-const output = generate(babeledCode);
+const output = generate(code);
 console.log(
-  `const global=this;\n${output.entryPointFunctions}\n(() => {\n${babeledCode}\n})();`,
+  `const global=this;\n${output.entryPointFunctions}\n(() => {\n${code}\n})();`,
 );
