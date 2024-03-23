@@ -22,12 +22,21 @@ import { ProgressBar } from "./ProgressBar.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
 import { useStopPropagation } from "./useStopPropagation.ts";
 
+/** schedulerのcontroller */
 export interface Controller {
+  /** schedulerを開く */
   open: () => void;
+  /** schedulerを閉じる */
   close: () => void;
+  /** schedulerの開閉を切り替える */
   toggle: () => void;
 }
 
+/** 時系列順にタスクを閲覧するviewerを起動する
+ *
+ * @param projects タスクの取得先projectのリスト
+ * @return viewerのcontroller
+ */
 export const setup = (projects: string[]): Promise<Controller> => {
   const app = document.createElement("div");
   app.dataset.userscriptName = "takker-scheduler/scheduler";
@@ -57,7 +66,10 @@ const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
   const { pageNo, next, prev } = useNavigation();
 
-  /** 表示対象の日付 */
+  /** 表示対象の日付
+   *
+   * 指定した週の日曜日から土曜日までの日付を格納する
+   */
   const dateList = useMemo(() => {
     const start = toStartOfWeek(pageNo);
     return [0, 1, 2, 3, 4, 5, 6].map((i) => addDays(start, i));

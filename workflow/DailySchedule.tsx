@@ -33,6 +33,13 @@ import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
 
+/** 特定の日付のタスクを一覧するComponent
+ *
+ * @param date 表示する日付
+ * @param tasks その日のタスク
+ * @param project その日のタスクが属するproject
+ * @param onPageChanged このComponentが再描画されたときに呼ばれるcallback
+ */
 export const DailySchedule: FunctionComponent<
   { date: Date; tasks: Task[]; project: string; onPageChanged: () => void }
 > = (
