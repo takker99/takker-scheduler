@@ -17,9 +17,7 @@ import { Path } from "./path.ts";
 export type { InvalidDateError, TaskBase, TaskRangeError };
 export type Task = TaskBase & Path;
 
-export type TaskError =
-  & { project: string; title: string }
-  & (InvalidDateError | TaskRangeError);
+export type TaskError = Path & (InvalidDateError | TaskRangeError);
 
 export interface UseTaskCrawlerResult {
   /** 読み込んだ予定とタスク */
