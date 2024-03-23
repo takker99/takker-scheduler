@@ -26,6 +26,7 @@ import { toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
+import { useStopPropagation } from "./useStopPropagation.ts";
 
 export interface Controller {
   open: () => void;
@@ -115,7 +116,7 @@ const App = ({ getController, projects }: Props) => {
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
+  const stopPropagation = useStopPropagation();
 
   /** コピー用テキスト */
   const text = useMemo(

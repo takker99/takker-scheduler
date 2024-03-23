@@ -20,6 +20,7 @@ import { addDays, addWeeks, subWeeks } from "../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
+import { useStopPropagation } from "./useStopPropagation.ts";
 
 export interface Controller {
   open: () => void;
@@ -36,7 +37,7 @@ export const setup = (projects: string[]): Promise<Controller> => {
     (resolve) =>
       render(
         <App
-          getController={(controller) => resolve(controller)}
+          getController={resolve}
           projects={projects}
           mainProject={projects[0]}
         />,
@@ -67,10 +68,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useCallback(
-    (e: globalThis.Event) => e.stopPropagation(),
-    [],
-  );
+  const stopPropagation = useStopPropagation();
 
   return (
     <>
