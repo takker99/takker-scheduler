@@ -19,17 +19,10 @@ import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
-  { event: Event; onPageChanged: () => void }
+  { event: Event }
 > = (
-  { event, onPageChanged },
+  { event },
 ) => {
-  // 同じタブで別のページに遷移したときはmodalを閉じる
-  const handleClick = useCallback(() => {
-    scrapbox.once("page:changed", onPageChanged);
-    // 2秒以内に遷移しなかったら何もしない
-    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
-  }, []);
-
   const EventName = useMemo(
     () => {
       if (isLink(event)) {
@@ -45,7 +38,6 @@ export const EventItem: FunctionComponent<
                 target: "_blank",
               }
             ))}
-            onClick={handleClick}
           >
             {event.name}
           </a>

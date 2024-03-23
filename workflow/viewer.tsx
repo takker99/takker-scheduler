@@ -27,6 +27,7 @@ import { ProgressBar } from "./ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
 import { useStopPropagation } from "./useStopPropagation.ts";
+import { useUserScriptEvent } from "./useUserScriptEvent.ts";
 
 export interface Controller {
   open: () => void;
@@ -124,6 +125,9 @@ const App = ({ getController, projects }: Props) => {
     [actions, pageNo],
   );
 
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  useUserScriptEvent("page:changed", close);
+
   return (
     <>
       <style>{CSS}</style>
@@ -145,11 +149,7 @@ const App = ({ getController, projects }: Props) => {
           data-page-no={pageNo}
         >
           {actions.map((action, i) => (
-            <TaskItem
-              action={action}
-              pActions={actions.slice(0, i)}
-              onPageChanged={close}
-            />
+            <TaskItem action={action} pActions={actions.slice(0, i)} />
           ))}
         </ul>
       </dialog>

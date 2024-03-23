@@ -21,6 +21,7 @@ import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
 import { useStopPropagation } from "./useStopPropagation.ts";
+import { useUserScriptEvent } from "./useUserScriptEvent.ts";
 
 /** schedulerのcontroller */
 export interface Controller {
@@ -82,6 +83,9 @@ const App = ({ getController, projects, mainProject }: Props) => {
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useStopPropagation();
 
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  useUserScriptEvent("page:changed", close);
+
   return (
     <>
       <style>{CSS}</style>
@@ -107,7 +111,6 @@ const App = ({ getController, projects, mainProject }: Props) => {
                 date={date}
                 tasks={tasks}
                 project={mainProject}
-                onPageChanged={close}
               />
             </li>
           ))}

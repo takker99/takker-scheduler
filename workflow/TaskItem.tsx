@@ -18,13 +18,12 @@ declare const scrapbox: Scrapbox;
 /** タスクの情報を1行に表示する部品
  *
  * @param action 表示するタスク
- * @param onPageChanged タスクをクリックしたときに呼ばれる関数
  * @param pActions その他のタスク コピー用テキストを作成する時に使う
  */
 export const TaskItem: FunctionComponent<
-  { action: Action; onPageChanged: () => void; pActions: Action[] }
+  { action: Action; pActions: Action[] }
 > = (
-  { action, onPageChanged, pActions },
+  { action, pActions },
 ) => {
   const href = useMemo(
     () =>
@@ -33,13 +32,6 @@ export const TaskItem: FunctionComponent<
       }`,
     [action.project, action.raw],
   );
-
-  // 同じタブで別のページに遷移したときはmodalを閉じる
-  const handleClick = useCallback(() => {
-    scrapbox.once("page:changed", onPageChanged);
-    // 2秒以内に遷移しなかったら何もしない
-    setTimeout(() => scrapbox.off("page:changed", onPageChanged), 2000);
-  }, []);
 
   const type = useMemo(() => toStatusLabel(action.freshness.status), [
     action.freshness.status,
@@ -98,7 +90,6 @@ export const TaskItem: FunctionComponent<
                 target: "_blank",
               }
             ))}
-            onClick={handleClick}
           >
             {action.name}
           </a>
