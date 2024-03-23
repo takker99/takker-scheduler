@@ -1,10 +1,4 @@
-import { build, initialize } from "../../deps/esbuild.ts";
-
-// prepare esbuild
-await initialize({
-  wasmURL: "https://cdn.jsdelivr.net/npm/esbuild-wasm@0.14.10/esbuild.wasm",
-  worker: false,
-});
+import { build, stop } from "../../deps/esbuild.ts";
 
 // bundle & minify app.css
 const name = "file-loader";
@@ -33,6 +27,7 @@ const { outputFiles: [css] } = await build({
     },
   }],
 });
+await stop();
 
 // create app.min.css.ts
 await Deno.writeTextFile(

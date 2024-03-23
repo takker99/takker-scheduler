@@ -1,5 +1,3 @@
-/// <reference lib="deno.unstable" />
-
 import { parseSpecifier, SpecifierResult } from "./parseSpecifier.ts";
 import { assertEquals } from "./deps/testing.ts";
 
