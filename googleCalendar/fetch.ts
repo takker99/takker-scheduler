@@ -1,6 +1,6 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="esnext" />
-/// <reference types="https://raw.githubusercontent.com/takker99/deno-gas-types/main/mod.d.ts" />
+/// <reference types="https://raw.githubusercontent.com/proudust/deno-gas-types/main/mod.d.ts" />
 
 import { isDiaryPage } from "../diary.ts";
 import { encodeTitleURI } from "../deps/scrapbox-std.ts";
