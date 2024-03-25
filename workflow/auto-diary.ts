@@ -13,10 +13,10 @@ import { eachDayOfInterval, isSameDay, lightFormat } from "../deps/date-fns.ts";
 import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
 import { toTaskLine } from "../howm/toTaskLine.ts";
-declare const scrapbox: Scrapbox;
 import { decode, load } from "../deps/storage.ts";
-import { makeRepeat, parse } from "../howm/parse.ts";
+import { parse } from "../howm/parse.ts";
 import { Key, toKey } from "./key.ts";
+declare const scrapbox: Scrapbox;
 
 const project = "takker-memex";
 
@@ -87,21 +87,14 @@ export const main = async (): Promise<() => void | Promise<void>> => {
           // 一部のステータスのタスクを除外する
           if (result.value.freshness?.status === "done") continue;
 
-          if (!("recurrence" in result.value)) {
-            const task = toTaskLine(result.value);
-            // TODO: toTaskLineで済むようにしたい
-            task.title = `[${result.value.raw}]`;
+          for (const date of dates) {
+            const task = toTaskLine(result.value, date);
+            if (!task) continue;
             const key = toKey(task.base);
             if (!dayKeys.includes(key)) continue;
             tasks.set(key, [...(tasks.get(key) ?? []), task]);
-          } else {
-            for (const date of dates) {
-              const taskLink = makeRepeat(result.value, date);
-              if (!taskLink) continue;
-              const task = toTaskLine(taskLink);
-              const key = toKey(task.base);
-              tasks.set(key, [...(tasks.get(key) ?? []), task]);
-            }
+            // 繰り返しタスクでなければ、全ての日付を試す必要がない
+            if (!("recurrence" in result.value)) continue;
           }
         }
       }

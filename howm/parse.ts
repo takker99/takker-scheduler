@@ -19,6 +19,10 @@ import {
 import { Recurrence, toFrequency } from "./recurrence.ts";
 import { fromStatus, toStatus } from "./status.ts";
 
+/** Reminder (開始日時が指定されていないタスクのようなもの)
+ *
+ * Howmのreminderに相当する
+ */
 export interface Reminder {
   /** task name */
   name: string;
@@ -31,6 +35,9 @@ export interface Reminder {
    * 所要時間 (min)か終了日時のどちらか
    */
   estimated?: number | LocalDate | LocalDateTime;
+
+  /** 繰り返しイベントから生成された予定なら`true` */
+  generated: boolean;
 
   /** 解析前の文字列 */
   raw: string;
@@ -49,6 +56,9 @@ export interface Event {
 
   /** 繰り返し情報 */
   recurrence?: Recurrence;
+
+  /** 繰り返しイベントから生成された予定なら`true` */
+  generated: boolean;
 
   /** 解析前の文字列 */
   raw: string;
@@ -235,6 +245,7 @@ export const parse = (
     const event: Event = {
       name,
       executed,
+      generated: false,
       raw: text,
     };
     if (freshness) event.freshness = freshness;
@@ -261,6 +272,7 @@ export const parse = (
   const task: Reminder = {
     name,
     freshness,
+    generated: false,
     raw: text,
   };
   if (estimated) task.estimated = estimated;
@@ -404,11 +416,27 @@ export const makeRepeat = (
   const generated: Event = {
     name: event.name,
     executed: { start, duration: executed.duration },
+    generated: true,
     raw: event.raw,
   };
   if (event.freshness) generated.freshness = event.freshness;
   return generated;
 };
+
+/** `Task`からタスクリンクを復元する
+ *
+ * リンクにする条件
+ * - 繰り返しタスクの場合は`Reminder`のみリンクにする
+ * - 繰り返しタスクでない場合はすべてリンクにする
+ *
+ * リンクにしないものは`undefined`を返す
+ */
+export const getLinkTitle = (task: Task): string | undefined =>
+  task.freshness
+    ? task.generated ? toString(task) : task.raw
+    : !task.generated
+    ? task.raw
+    : undefined;
 
 /** 開始日時補正データから最終的な開始日時を決定する
  *

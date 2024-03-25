@@ -96,11 +96,7 @@ export const DailySchedule: FunctionComponent<
           const generated = makeRepeat(task, d);
           if (!generated) return [];
           return [
-            fromHowmEvent({
-              ...generated,
-              project: task.project,
-              title: toString(generated),
-            }),
+            fromHowmEvent(generated, task.project),
           ];
         });
       }
@@ -109,7 +105,7 @@ export const DailySchedule: FunctionComponent<
         !isSameDay(start, yesterday) && !isSameDay(start, date) &&
         !isSameDay(start, tomorrow)
       ) return [];
-      return [fromHowmEvent(task)];
+      return [fromHowmEvent(task, task.project)];
     });
   }, [tasks, eventsFrompLine, date]);
 

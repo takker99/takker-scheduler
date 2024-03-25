@@ -1,7 +1,7 @@
 /// <reference lib="deno.ns" />
 
 import { Event, makeRepeat, parse, toString } from "./parse.ts";
-import { assertEquals, assertSnapshot } from "../deps/testing.ts";
+import { assert, assertEquals, assertSnapshot } from "../deps/testing.ts";
 import { toDate } from "./localDate.ts";
 
 const runTests = async (t: Deno.TestContext, args: string[]) => {
@@ -105,59 +105,57 @@ Deno.test("parse()", async (t) => {
 Deno.test("makeRepeat()", () => {
   {
     const task = "ひるごはん@2023-10-09T12:00D30R1";
-    assertEquals(
-      toString(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2023, month: 10, date: 10 }),
-        )!,
-      ),
-      "@2023-10-10T12:00D30ひるごはん",
-    );
-    assertEquals(
-      toString(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2023, month: 11, date: 10 }),
-        )!,
-      ),
-      "@2023-11-10T12:00D30ひるごはん",
-    );
-    assertEquals(
-      toString(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2024, month: 11, date: 10 }),
-        )!,
-      ),
-      "@2024-11-10T12:00D30ひるごはん",
-    );
+    const parsed = parse(task)!.value as unknown as Event;
+    {
+      const event = makeRepeat(
+        parsed,
+        toDate({ year: 2023, month: 10, date: 10 }),
+      )!;
+      assert(event.generated);
+      assertEquals(toString(event), "@2023-10-10T12:00D30ひるごはん");
+    }
+    {
+      const event = makeRepeat(
+        parsed,
+        toDate({ year: 2023, month: 11, date: 10 }),
+      )!;
+      assert(event.generated);
+      assertEquals(toString(event), "@2023-11-10T12:00D30ひるごはん");
+    }
+    {
+      const event = makeRepeat(
+        parsed,
+        toDate({ year: 2024, month: 11, date: 10 }),
+      )!;
+      assert(event.generated);
+      assertEquals(toString(event), "@2024-11-10T12:00D30ひるごはん");
+    }
   }
 
   {
     const task = "爪切り@2023-10-09T12:00D5RW1";
-    assertEquals(
-      makeRepeat(
-        parse(task)!.value as unknown as Event,
+    const parsed = parse(task)!.value as unknown as Event;
+    {
+      const event = makeRepeat(
+        parsed,
         toDate({ year: 2023, month: 10, date: 10 }),
-      ),
-      undefined,
-    );
-    assertEquals(
-      makeRepeat(
-        parse(task)!.value as unknown as Event,
+      )!;
+      assertEquals(event, undefined);
+    }
+    {
+      const event = makeRepeat(
+        parsed,
         toDate({ year: 2023, month: 10, date: 15 }),
-      ),
-      undefined,
-    );
-    assertEquals(
-      toString(
-        makeRepeat(
-          parse(task)!.value as unknown as Event,
-          toDate({ year: 2023, month: 10, date: 16 }),
-        )!,
-      ),
-      "@2023-10-16T12:00D5爪切り",
-    );
+      )!;
+      assertEquals(event, undefined);
+    }
+    {
+      const event = makeRepeat(
+        parsed,
+        toDate({ year: 2023, month: 10, date: 16 }),
+      )!;
+      assert(event.generated);
+      assertEquals(toString(event), "@2023-10-16T12:00D5爪切り");
+    }
   }
 });

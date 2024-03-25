@@ -2,7 +2,12 @@ import { differenceInMinutes } from "../deps/date-fns.ts";
 import { Period } from "../howm/Period.ts";
 import { getEnd, Log } from "../howm/Period.ts";
 import { fromDate, isBefore } from "../howm/localDate.ts";
-import { Event as HowmEvent, isReminder, parse } from "../howm/parse.ts";
+import {
+  Event as HowmEvent,
+  getLinkTitle,
+  isReminder,
+  parse,
+} from "../howm/parse.ts";
 import { Status } from "../howm/status.ts";
 import { Task as TaskLine } from "../task.ts";
 import { Path } from "./path.ts";
@@ -125,11 +130,23 @@ export const fromTaskLine = (
 };
 
 /** howmのEventからEventを生成する */
-export const fromHowmEvent = (event: HowmEvent & Path): EventWithLink => ({
-  name: event.name,
-  project: event.project,
-  title: event.title,
-  executed: event.executed,
-  plan: event.executed,
-  status: event.freshness?.status,
-});
+export const fromHowmEvent = (
+  event: HowmEvent,
+  project: string,
+): Event => {
+  const title = getLinkTitle(event);
+
+  return title !== undefined
+    ? {
+      name: event.name,
+      project,
+      title,
+      executed: event.executed,
+      plan: event.executed,
+      status: event.freshness?.status,
+    }
+    : {
+      name: event.name,
+      plan: event.executed,
+    };
+};
