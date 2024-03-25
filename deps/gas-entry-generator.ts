@@ -1,1 +1,1 @@
-export * from "https://esm.sh/gas-entry-generator@2.1.0";
+export * from "https://esm.sh/gas-entry-generator@2.5.1/";
