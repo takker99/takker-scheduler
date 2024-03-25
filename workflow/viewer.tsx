@@ -26,6 +26,8 @@ import { toLocalDate } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
+import { useStopPropagation } from "./useStopPropagation.ts";
+import { useUserScriptEvent } from "./useUserScriptEvent.ts";
 
 export interface Controller {
   open: () => void;
@@ -76,6 +78,7 @@ const App = ({ getController, projects }: Props) => {
           status: "todo" as Status,
         },
         project: error.project,
+        generated: true,
         score: 0,
       }));
     }
@@ -115,13 +118,16 @@ const App = ({ getController, projects }: Props) => {
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useCallback((e: Event) => e.stopPropagation(), []);
+  const stopPropagation = useStopPropagation();
 
   /** コピー用テキスト */
   const text = useMemo(
     () => [pageNo, ...actions.map((action) => ` [${action.raw}]`)].join("\n"),
     [actions, pageNo],
   );
+
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  useUserScriptEvent("page:changed", close);
 
   return (
     <>
@@ -144,11 +150,7 @@ const App = ({ getController, projects }: Props) => {
           data-page-no={pageNo}
         >
           {actions.map((action, i) => (
-            <TaskItem
-              action={action}
-              pActions={actions.slice(0, i)}
-              onPageChanged={close}
-            />
+            <TaskItem action={action} pActions={actions.slice(0, i)} />
           ))}
         </ul>
       </dialog>

@@ -33,10 +33,16 @@ import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
 
+/** 特定の日付のタスクを一覧するComponent
+ *
+ * @param date 表示する日付
+ * @param tasks その日のタスク
+ * @param project その日のタスクが属するproject
+ */
 export const DailySchedule: FunctionComponent<
-  { date: Date; tasks: Task[]; project: string; onPageChanged: () => void }
+  { date: Date; tasks: Task[]; project: string }
 > = (
-  { date, tasks, project, onPageChanged },
+  { date, tasks, project },
 ) => {
   // 日刊記録sheetから、前日・当日・翌日の予定を取得する
   // 日をまたぐ予定に対応するため、前後日の予定も取得する
@@ -90,11 +96,7 @@ export const DailySchedule: FunctionComponent<
           const generated = makeRepeat(task, d);
           if (!generated) return [];
           return [
-            fromHowmEvent({
-              ...generated,
-              project: task.project,
-              title: toString(generated),
-            }),
+            fromHowmEvent(generated, task.project),
           ];
         });
       }
@@ -103,7 +105,7 @@ export const DailySchedule: FunctionComponent<
         !isSameDay(start, yesterday) && !isSameDay(start, date) &&
         !isSameDay(start, tomorrow)
       ) return [];
-      return [fromHowmEvent(task)];
+      return [fromHowmEvent(task, task.project)];
     });
   }, [tasks, eventsFrompLine, date]);
 
@@ -170,13 +172,7 @@ export const DailySchedule: FunctionComponent<
         <ScheduleSummary date={date} now={now} remains={remains} />
       </summary>
       <ul>
-        {events.map((event, i) => (
-          <EventItem
-            key={event.name}
-            event={event}
-            onPageChanged={onPageChanged}
-          />
-        ))}
+        {events.map((event, i) => <EventItem key={event.name} event={event} />)}
       </ul>
     </details>
   );

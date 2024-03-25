@@ -20,13 +20,24 @@ import { addDays, addWeeks, subWeeks } from "../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "./key.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
+import { useStopPropagation } from "./useStopPropagation.ts";
+import { useUserScriptEvent } from "./useUserScriptEvent.ts";
 
+/** schedulerのcontroller */
 export interface Controller {
+  /** schedulerを開く */
   open: () => void;
+  /** schedulerを閉じる */
   close: () => void;
+  /** schedulerの開閉を切り替える */
   toggle: () => void;
 }
 
+/** 時系列順にタスクを閲覧するviewerを起動する
+ *
+ * @param projects タスクの取得先projectのリスト
+ * @return viewerのcontroller
+ */
 export const setup = (projects: string[]): Promise<Controller> => {
   const app = document.createElement("div");
   app.dataset.userscriptName = "takker-scheduler/scheduler";
@@ -36,7 +47,7 @@ export const setup = (projects: string[]): Promise<Controller> => {
     (resolve) =>
       render(
         <App
-          getController={(controller) => resolve(controller)}
+          getController={resolve}
           projects={projects}
           mainProject={projects[0]}
         />,
@@ -56,7 +67,10 @@ const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
   const { pageNo, next, prev } = useNavigation();
 
-  /** 表示対象の日付 */
+  /** 表示対象の日付
+   *
+   * 指定した週の日曜日から土曜日までの日付を格納する
+   */
   const dateList = useMemo(() => {
     const start = toStartOfWeek(pageNo);
     return [0, 1, 2, 3, 4, 5, 6].map((i) => addDays(start, i));
@@ -67,10 +81,10 @@ const App = ({ getController, projects, mainProject }: Props) => {
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useCallback(
-    (e: globalThis.Event) => e.stopPropagation(),
-    [],
-  );
+  const stopPropagation = useStopPropagation();
+
+  // 同じタブで別のページに遷移したときはmodalを閉じる
+  useUserScriptEvent("page:changed", close);
 
   return (
     <>
@@ -97,7 +111,6 @@ const App = ({ getController, projects, mainProject }: Props) => {
                 date={date}
                 tasks={tasks}
                 project={mainProject}
-                onPageChanged={close}
               />
             </li>
           ))}
