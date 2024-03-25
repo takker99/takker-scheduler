@@ -78,7 +78,7 @@ const App = ({ getController, projects }: Props) => {
           status: "todo" as Status,
         },
         project: error.project,
-        generated:true,
+        generated: true,
         score: 0,
       }));
     }
