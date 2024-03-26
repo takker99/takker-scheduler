@@ -15,7 +15,7 @@ import {
   subDays,
 } from "../deps/date-fns.ts";
 import { isBefore, toDate } from "../howm/localDate.ts";
-import { isReminder, makeRepeat, toString } from "../howm/parse.ts";
+import { isReminder, makeRepeat } from "../howm/parse.ts";
 import { toKey } from "./key.ts";
 import { toTitle } from "../diary.ts";
 import { useLines } from "./useLines.ts";

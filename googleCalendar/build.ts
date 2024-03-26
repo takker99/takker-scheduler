@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="dom.iterable" />
-import { generate } from "../deps/gas-entry-generator.ts";
+import { generate } from "../deps/gas-entry-generator.js";
 import { build, denoPlugins, stop } from "../deps/esbuild.ts";
 
 const { outputFiles } = await build({
