@@ -4,14 +4,7 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import {
-  Fragment,
-  h,
-  render,
-  useCallback,
-  useEffect,
-  useMemo,
-} from "../deps/preact.tsx";
+import { Fragment, h, render, useEffect, useMemo } from "../deps/preact.tsx";
 import { useTaskCrawler } from "./useTaskCrawler.ts";
 import { useDialog } from "./useDialog.ts";
 import { CSS } from "./viewer.min.css.ts";
