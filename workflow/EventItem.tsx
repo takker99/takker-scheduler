@@ -4,18 +4,12 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import {
-  Fragment,
-  FunctionComponent,
-  h,
-  useCallback,
-  useMemo,
-} from "../deps/preact.tsx";
-import { encodeTitleURI } from "../deps/scrapbox-std.ts";
+import { Fragment, FunctionComponent, h, useMemo } from "../deps/preact.tsx";
 import { useMinutes } from "./useMinutes.ts";
 import { Event, getEventStatus, isLink } from "./event.ts";
 import { getEnd } from "../howm/Period.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
+import { makeLink } from "./path.ts";
 declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
@@ -24,27 +18,19 @@ export const EventItem: FunctionComponent<
   { event },
 ) => {
   const EventName = useMemo(
-    () => {
-      if (isLink(event)) {
-        const href = `https://${location.hostname}/${event.project}/${
-          encodeTitleURI(event.title)
-        }`;
-        return (
+    () =>
+      isLink(event)
+        ? (
           <a
-            href={href}
-            {...(event.project === scrapbox.Project.name ? ({}) : (
-              {
-                rel: "noopener noreferrer",
-                target: "_blank",
-              }
-            ))}
+            href={makeLink(event).href}
+            {...(event.project === scrapbox.Project.name
+              ? ({})
+              : ({ rel: "noopener noreferrer", target: "_blank" }))}
           >
             {event.name}
           </a>
-        );
-      }
-      return <>{event.name}</>;
-    },
+        )
+        : <>{event.name}</>,
     [event],
   );
 

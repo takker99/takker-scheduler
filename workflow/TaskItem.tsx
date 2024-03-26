@@ -3,9 +3,8 @@
 /// <reference lib="dom" />
 /** @jsx h */
 
-import { FunctionComponent, h, useCallback, useMemo } from "../deps/preact.tsx";
+import { FunctionComponent, h, useMemo } from "../deps/preact.tsx";
 import { Copy } from "./Copy.tsx";
-import { encodeTitleURI } from "../deps/scrapbox-std.ts";
 import { addMinutes, isAfter } from "../deps/date-fns.ts";
 import { format, toDate } from "../howm/localDate.ts";
 import { getDuration, getStart } from "../howm/parse.ts";
@@ -13,6 +12,7 @@ import { useMinutes } from "./useMinutes.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { Action } from "./viewer.tsx";
 import { toStatusLabel } from "./toStatusLabel.ts";
+import { makeLink } from "./path.ts";
 declare const scrapbox: Scrapbox;
 
 /** タスクの情報を1行に表示する部品
@@ -26,10 +26,7 @@ export const TaskItem: FunctionComponent<
   { action, pActions },
 ) => {
   const href = useMemo(
-    () =>
-      `https://${location.hostname}/${action.project}/${
-        encodeTitleURI(action.raw)
-      }`,
+    () => makeLink({ project: action.project, title: action.raw }).href,
     [action.project, action.raw],
   );
 
