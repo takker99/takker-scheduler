@@ -35,13 +35,7 @@ export const setup = (projects: string[]): Promise<Controller> => {
   document.body.append(app);
   return new Promise(
     (resolve) =>
-      render(
-        <App
-          getController={(controller) => resolve(controller)}
-          projects={projects}
-        />,
-        shadowRoot,
-      ),
+      render(<App getController={resolve} projects={projects} />, shadowRoot),
   );
 };
 

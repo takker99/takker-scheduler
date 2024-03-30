@@ -1,3 +1,5 @@
+import { zero } from "../zero.ts";
+
 export interface LocalDate {
   year: number;
   month: number;
@@ -32,8 +34,6 @@ export const format = (date: LocalDate | LocalDateTime): string =>
   `${`${date.year}`.padStart(4, "0")}-${zero(date.month)}-${zero(date.date)}${
     "hours" in date ? `T${zero(date.hours)}:${zero(date.minutes)}` : ""
   }`;
-
-const zero = (n: number): string => `${n}`.padStart(2, "0");
 
 export const toDate = (date: LocalDate | LocalDateTime): Date => {
   const str = format(date);

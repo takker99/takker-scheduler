@@ -5,6 +5,7 @@ import {
   startOfWeek,
 } from "../deps/date-fns.ts";
 import { LocalDate } from "../howm/localDate.ts";
+import { zero } from "../zero.ts";
 
 export type Key = `${number}-${string}-${string}`;
 export type WeekKey = `${number}-w${string}`;
@@ -24,5 +25,3 @@ export const toStartOfWeek = (key: WeekKey): Date => {
   const [year, week] = key.split("-w").map((s) => parseInt(s, 10));
   return startOfWeek(setWeek(new Date(year, 0, 1), week));
 };
-
-const zero = (n: number) => `${n}`.padStart(2, "0");
