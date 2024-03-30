@@ -10,6 +10,7 @@ import { Event, getEventStatus, isLink } from "./event.ts";
 import { getEnd } from "../howm/Period.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { makeLink } from "./path.ts";
+import { zero } from "../zero.ts";
 declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
@@ -62,5 +63,3 @@ export const EventItem: FunctionComponent<
     </li>
   );
 };
-
-const zero = (n: number): string => `${n}`.padStart(2, "0");
