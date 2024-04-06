@@ -86,26 +86,22 @@ export const DailySchedule: FunctionComponent<
   const eventsFromLink: Event[] = useMemo(() => {
     if (eventsFrompLine.length > 0) return [];
 
-    const yesterday = subDays(date, 1);
-    const tomorrow = addDays(date, 1);
+    const dateList = [subDays(date, 1), date, addDays(date, 1)];
     return tasks.flatMap((task) => {
       if (task.freshness?.status === "done") return [];
       if (isReminder(task)) return [];
       if (task.recurrence) {
-        return [yesterday, date, tomorrow].flatMap((d) => {
+        return dateList.flatMap((d) => {
           const generated = makeRepeat(task, d);
-          if (!generated) return [];
-          return [
+          return !generated ? [] : [
             fromHowmEvent(generated, task.project),
           ];
         });
       }
       const start = toDate(task.executed.start);
-      if (
-        !isSameDay(start, yesterday) && !isSameDay(start, date) &&
-        !isSameDay(start, tomorrow)
-      ) return [];
-      return [fromHowmEvent(task, task.project)];
+      return dateList.every((d) => !isSameDay(start, d))
+        ? []
+        : [fromHowmEvent(task, task.project)];
     });
   }, [tasks, eventsFrompLine, date]);
 
