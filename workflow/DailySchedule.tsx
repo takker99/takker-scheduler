@@ -19,19 +19,12 @@ import { isReminder, makeRepeat } from "../howm/parse.ts";
 import { toKey } from "./key.ts";
 import { toTitle } from "../diary.ts";
 import { useLines } from "./useLines.ts";
-import { parseLines } from "../task.ts";
-import { isString } from "../utils.ts";
 import { useMinutes } from "./useMinutes.ts";
-import {
-  Event,
-  fromHowmEvent,
-  fromTaskLine,
-  getRemains,
-  isLink,
-} from "./event.ts";
+import { Event, fromHowmEvent, getRemains, isLink } from "./event.ts";
 import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
+import { getEventsFromLines } from "./getEventsFromLines.tsx";
 
 /** 特定の日付のタスクを一覧するComponent
  *
@@ -86,26 +79,22 @@ export const DailySchedule: FunctionComponent<
   const eventsFromLink: Event[] = useMemo(() => {
     if (eventsFrompLine.length > 0) return [];
 
-    const yesterday = subDays(date, 1);
-    const tomorrow = addDays(date, 1);
+    const dateList = [subDays(date, 1), date, addDays(date, 1)];
     return tasks.flatMap((task) => {
       if (task.freshness?.status === "done") return [];
       if (isReminder(task)) return [];
       if (task.recurrence) {
-        return [yesterday, date, tomorrow].flatMap((d) => {
+        return dateList.flatMap((d) => {
           const generated = makeRepeat(task, d);
-          if (!generated) return [];
-          return [
+          return !generated ? [] : [
             fromHowmEvent(generated, task.project),
           ];
         });
       }
       const start = toDate(task.executed.start);
-      if (
-        !isSameDay(start, yesterday) && !isSameDay(start, date) &&
-        !isSameDay(start, tomorrow)
-      ) return [];
-      return [fromHowmEvent(task, task.project)];
+      return dateList.every((d) => !isSameDay(start, d))
+        ? []
+        : [fromHowmEvent(task, task.project)];
     });
   }, [tasks, eventsFrompLine, date]);
 
@@ -176,21 +165,4 @@ export const DailySchedule: FunctionComponent<
       </ul>
     </details>
   );
-};
-
-/** 日刊記録sheetから、Eventsを生成する
- *
- * 予定開始日時があるもののみ対象とする。完了未完了は考慮しない
- */
-const getEventsFromLines = (lines: string[], project: string): Event[] => {
-  const events: Event[] = [];
-  for (const task of parseLines(lines)) {
-    if (isString(task)) continue;
-
-    const event = fromTaskLine(task, project);
-    if (!event) continue;
-
-    events.push(event);
-  }
-  return events;
 };
