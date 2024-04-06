@@ -45,7 +45,7 @@ export const DailySchedule: FunctionComponent<
     [
       summary,
       ...events.map((event) =>
-        isLink(event) ? ` [${event.name}]` : ` ${event.name}`
+        isLink(event) ? ` [${event.title}]` : ` ${event.name}`
       ),
     ].join("\n"), [summary, events]);
 
