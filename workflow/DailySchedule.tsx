@@ -20,12 +20,7 @@ import { toKey } from "./key.ts";
 import { toTitle } from "../diary.ts";
 import { useLines } from "./useLines.ts";
 import { useMinutes } from "./useMinutes.ts";
-import {
-  Event,
-  fromHowmEvent,
-  getRemains,
-  isLink,
-} from "./event.ts";
+import { Event, fromHowmEvent, getRemains, isLink } from "./event.ts";
 import { split } from "../howm/Period.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";

@@ -6,7 +6,10 @@ import { Event, fromTaskLine } from "./event.ts";
  *
  * 予定開始日時があるもののみ対象とする。完了未完了は考慮しない
  */
-export const getEventsFromLines = (lines: string[], project: string): Event[] => {
+export const getEventsFromLines = (
+  lines: string[],
+  project: string,
+): Event[] => {
   const events: Event[] = [];
   for (const task of parseLines(lines)) {
     if (isString(task)) continue;
