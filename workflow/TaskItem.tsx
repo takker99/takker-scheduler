@@ -13,6 +13,7 @@ import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { Action } from "./viewer.tsx";
 import { toStatusLabel } from "./toStatusLabel.ts";
 import { makeLink } from "./path.ts";
+import { ScrapboxLink } from "./ScrapboxLink.tsx";
 declare const scrapbox: Scrapbox;
 
 /** タスクの情報を1行に表示する部品
@@ -25,11 +26,6 @@ export const TaskItem: FunctionComponent<
 > = (
   { action, pActions },
 ) => {
-  const href = useMemo(
-    () => makeLink({ project: action.project, title: action.raw }).href,
-    [action.project, action.raw],
-  );
-
   const type = useMemo(() => toStatusLabel(action.freshness.status), [
     action.freshness.status,
   ]);
@@ -77,21 +73,9 @@ export const TaskItem: FunctionComponent<
       <span className="label freshness">{action.score.toFixed(0)}</span>
       <time className="label start">{start}</time>
       <span className="label duration">{duration}m</span>
-      {href
-        ? (
-          <a
-            href={href}
-            {...(action.project === scrapbox.Project.name ? ({}) : (
-              {
-                rel: "noopener noreferrer",
-                target: "_blank",
-              }
-            ))}
-          >
-            {action.name}
-          </a>
-        )
-        : action.name}
+      <ScrapboxLink project={action.project} title={action.raw}>
+        {action.name}
+      </ScrapboxLink>
     </li>
   );
 };

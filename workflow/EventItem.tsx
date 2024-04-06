@@ -11,6 +11,7 @@ import { getEnd } from "../howm/Period.ts";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { makeLink } from "./path.ts";
 import { zero } from "../zero.ts";
+import { ScrapboxLink } from "./ScrapboxLink.tsx";
 declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
@@ -21,16 +22,7 @@ export const EventItem: FunctionComponent<
   const EventName = useMemo(
     () =>
       isLink(event)
-        ? (
-          <a
-            href={makeLink(event).href}
-            {...(event.project === scrapbox.Project.name
-              ? ({})
-              : ({ rel: "noopener noreferrer", target: "_blank" }))}
-          >
-            {event.name}
-          </a>
-        )
+        ? <ScrapboxLink {...event}>{event.name}</ScrapboxLink>
         : <>{event.name}</>,
     [event],
   );
