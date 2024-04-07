@@ -1,4 +1,5 @@
 @import "./font.css";
+@import "./timegrid.css";
 
 dialog::backdrop {
   background-color: #000c;
@@ -95,7 +96,7 @@ button {
   font-weight: 900
 }
 
-.reload {
+.today, .reload {
   border: 1px solid;
   border-radius: 3px;
 }

@@ -8,6 +8,7 @@ export * from "https://esm.sh/preact@10.6.4";
 export {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,

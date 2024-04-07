@@ -53,11 +53,7 @@ export const useEvents = (
         return [{ plan: forward, ...rest }];
       },
     ).sort((a, b) => isBefore(a.plan.start, b.plan.start) ? -1 : 0);
-  }, [
-    events,
-    date,
-    tasks,
-  ]);
+  }, [events, date]);
 };
 
 const useEvents_ = (project: string, date: Date, tasks: Task[]) => {

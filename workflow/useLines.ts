@@ -1,4 +1,4 @@
-import { useEffect, useState } from "../deps/preact.tsx";
+import { useEffect, useLayoutEffect, useState } from "../deps/preact.tsx";
 import { getPage, toTitleLc } from "../deps/scrapbox-std.ts";
 import { Scrapbox, takeInternalLines } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
@@ -67,6 +67,9 @@ const get = (project: string, title: string): string[] => {
 /** scrapboxのページテキストを格納・参照するhooks */
 export const useLines = (project: string, title: string): string[] => {
   const [lines, setLines] = useState<string[]>(get(project, title));
+
+  // ちらつき(FOUC)対策
+  useLayoutEffect(() => setLines(get(project, title)), [project, title]);
 
   useEffect(() => {
     const key = toKey(project, title);
