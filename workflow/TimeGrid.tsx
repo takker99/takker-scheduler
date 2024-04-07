@@ -9,7 +9,10 @@ import { Task } from "./useTaskCrawler.ts";
 import { Event, isLink } from "./event.ts";
 import { useEvents } from "./useEvents.ts";
 import { ScrapboxLink } from "./ScrapboxLink.tsx";
-import { getDate } from "../deps/date-fns.ts";
+import { getDate, isSameDay } from "../deps/date-fns.ts";
+import { useMinutes } from "./useMinutes.ts";
+import { getHours } from "../deps/date-fns.ts";
+import { getMinutes } from "../deps/date-fns.ts";
 
 /** 特定の日付のタスクを一覧するComponent
  *
@@ -69,9 +72,23 @@ const TimeLine: FunctionComponent<
   { project: string; date: Date; tasks: Task[] }
 > = ({ project, date, tasks }) => {
   const events = useEvents(project, date, tasks);
+  const now = useMinutes();
+  const indicator = useMemo(
+    () =>
+      isSameDay(now, date)
+        ? (
+          <div
+            className="indicator"
+            style={`--start: ${getHours(now) + getMinutes(now) / 60}`}
+          />
+        )
+        : <></>,
+    [now, date],
+  );
 
   return (
     <div className="timeline" role="gridcell">
+      {indicator}
       {events.map((event) => <TimeBlock event={event} />)}
     </div>
   );
