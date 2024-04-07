@@ -33,6 +33,8 @@ export interface Reminder {
   /** 見積もり用日時
    *
    * 所要時間 (min)か終了日時のどちらか
+   *
+   * 所要時間のときは、`freshness.refDate`からの経過時間 (min) として扱う
    */
   estimated?: number | LocalDate | LocalDateTime;
 

@@ -81,7 +81,12 @@ export const getRemains = (event: Event, now: Date): number => {
 
 /** TaskLineからEventを生成する
  *
- * task nameがタスクリンクの場合でも、TaskLineから得た予定開始日時を使ってEventを生成する
+ * - 予定開始日時のないTaskLineは変換対象外
+ * - task nameがタスクリンクの場合でも、TaskLineから得た予定開始日時を使ってEventを生成する
+ *
+ * @param task TaskLine
+ * @param project project name, タスクリンクのパスを作るときに使う
+ * @return `Event`, 予定開始日時がないTaskLineのときは`undefined`
  */
 export const fromTaskLine = (
   task: TaskLine,
