@@ -4,36 +4,29 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import {
-  Fragment,
-  h,
-  render,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "../deps/preact.tsx";
-import { useTaskCrawler } from "./useTaskCrawler.ts";
-import { useDialog } from "./useDialog.ts";
-import { CSS } from "./viewer.min.css.ts";
-import { addDays, addWeeks, subWeeks } from "../deps/date-fns.ts";
-import { toStartOfWeek, toWeekKey, WeekKey } from "./key.ts";
-import { ProgressBar } from "./ProgressBar.tsx";
-import { useStopPropagation } from "./useStopPropagation.ts";
-import { useUserScriptEvent } from "./useUserScriptEvent.ts";
-import { TimeGrid } from "./TimeGrid.tsx";
+import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
+import { useTaskCrawler } from "../useTaskCrawler.ts";
+import { useDialog } from "../useDialog.ts";
+import { CSS } from "../viewer.min.css.ts";
+import { addDays } from "../../deps/date-fns.ts";
+import { toKey, toStartOfWeek } from "../key.ts";
+import { ProgressBar } from "../ProgressBar.tsx";
+import { DailySchedule } from "./DailySchedule.tsx";
+import { useStopPropagation } from "../useStopPropagation.ts";
+import { useUserScriptEvent } from "../useUserScriptEvent.ts";
+import { useWeeklyNavigation } from "./useWeeklyNavigation.tsx";
 
-/** calnedarのcontroller */
+/** schedulerのcontroller */
 export interface Controller {
-  /** calendarを開く */
+  /** schedulerを開く */
   open: () => void;
-  /** calendarを閉じる */
+  /** schedulerを閉じる */
   close: () => void;
-  /** calendarの開閉を切り替える */
+  /** schedulerの開閉を切り替える */
   toggle: () => void;
 }
 
-/** 週単位のカレンダーを起動する
+/** 時系列順にタスクを閲覧するviewerを起動する
  *
  * @param projects タスクの取得先projectのリスト
  * @return viewerのcontroller
@@ -65,7 +58,7 @@ interface Props {
 }
 const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
-  const { pageNo, next, prev, jump } = useNavigation();
+  const { pageNo, next, prev } = useWeeklyNavigation();
 
   /** 表示対象の日付
    *
@@ -86,8 +79,6 @@ const App = ({ getController, projects, mainProject }: Props) => {
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
 
-  const goToday = useCallback(() => jump(new Date()), [jump]);
-
   return (
     <>
       <style>{CSS}</style>
@@ -97,38 +88,27 @@ const App = ({ getController, projects, mainProject }: Props) => {
           <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>today</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-
-        <div
+        <ul
           className="result scheduler"
           onClick={stopPropagation}
           data-page-no={pageNo}
         >
-          <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
-        </div>
+          {dateList.map((date) => (
+            <li key={toKey(date)}>
+              <DailySchedule
+                date={date}
+                tasks={tasks}
+                project={mainProject}
+              />
+            </li>
+          ))}
+        </ul>
       </dialog>
     </>
   );
-};
-
-const useNavigation = (
-  defaultPageNo: WeekKey = toWeekKey(new Date()),
-) => {
-  /** 現在表示する週番号を格納する */
-  const [pageNo, setPageNo] = useState<WeekKey>(defaultPageNo);
-
-  const next = useCallback(() => {
-    setPageNo((pageNo) => toWeekKey(addWeeks(toStartOfWeek(pageNo), 1)));
-  }, []);
-  const prev = useCallback(() => {
-    setPageNo((pageNo) => toWeekKey(subWeeks(toStartOfWeek(pageNo), 1)));
-  }, []);
-
-  const jump = useCallback((date: Date) => setPageNo(toWeekKey(date)), []);
-  return { pageNo, next, prev, jump };
 };

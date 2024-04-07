@@ -1,16 +1,16 @@
-import { differenceInMinutes } from "../deps/date-fns.ts";
-import { Period } from "../howm/Period.ts";
-import { getEnd, Log } from "../howm/Period.ts";
-import { fromDate, isBefore } from "../howm/localDate.ts";
+import { differenceInMinutes } from "../../deps/date-fns.ts";
+import { Period } from "../../howm/Period.ts";
+import { getEnd, Log } from "../../howm/Period.ts";
+import { fromDate, isBefore } from "../../howm/localDate.ts";
 import {
   Event as HowmEvent,
   getLinkTitle,
   isReminder,
   parse,
-} from "../howm/parse.ts";
-import { Status } from "../howm/status.ts";
-import { Task as TaskLine } from "../task.ts";
-import { Path } from "./path.ts";
+} from "../../howm/parse.ts";
+import { Status } from "../../howm/status.ts";
+import { Task as TaskLine } from "../../task.ts";
+import { Path } from "../path.ts";
 
 /** 予定表用に修正したEvent object */
 export type Event = PlainEvent | EventWithLink;

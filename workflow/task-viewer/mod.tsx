@@ -4,23 +4,23 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { Fragment, h, render, useEffect, useMemo } from "../deps/preact.tsx";
-import { useTaskCrawler } from "./useTaskCrawler.ts";
-import { useDialog } from "./useDialog.ts";
-import { CSS } from "./viewer.min.css.ts";
-import { Copy } from "./Copy.tsx";
-import { fromDate, isBefore, toDate } from "../howm/localDate.ts";
-import { calcFreshness } from "../howm/freshness.ts";
-import { getEnd, getStart, isReminder, Reminder } from "../howm/parse.ts";
-import { Period } from "../howm/Period.ts";
-import { compareFn } from "../howm/sort.ts";
-import { Status } from "../howm/status.ts";
-import { toLocalDate } from "./key.ts";
-import { ProgressBar } from "./ProgressBar.tsx";
+import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
+import { useTaskCrawler } from "../useTaskCrawler.ts";
+import { useDialog } from "../useDialog.ts";
+import { CSS } from "../viewer.min.css.ts";
+import { Copy } from "../Copy.tsx";
+import { fromDate, isBefore, toDate } from "../../howm/localDate.ts";
+import { calcFreshness } from "../../howm/freshness.ts";
+import { getEnd, getStart, isReminder, Reminder } from "../../howm/parse.ts";
+import { Period } from "../../howm/Period.ts";
+import { compareFn } from "../../howm/sort.ts";
+import { Status } from "../../howm/status.ts";
+import { toLocalDate } from "../key.ts";
+import { ProgressBar } from "../ProgressBar.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
-import { useStopPropagation } from "./useStopPropagation.ts";
-import { useUserScriptEvent } from "./useUserScriptEvent.ts";
+import { useStopPropagation } from "../useStopPropagation.ts";
+import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 
 export interface Controller {
   open: () => void;

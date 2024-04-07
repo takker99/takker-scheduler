@@ -1,5 +1,5 @@
 @import "./font.css";
-@import "./timegrid.css";
+@import "./weekly-calendar/timegrid.css";
 
 dialog::backdrop {
   background-color: #000c;

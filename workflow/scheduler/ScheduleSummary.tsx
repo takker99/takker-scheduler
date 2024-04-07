@@ -4,8 +4,8 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { Fragment, FunctionComponent, h } from "../deps/preact.tsx";
-import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
+import { Fragment, FunctionComponent, h } from "../../deps/preact.tsx";
+import { differenceInMinutes, isAfter } from "../../deps/date-fns.ts";
 
 export const ScheduleSummary: FunctionComponent<
   { date: Date; now: Date; remains: number }

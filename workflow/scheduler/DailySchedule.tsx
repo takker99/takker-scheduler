@@ -4,16 +4,16 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { Fragment, FunctionComponent, h, useMemo } from "../deps/preact.tsx";
-import { Task } from "./useTaskCrawler.ts";
-import { Copy } from "./Copy.tsx";
-import { toKey } from "./key.ts";
-import { useMinutes } from "./useMinutes.ts";
+import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+import { Task } from "../useTaskCrawler.ts";
+import { Copy } from "../Copy.tsx";
+import { toKey } from "../key.ts";
+import { useMinutes } from "../useMinutes.ts";
 import { getRemains, isLink } from "./event.ts";
 import { ScheduleSummary } from "./ScheduleSummary.tsx";
 import { EventItem } from "./EventItem.tsx";
 import { useEvents } from "./useEvents.ts";
-import { sumOf } from "../deps/collections.ts";
+import { sumOf } from "../../deps/collections.ts";
 
 /** 特定の日付のタスクを一覧するComponent
  *

@@ -1,20 +1,20 @@
-import { useMemo } from "../deps/preact.tsx";
-import { Task } from "./useTaskCrawler.ts";
-import { parseLines } from "../task.ts";
-import { isString } from "../utils.ts";
+import { useMemo } from "../../deps/preact.tsx";
+import { Task } from "../useTaskCrawler.ts";
+import { parseLines } from "../../task.ts";
+import { isString } from "../../utils.ts";
 import {
   addDays,
   endOfDay,
   isSameDay,
   startOfDay,
   subDays,
-} from "../deps/date-fns.ts";
-import { isBefore, toDate } from "../howm/localDate.ts";
-import { isReminder, makeRepeat } from "../howm/parse.ts";
-import { toTitle } from "../diary.ts";
-import { useLines } from "./useLines.ts";
+} from "../../deps/date-fns.ts";
+import { isBefore, toDate } from "../../howm/localDate.ts";
+import { isReminder, makeRepeat } from "../../howm/parse.ts";
+import { toTitle } from "../../diary.ts";
+import { useLines } from "../useLines.ts";
 import { Event, fromHowmEvent, fromTaskLine } from "./event.ts";
-import { split } from "../howm/Period.ts";
+import { split } from "../../howm/Period.ts";
 
 /** 指定した日付の予定を取得する
  *
