@@ -1,0 +1,128 @@
+.timeline-wrap {
+    display: flex;
+    flex-direction: column;
+
+    --row-header-width: 40px;
+    --column-header-height: 20px;
+
+    .column-header {
+        flex: 0 1 84px;
+
+        display: flex;
+        flex-direction: row;
+
+        position: relative;
+        overflow: hidden;
+
+        .corner {
+            white-space: nowrap;
+            flex: 0 1 var(--row-header-width);
+            margin-left: 1px;
+        }
+
+        .cell {
+            /* width: var(--timeline-width, 81px); */
+            flex: auto;
+
+            h2 {
+                font-weight: 400;
+                margin: 0;
+                text-align: center;
+                width: 100%;
+            }
+        }
+    }
+
+    .body {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+        align-items: stretch;
+        overflow-y: scroll;
+        scrollbar-width: none;
+
+        .header-container {
+            flex: 0 1 var(--row-header-width);
+
+            .header {
+                position: relative;
+                box-sizing: border-box;
+                margin-left: auto;
+
+                .time {
+                    position: relative;
+                    height: 40px;
+                    padding-right: 8px;
+                    text-align: right;
+
+                    span {
+                        display: block;
+                        position: relative;
+                        top: -6px;
+                        font-size: 10px;
+                    }
+                }
+            }
+        }
+
+        .week-container {
+            display: flex;
+            align-items: flex-start;
+            flex: auto;
+
+            .week {
+                min-width: 100%;
+                flex: none;
+                display: inline-flex;
+                overflow: hidden;
+                position: relative;
+
+                .borders {
+                    border-top: rgb(218, 220, 224) 1px solid;
+
+                    .border {
+                        height: 40px;
+                    }
+
+                    .border::after {
+                        content: "";
+                        border-bottom: rgb(218, 220, 224) 1px solid;
+                        position: absolute;
+                        width: 100%;
+                        margin-top: -1px;
+                        z-index: 3;
+                        pointer-events: none;
+                    }
+                }
+
+                .timeline {
+                    flex: auto;
+                    border-left: rgb(218, 220, 224) 1px solid;
+                    position: relative;
+
+                    .event {
+                        position: absolute;
+                        /* --startは時単位 */
+                        top: calc(var(--start) / 24 * 100%);
+                        /* --durationは分単位 */
+                        height: calc(var(--duration) / 1440 * 100%);
+                        outline: none;
+                        background-color: rgb(179, 225, 247);
+                        border-color: rgb(129, 205, 242);
+                        border-radius: 4px;
+                        z-index: 5;
+                        overflow: hidden;
+                        text-wrap: nowrap;
+                        max-width: 100%;
+                        text-overflow: ellipsis;
+                    }
+                }
+
+                .timeline:first-child {
+                    border-right: rgb(218, 220, 224) 1px solid;
+                }
+            }
+        }
+    }
+}
