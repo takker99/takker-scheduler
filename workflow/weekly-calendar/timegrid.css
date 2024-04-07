@@ -6,7 +6,7 @@
     --column-header-height: 20px;
 
     .column-header {
-        flex: 0 1 84px;
+        flex: auto;
 
         display: flex;
         flex-direction: row;
@@ -16,13 +16,13 @@
 
         .corner {
             white-space: nowrap;
-            flex: 0 1 var(--row-header-width);
+            flex: 0 0 var(--row-header-width);
             margin-left: 1px;
         }
 
         .cell {
-            /* width: var(--timeline-width, 81px); */
-            flex: auto;
+            /* 伸縮可、全て同じ幅にする */
+            flex: 1 1 1px;
 
             h2 {
                 font-weight: 400;
@@ -43,7 +43,7 @@
         scrollbar-width: none;
 
         .header-container {
-            flex: 0 1 var(--row-header-width);
+            flex: 0 0 var(--row-header-width);
 
             .header {
                 position: relative;
@@ -69,7 +69,8 @@
         .week-container {
             display: flex;
             align-items: flex-start;
-            flex: auto;
+            /* 伸縮可、全て同じ幅にする */
+            flex: 1 1 1px;
 
             .week {
                 min-width: 100%;
