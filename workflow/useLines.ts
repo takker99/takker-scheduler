@@ -1,4 +1,4 @@
-import { useEffect, useState ,useLayoutEffect} from "../deps/preact.tsx";
+import { useEffect, useLayoutEffect, useState } from "../deps/preact.tsx";
 import { getPage, toTitleLc } from "../deps/scrapbox-std.ts";
 import { Scrapbox, takeInternalLines } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
