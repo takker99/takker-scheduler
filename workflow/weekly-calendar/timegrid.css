@@ -2,8 +2,17 @@
     display: flex;
     flex-direction: column;
 
+    --timeline-bg: var(--dropdown-menu-bg, #fff);
+    --timeline-text-color: var(--page-text-color, #4a4a4a);
+    --timeline-link-color: var(--page-link-color, #5e8af7);
     --row-header-width: 40px;
-    --column-header-height: 20px;
+    --timeline-border-color: #888;
+    --timeline-border: solid 1px var(--timeline-border-color);
+
+    background-color: var(--timeline-bg);
+    color: var(--timeline-text-color);
+
+
 
     .column-header {
         flex: auto;
@@ -80,7 +89,6 @@
                 position: relative;
 
                 .borders {
-                    border-top: rgb(218, 220, 224) 1px solid;
 
                     .border {
                         height: 40px;
@@ -88,7 +96,7 @@
 
                     .border::after {
                         content: "";
-                        border-bottom: rgb(218, 220, 224) 1px solid;
+                        border-bottom: var(--timeline-border);
                         position: absolute;
                         width: 100%;
                         margin-top: -1px;
@@ -99,7 +107,7 @@
 
                 .timeline {
                     flex: auto;
-                    border-left: rgb(218, 220, 224) 1px solid;
+                    border-left: var(--timeline-border);
                     position: relative;
 
                     .indicator {
@@ -119,8 +127,18 @@
                         /* --durationは分単位 */
                         height: calc(var(--duration) / 1440 * 100%);
                         outline: none;
-                        background-color: rgb(179, 225, 247);
-                        border-color: rgb(129, 205, 242);
+                        --event-bg2: var(--timeline-text-color);
+                        --event-bg: var(--timeline-bg);
+                        --event-bg-ratio: 50%;
+                        --event-color-ratio: 0%;
+                        --event-border-color-ratio: 0%;
+                        background-color:
+                            color-mix(in srgb, var(--event-bg) var(--event-bg-ratio), var(--event-bg2));
+                        color:
+                            color-mix(in srgb, var(--event-bg) var(--event-color-ratio), var(--timeline-text-color));
+                        border: var(--timeline-border);
+                        border-color:
+                            color-mix(in srgb, var(--event-bg) var(--event-border-color-ratio), var(--timeline-border-color));
                         border-radius: 4px;
                         z-index: 5;
                         overflow: hidden;
@@ -128,11 +146,27 @@
                         max-width: 100%;
                         text-overflow: ellipsis;
                     }
+
+                    .event[data-status="done"] {
+                        --event-bg-ratio: 90%;
+                        --event-color-ratio: 50%;
+                        --event-border-color-ratio: 50%;
+                    }
+
+                    .event[data-status="expired"] {
+                        font-weight: bold;
+                    }
+
+                    a.event {
+                        --event-bg2: var(--timeline-link-color);
+                        text-decoration: none;
+                    }
                 }
 
                 .timeline:first-child {
-                    border-right: rgb(218, 220, 224) 1px solid;
+                    border-right: var(--timeline-border);
                 }
+
             }
         }
     }

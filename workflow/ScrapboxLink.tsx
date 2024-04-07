@@ -9,11 +9,18 @@ import { makeLink, Path } from "./path.ts";
 declare const scrapbox: Scrapbox;
 
 /** 内部projectではSPAを維持して遷移するリンク */
-export const ScrapboxLink: FunctionComponent<Path> = (
-  { children, project, title },
+export const ScrapboxLink: FunctionComponent<
+  & Path
+  & Omit<
+    h.JSX.HTMLAttributes<HTMLAnchorElement>,
+    "rel" | "target" | "type" | "href"
+  >
+> = (
+  { children, project, title, className, ...atributes },
 ) => (
   <a
-    className="page-link"
+    {...atributes}
+    className={[className ?? "", "page-link"].join(" ")}
     type="link"
     href={makeLink({ project, title }).pathname}
     {...(project === scrapbox.Project.name

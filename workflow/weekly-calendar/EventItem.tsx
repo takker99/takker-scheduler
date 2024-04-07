@@ -2,18 +2,11 @@
 /** @jsxFrag Fragment */
 
 import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
-import { Event, isLink } from "../scheduler/event.ts";
+import { Event, getEventStatus, isLink } from "../scheduler/event.ts";
 import { ScrapboxLink } from "../ScrapboxLink.tsx";
+import { useMinutes } from "../useMinutes.ts";
 
 export const EventItem: FunctionComponent<{ event: Event }> = ({ event }) => {
-  const EventName = useMemo(
-    () =>
-      isLink(event)
-        ? <ScrapboxLink {...event}>{event.name}</ScrapboxLink>
-        : <>{event.name}</>,
-    [event],
-  );
-
   const start = useMemo(
     () => event.plan.start.hours + event.plan.start.minutes / 60,
     [event.plan.start],
@@ -23,7 +16,29 @@ export const EventItem: FunctionComponent<{ event: Event }> = ({ event }) => {
     [start, event.plan.duration],
   );
 
-  return (
-    <div className="event" title={event.name} style={style}>{event.name}</div>
-  );
+  const now = useMinutes();
+  const type = useMemo(() => getEventStatus(event, now), [event, now]);
+
+  return !isLink(event)
+    ? (
+      <div
+        className="event"
+        data-status={type}
+        title={event.name}
+        style={style}
+      >
+        {event.name}
+      </div>
+    )
+    : (
+      <ScrapboxLink
+        className="event"
+        data-status={type}
+        style={style}
+        title={event.title}
+        project={event.project}
+      >
+        {event.name}
+      </ScrapboxLink>
+    );
 };
