@@ -14,7 +14,7 @@ import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
 import { toTaskLine } from "../howm/toTaskLine.ts";
 import { decode, load } from "../deps/storage.ts";
-import { parse } from "../howm/parse.ts";
+import { isRecurrence, parse } from "../howm/parse.ts";
 import { Key, toKey } from "./key.ts";
 declare const scrapbox: Scrapbox;
 
@@ -94,7 +94,7 @@ export const main = async (): Promise<() => void | Promise<void>> => {
             if (!dayKeys.includes(key)) continue;
             tasks.set(key, [...(tasks.get(key) ?? []), task]);
             // 繰り返しタスクでなければ、全ての日付を試す必要がない
-            if (!("recurrence" in result.value)) continue;
+            if (!isRecurrence(result.value)) continue;
           }
         }
       }

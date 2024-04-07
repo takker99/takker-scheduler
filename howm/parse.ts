@@ -67,6 +67,10 @@ export interface Event {
   raw: string;
 }
 
+export type RecurrentEvent = Omit<Event, "recurrence"> & {
+  recurrence: Recurrence;
+};
+
 export type Task = Reminder | Event;
 
 export interface TaskRangeError {
@@ -286,6 +290,13 @@ export const parse = (
 export const isReminder = <R extends Reminder>(task: Task): task is R =>
   !("executed" in task);
 
+/** 繰り返しタスクかどうか調べる */
+export const isRecurrence = <
+  R extends RecurrentEvent,
+>(
+  task: Task,
+): task is R => "recurrence" in task;
+
 /** 終日タスクかどうか判定する
  *
  * `start`に時刻が含まれていないタスクは全て終日タスクだとみなす
@@ -361,10 +372,9 @@ export const toString = (task: Task): string => {
  * 繰り返さない場合は`undefined`を返す
  */
 export const makeRepeat = (
-  event: Event,
+  event: RecurrentEvent,
   date: Date,
 ): Event | undefined => {
-  if (!event.recurrence) return;
   const localDate = fromDate(date);
 
   const { recurrence, executed } = event;
