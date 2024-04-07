@@ -13,9 +13,11 @@ export const ScrapboxLink: FunctionComponent<Path> = (
   { children, project, title },
 ) => (
   <a
-    href={makeLink({ project, title }).href}
+    className="page-link"
+    type="link"
+    href={makeLink({ project, title }).pathname}
     {...(project === scrapbox.Project.name
-      ? ({})
+      ? ({ rel: "route" })
       : ({ rel: "noopener noreferrer", target: "_blank" }))}
   >
     {children}
