@@ -1,3 +1,4 @@
+import { addDays } from "../deps/date-fns.ts";
 import {
   addMinutes,
   differenceInCalendarDays,
@@ -33,6 +34,8 @@ export interface Reminder {
   /** 見積もり用日時
    *
    * 所要時間 (min)か終了日時のどちらか
+   *
+   * 所要時間のときは、`freshness.refDate`からの経過時間 (min) として扱う
    */
   estimated?: number | LocalDate | LocalDateTime;
 
@@ -321,15 +324,13 @@ export const getStart = (task: Task): LocalDate | LocalDateTime =>
 export const getEnd = (task: Task): LocalDateTime => {
   if (!isReminder(task)) {
     const end = toDate(task.executed.start);
-    end.setMinutes(end.getMinutes() + task.executed.duration);
-    return fromDate(end);
+    return fromDate(addMinutes(end, task.executed.duration));
   }
   if (
     isNumber(task.estimated) && isLocalDateTime(task.freshness.refDate)
   ) {
     const end = toDate(task.freshness.refDate);
-    end.setMinutes(end.getMinutes() + task.estimated);
-    return fromDate(end);
+    return fromDate(addMinutes(end, task.estimated));
   }
   const end = toDate(
     isNumber(task.estimated)
@@ -338,8 +339,7 @@ export const getEnd = (task: Task): LocalDateTime => {
   );
   end.setHours(0);
   end.setMinutes(0);
-  end.setDate(end.getDate() + 1);
-  return fromDate(end);
+  return fromDate(addDays(end, 1));
 };
 
 /** Task objectからタスクリンクの文字列を作る */
