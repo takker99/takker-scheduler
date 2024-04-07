@@ -1,6 +1,6 @@
-import { useCallback, useState } from "../deps/preact.tsx";
-import { toDate } from "../howm/localDate.ts";
-import { Key, toKey, toLocalDate } from "./key.ts";
+import { useCallback, useState } from "../../deps/preact.tsx";
+import { toDate } from "../../howm/localDate.ts";
+import { Key, toKey, toLocalDate } from "../key.ts";
 
 export type PageNo = Key | "expired" | "errors";
 

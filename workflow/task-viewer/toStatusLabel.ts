@@ -1,4 +1,4 @@
-import { Status } from "../howm/status.ts";
+import { Status } from "../../howm/status.ts";
 
 export const toStatusLabel = (
   status: Status,

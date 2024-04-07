@@ -1,0 +1,37 @@
+/** @jsx h */
+/** @jsxFrag Fragment */
+
+import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+import { Task } from "../useTaskCrawler.ts";
+import { useEvents } from "../scheduler/useEvents.ts";
+import { isSameDay } from "../../deps/date-fns.ts";
+import { useMinutes } from "../useMinutes.ts";
+import { getHours } from "../../deps/date-fns.ts";
+import { getMinutes } from "../../deps/date-fns.ts";
+import { EventItem } from "./EventItem.tsx";
+
+export const TimeLine: FunctionComponent<
+  { project: string; date: Date; tasks: Task[] }
+> = ({ project, date, tasks }) => {
+  const events = useEvents(project, date, tasks);
+  const now = useMinutes();
+  const indicator = useMemo(
+    () =>
+      isSameDay(now, date)
+        ? (
+          <div
+            className="indicator"
+            style={`--start: ${getHours(now) + getMinutes(now) / 60}`}
+          />
+        )
+        : <></>,
+    [now, date],
+  );
+
+  return (
+    <div className="timeline" role="gridcell">
+      {indicator}
+      {events.map((event) => <EventItem event={event} />)}
+    </div>
+  );
+};
