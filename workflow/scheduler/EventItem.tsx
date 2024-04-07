@@ -8,11 +8,8 @@ import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
 import { useMinutes } from "../useMinutes.ts";
 import { Event, getEventStatus, isLink } from "./event.ts";
 import { getEnd } from "../../howm/Period.ts";
-import type { Scrapbox } from "../../deps/scrapbox-std-dom.ts";
-import { makeLink } from "../path.ts";
 import { zero } from "../../zero.ts";
 import { ScrapboxLink } from "../ScrapboxLink.tsx";
-declare const scrapbox: Scrapbox;
 
 export const EventItem: FunctionComponent<
   { event: Event }
