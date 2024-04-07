@@ -65,7 +65,7 @@ interface Props {
 }
 const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
-  const { pageNo, next, prev } = useNavigation();
+  const { pageNo, next, prev, jump } = useNavigation();
 
   /** 表示対象の日付
    *
@@ -86,6 +86,8 @@ const App = ({ getController, projects, mainProject }: Props) => {
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
 
+  const goToday = useCallback(() => jump(new Date()), [jump]);
+
   return (
     <>
       <style>{CSS}</style>
@@ -95,6 +97,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
           <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
+          <button className="today" onClick={goToday}>today</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
@@ -126,5 +129,6 @@ const useNavigation = (
     setPageNo((pageNo) => toWeekKey(subWeeks(toStartOfWeek(pageNo), 1)));
   }, []);
 
-  return { pageNo, next, prev };
+  const jump = useCallback((date: Date) => setPageNo(toWeekKey(date)), []);
+  return { pageNo, next, prev, jump };
 };
