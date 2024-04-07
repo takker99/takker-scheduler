@@ -11,7 +11,13 @@ import { CSS } from "../viewer.min.css.ts";
 import { Copy } from "../Copy.tsx";
 import { fromDate, isBefore, toDate } from "../../howm/localDate.ts";
 import { calcFreshness } from "../../howm/freshness.ts";
-import { getEnd, getStart, isReminder, Reminder } from "../../howm/parse.ts";
+import {
+  getEnd,
+  getStart,
+  isRecurrence,
+  isReminder,
+  Reminder,
+} from "../../howm/parse.ts";
 import { Period } from "../../howm/Period.ts";
 import { compareFn } from "../../howm/sort.ts";
 import { Status } from "../../howm/status.ts";
@@ -94,7 +100,7 @@ const App = ({ getController, projects }: Props) => {
     // 一応、一定未満の旬度のタスクは表示しないが、正直この制限はいらないように思う
     return tasks.flatMap((task) => {
       if (!task.freshness) return [];
-      if ("recurrence" in task) return [];
+      if (isRecurrence(task)) return [];
       const score = calcFreshness(task.freshness, date);
       return score > -999 ? [{ ...task, score } as Action] : [];
     }).sort(compareFn);

@@ -10,7 +10,7 @@ import {
   subDays,
 } from "../../deps/date-fns.ts";
 import { isBefore, toDate } from "../../howm/localDate.ts";
-import { isReminder, makeRepeat } from "../../howm/parse.ts";
+import { isRecurrence, isReminder, makeRepeat } from "../../howm/parse.ts";
 import { toTitle } from "../../diary.ts";
 import { useLines } from "../useLines.ts";
 import { Event, fromHowmEvent, fromTaskLine } from "./event.ts";
@@ -78,11 +78,11 @@ const useEvents_ = (project: string, date: Date, tasks: Task[]) => {
  *
  * 予定開始日時があって、まだ終わっていないタスクを対象とする。
  */
-const getEventsFromLinks = (date: Date, tasks: Task[]) =>
+const getEventsFromLinks = (date: Date, tasks: Task[]): Event[] =>
   tasks.flatMap((task) => {
     if (task.freshness?.status === "done") return [];
     if (isReminder(task)) return [];
-    if (task.recurrence) {
+    if (isRecurrence(task)) {
       const generated = makeRepeat(task, date);
       return generated ? [fromHowmEvent(generated, task.project)] : [];
     }

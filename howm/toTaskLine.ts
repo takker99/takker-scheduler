@@ -2,6 +2,7 @@ import {
   getDuration,
   getLinkTitle,
   isAllDay,
+  isRecurrence,
   isReminder,
   makeRepeat,
   Task,
@@ -16,7 +17,7 @@ import { toDate } from "./localDate.ts";
  * @return タスクライン用データ
  */
 export const toTaskLine = (task: Task, date: Date): TaskLine | undefined => {
-  if (!task.generated && "recurrence" in task) {
+  if (!task.generated && isRecurrence(task)) {
     const generated = makeRepeat(task, date);
     if (!generated) return;
     return toTaskLine(generated, date);

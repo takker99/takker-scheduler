@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 
-import { Event, makeRepeat, parse, toString } from "./parse.ts";
+import { makeRepeat, parse, RecurrentEvent, toString } from "./parse.ts";
 import { assert, assertEquals, assertSnapshot } from "../deps/testing.ts";
 import { toDate } from "./localDate.ts";
 
@@ -105,7 +105,7 @@ Deno.test("parse()", async (t) => {
 Deno.test("makeRepeat()", () => {
   {
     const task = "ひるごはん@2023-10-09T12:00D30R1";
-    const parsed = parse(task)!.value as unknown as Event;
+    const parsed = parse(task)!.value as unknown as RecurrentEvent;
     {
       const event = makeRepeat(
         parsed,
@@ -134,7 +134,7 @@ Deno.test("makeRepeat()", () => {
 
   {
     const task = "爪切り@2023-10-09T12:00D5RW1";
-    const parsed = parse(task)!.value as unknown as Event;
+    const parsed = parse(task)!.value as unknown as RecurrentEvent;
     {
       const event = makeRepeat(
         parsed,
