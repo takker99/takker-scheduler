@@ -15,5 +15,6 @@ export const useWeeklyNavigation = (
     setPageNo((pageNo) => toWeekKey(subWeeks(toStartOfWeek(pageNo), 1)));
   }, []);
 
-  return { pageNo, next, prev };
+  const jump = useCallback((date: Date) => setPageNo(toWeekKey(date)), []);
+  return { pageNo, next, prev, jump };
 };

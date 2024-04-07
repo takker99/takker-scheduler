@@ -171,3 +171,23 @@
         }
     }
 }
+
+.wedget {
+    position: absolute;
+    top: 70px;
+    left: 10px;
+    max-width: 120px;
+    border: solid 1px #888;
+    border-radius: 4px;
+
+    .controller {
+        background-color: var(--dropdown-menu-bg, #fff);
+        color: var(--page-text-color, #4a4a4a);
+    }
+}
+
+@media(min-width: 1092px) {
+    .wedget {
+        width: calc((100% - 960px)/2)
+    }
+}

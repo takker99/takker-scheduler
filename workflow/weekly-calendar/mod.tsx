@@ -17,11 +17,13 @@ import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
-import { toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
+import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
 import { ProgressBar } from "../ProgressBar.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
+import { useWeeklyNavigation } from "../scheduler/useWeeklyNavigation.tsx";
+import { useMinutes } from "../useMinutes.ts";
 
 /** calnedarのcontroller */
 export interface Controller {
@@ -40,13 +42,36 @@ export interface Controller {
  */
 export const setup = (projects: string[]): Promise<Controller> => {
   const app = document.createElement("div");
-  app.dataset.userscriptName = "takker-scheduler/scheduler";
+  app.dataset.userscriptName = "takker-scheduler/weekly-scheduler";
   const shadowRoot = app.attachShadow({ mode: "open" });
   document.body.append(app);
   return new Promise(
     (resolve) =>
       render(
         <App
+          getController={resolve}
+          projects={projects}
+          mainProject={projects[0]}
+        />,
+        shadowRoot,
+      ),
+  );
+};
+
+/** 当日のtimelineを左隅に表示する
+ *
+ * @param projects タスクの取得先projectのリスト
+ * @return viewerのcontroller
+ */
+export const setupWedget = (projects: string[]): Promise<Controller> => {
+  const app = document.createElement("div");
+  app.dataset.userscriptName = "takker-scheduler/timeline-wedget";
+  const shadowRoot = app.attachShadow({ mode: "open" });
+  document.body.append(app);
+  return new Promise(
+    (resolve) =>
+      render(
+        <Wedget
           getController={resolve}
           projects={projects}
           mainProject={projects[0]}
@@ -63,9 +88,10 @@ interface Props {
   /** 日刊記録sheetが置いてあるproject */
   mainProject: string;
 }
+
 const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
-  const { pageNo, next, prev, jump } = useNavigation();
+  const { pageNo, next, prev, jump } = useWeeklyNavigation();
 
   /** 表示対象の日付
    *
@@ -116,19 +142,34 @@ const App = ({ getController, projects, mainProject }: Props) => {
   );
 };
 
-const useNavigation = (
-  defaultPageNo: WeekKey = toWeekKey(new Date()),
-) => {
-  /** 現在表示する週番号を格納する */
-  const [pageNo, setPageNo] = useState<WeekKey>(defaultPageNo);
+const Wedget = ({ getController, projects, mainProject }: Props) => {
+  // UIの開閉
+  const [closed, setClosed] = useState(false);
+  const open = useCallback(() => setClosed(false), []);
+  const close = useCallback(() => setClosed(true), []);
+  const toggle = useCallback(() => setClosed((closed) => !closed), []);
+  useEffect(() => getController({ open, close, toggle }), [getController]);
 
-  const next = useCallback(() => {
-    setPageNo((pageNo) => toWeekKey(addWeeks(toStartOfWeek(pageNo), 1)));
-  }, []);
-  const prev = useCallback(() => {
-    setPageNo((pageNo) => toWeekKey(subWeeks(toStartOfWeek(pageNo), 1)));
-  }, []);
+  /** dialogクリックではmodalを閉じないようにする */
+  const stopPropagation = useStopPropagation();
 
-  const jump = useCallback((date: Date) => setPageNo(toWeekKey(date)), []);
-  return { pageNo, next, prev, jump };
+  const { tasks, load, loading } = useTaskCrawler(projects);
+
+  const dateList = [useMinutes()];
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div className="wedget" hidden={closed}>
+        <div className="controller" onClick={stopPropagation}>
+          <span>{toKey(dateList[0])}</span>
+          <ProgressBar loading={loading} />
+          <button className="reload" onClick={load} disabled={loading}>
+            request reload
+          </button>
+        </div>
+        <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
+      </div>
+    </>
+  );
 };
