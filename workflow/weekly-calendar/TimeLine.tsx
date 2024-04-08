@@ -30,8 +30,8 @@ export const TimeLine: FunctionComponent<
 
   return (
     <div className="timeline" role="gridcell">
-      {indicator}
       {events.map((event) => <EventItem event={event} />)}
+      {indicator}
     </div>
   );
 };
