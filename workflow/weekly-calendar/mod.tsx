@@ -144,7 +144,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
 
 const Wedget = ({ getController, projects, mainProject }: Props) => {
   // UIの開閉
-  const [closed, setClosed] = useState(false);
+  const [closed, setClosed] = useState(true);
   const open = useCallback(() => setClosed(false), []);
   const close = useCallback(() => setClosed(true), []);
   const toggle = useCallback(() => setClosed((closed) => !closed), []);
