@@ -7,6 +7,7 @@ import { FunctionComponent, h } from "../../deps/preact.tsx";
 import { Task } from "../useTaskCrawler.ts";
 import { getDate } from "../../deps/date-fns.ts";
 import { TimeLine } from "./TimeLine.tsx";
+import { zero } from "../../zero.ts";
 
 /** 特定の日付のタスクを一覧するComponent
  *
@@ -36,7 +37,7 @@ export const TimeGrid: FunctionComponent<
           {[...Array(23).keys()].map(
             (i) => (
               <div className="time">
-                <span>{`${`${i + 1}`.padStart(2, "0")}:00`}</span>
+                <span>{`${zero(i)}:00`}</span>
               </div>
             ),
           )}
