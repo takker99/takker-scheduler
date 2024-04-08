@@ -17,9 +17,30 @@ const emitChange = (key: Key, lines: string[]) => {
 };
 // 入力するたびに更新する
 // 更新は`get()`で1回以上呼び出されたpagesのみを対象とする
+const update = () => {
+  if (timer !== undefined) {
+    clearInterval(timer);
+    timer = undefined;
+  }
+  const lines = takeInternalLines().map((line) => line.text);
+  const project = scrapbox.Project.name;
+  const title = scrapbox.Page.title ?? "";
+  const key = toKey(project, title);
+  if (!pages.has(key)) return;
+
+  // 更新のタイミングの影響で、本文がまだ更新されていない可能性がある
+  // その場合は`title`と本文先頭の文字列が一致するまで待機する
+  timer = setInterval(() => {
+    if (toTitleLc(title) !== toTitleLc(lines[0])) return;
+    emitChange(key, lines);
+    if (timer !== undefined) {
+      clearInterval(timer);
+      timer = undefined;
+    }
+  }, 1000);
+};
+let timer: undefined | number;
 {
-  let update: undefined | (() => void);
-  let timer: undefined | number;
   scrapbox.on("page:changed", () => {
     if (update) scrapbox.off("lines:changed", update);
 
@@ -28,24 +49,6 @@ const emitChange = (key: Key, lines: string[]) => {
     const key = toKey(project, title);
     if (!pages.has(key)) return;
 
-    update = () => {
-      if (timer !== undefined) {
-        clearInterval(timer);
-        timer = undefined;
-      }
-      const lines = takeInternalLines().map((line) => line.text);
-
-      // 更新のタイミングの影響で、本文がまだ更新されていない可能性がある
-      // その場合は`title`と本文先頭の文字列が一致するまで待機する
-      timer = setInterval(() => {
-        if (toTitleLc(title) !== toTitleLc(lines[0])) return;
-        emitChange(key, lines);
-        if (timer !== undefined) {
-          clearInterval(timer);
-          timer = undefined;
-        }
-      }, 1000);
-    };
     scrapbox.on("lines:changed", update);
   });
 }
@@ -59,6 +62,9 @@ const get = (project: string, title: string): string[] => {
         if (!result.ok) return [];
         const lines = result.value.lines.map((line) => line.text);
         emitChange(key, lines);
+        if (title === scrapbox.Page.title) {
+          scrapbox.on("lines:changed", update);
+        }
       });
   }
   return result ?? [];
