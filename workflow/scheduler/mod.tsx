@@ -8,13 +8,13 @@ import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
-import { addDays } from "../../deps/date-fns.ts";
-import { toKey, toStartOfWeek } from "../key.ts";
+import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
+import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
 import { ProgressBar } from "../ProgressBar.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
-import { useWeeklyNavigation } from "./useWeeklyNavigation.tsx";
+import { useNavigation } from "./useNavigation.ts";
 
 /** schedulerのcontroller */
 export interface Controller {
@@ -58,7 +58,11 @@ interface Props {
 }
 const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
-  const { pageNo, next, prev } = useWeeklyNavigation();
+  const { pageNo, next, prev } = useNavigation(
+    toWeekKey(new Date()),
+    nextWeekKey,
+    prevWeekKey,
+  );
 
   /** 表示対象の日付
    *
@@ -112,3 +116,8 @@ const App = ({ getController, projects, mainProject }: Props) => {
     </>
   );
 };
+
+const nextWeekKey = (pageNo: WeekKey) =>
+  toWeekKey(addWeeks(toStartOfWeek(pageNo), 1));
+const prevWeekKey = (pageNo: WeekKey) =>
+  toWeekKey(subWeeks(toStartOfWeek(pageNo), 1));
