@@ -128,8 +128,8 @@ const App = ({ getController, projects, mainProject }: Props) => {
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
           <button className="today" onClick={goToday}>today</button>
-          <button className="reload" onClick={load} disabled={loading}>
-            request reload
+          <button className="navi reload" onClick={load} disabled={loading}>
+            {"\ue06d"}
           </button>
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
@@ -178,8 +178,8 @@ const Wedget = ({ getController, projects, mainProject }: Props) => {
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
           <button className="today" onClick={goToday}>today</button>
-          <button className="reload" onClick={load} disabled={loading}>
-            request reload
+          <button className="navi reload" onClick={load} disabled={loading}>
+            {"\ue06d"}
           </button>
         </div>
         <TimeGrid dateList={dates} tasks={tasks} project={mainProject} />
