@@ -96,7 +96,7 @@ button {
   font-weight: 900
 }
 
-.today, .reload {
+.today {
   border: 1px solid;
   border-radius: 3px;
 }
