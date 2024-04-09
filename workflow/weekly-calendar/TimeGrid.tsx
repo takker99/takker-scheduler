@@ -34,7 +34,7 @@ export const TimeGrid: FunctionComponent<
     <div className="body" role="presentation">
       <div className="header-container">
         <div className="header">
-          {[...Array(23).keys()].map(
+          {[...Array(24).keys()].map(
             (i) => (
               <div className="time">
                 <span>{`${zero(i)}:00`}</span>
@@ -46,7 +46,7 @@ export const TimeGrid: FunctionComponent<
       <div className="week-container">
         <div className="week">
           <div className="borders">
-            {[...Array(23).keys()].map(() => <div className="border" />)}
+            {[...Array(24).keys()].map(() => <div className="border" />)}
           </div>
           {dateList.map(
             (date) => (
