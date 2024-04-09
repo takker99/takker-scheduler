@@ -182,7 +182,12 @@ const Wedget = ({ getController, projects, mainProject }: Props) => {
             {"\ue06d"}
           </button>
         </div>
-        <TimeGrid dateList={dates} tasks={tasks} project={mainProject} />
+        <TimeGrid
+          dateList={dates}
+          tasks={tasks}
+          project={mainProject}
+          hasColumn={false}
+        />
       </div>
     </>
   );
