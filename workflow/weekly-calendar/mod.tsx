@@ -16,13 +16,13 @@ import {
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
-import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
+import { addDays, addWeeks, subDays, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
 import { ProgressBar } from "../ProgressBar.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
-import { useWeeklyNavigation } from "../scheduler/useWeeklyNavigation.tsx";
+import { useNavigation } from "../scheduler/useNavigation.ts";
 import { useMinutes } from "../useMinutes.ts";
 
 /** calnedarのcontroller */
@@ -91,7 +91,11 @@ interface Props {
 
 const App = ({ getController, projects, mainProject }: Props) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
-  const { pageNo, next, prev, jump } = useWeeklyNavigation();
+  const { pageNo, next, prev, jump } = useNavigation(
+    toWeekKey(new Date()),
+    nextWeekKey,
+    prevWeekKey,
+  );
 
   /** 表示対象の日付
    *
@@ -112,7 +116,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
 
-  const goToday = useCallback(() => jump(new Date()), [jump]);
+  const goToday = useCallback(() => jump(toWeekKey(new Date())), [jump]);
 
   return (
     <>
@@ -155,21 +159,39 @@ const Wedget = ({ getController, projects, mainProject }: Props) => {
 
   const { tasks, load, loading } = useTaskCrawler(projects);
 
-  const dateList = [useMinutes()];
+  const { pageNo, next, prev, jump } = useNavigation(
+    new Date(),
+    nextDate,
+    prevDate,
+  );
+  const dates = useMemo(() => [pageNo], [pageNo]);
+
+  const goToday = useCallback(() => jump(new Date()), [jump]);
 
   return (
     <>
       <style>{CSS}</style>
       <div className="wedget" hidden={closed}>
         <div className="controller" onClick={stopPropagation}>
-          <span>{toKey(dateList[0])}</span>
+          <span>{toKey(pageNo)}</span>
           <ProgressBar loading={loading} />
+          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+          <button className="navi right" onClick={next}>{"\ue02d"}</button>
+          <button className="today" onClick={goToday}>today</button>
           <button className="reload" onClick={load} disabled={loading}>
             request reload
           </button>
         </div>
-        <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
+        <TimeGrid dateList={dates} tasks={tasks} project={mainProject} />
       </div>
     </>
   );
 };
+
+const nextWeekKey = (pageNo: WeekKey) =>
+  toWeekKey(addWeeks(toStartOfWeek(pageNo), 1));
+const prevWeekKey = (pageNo: WeekKey) =>
+  toWeekKey(subWeeks(toStartOfWeek(pageNo), 1));
+
+const nextDate = (date: Date) => addDays(date, 1);
+const prevDate = (date: Date) => subDays(date, 1);
