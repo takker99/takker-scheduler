@@ -170,12 +170,15 @@
 }
 
 .wedget {
-    position: absolute;
-    top: 70px;
+    position: fixed;
+    top: 60px;
     left: 10px;
     max-width: 100px;
+    max-height: calc(90vh - 60px);
     border: solid 1px #888;
     border-radius: 4px;
+    overflow-y: auto;
+    scrollbar-width: none;
 
     .controller {
         background-color: var(--dropdown-menu-bg, #fff);
