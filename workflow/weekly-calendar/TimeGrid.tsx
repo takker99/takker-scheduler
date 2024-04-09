@@ -16,21 +16,21 @@ import { zero } from "../../zero.ts";
  * @param project その日のタスクが属するproject
  */
 export const TimeGrid: FunctionComponent<
-  { dateList: Date[]; tasks: Task[]; project: string }
+  { dateList: Date[]; tasks: Task[]; project: string; hasColumn?: boolean }
 > = (
-  { dateList, tasks, project },
+  { dateList, tasks, project, hasColumn },
 ) => (
   <div className="timeline-wrap" role="grid">
-    <div className="column-header" role="row">
-      <div className="corner" />
-      {dateList.map(
-        (date) => (
+    {(hasColumn ?? true) && (
+      <div className="column-header" role="row">
+        <div className="corner" />{" "}
+        {dateList.map((date) => (
           <div className="cell" role="columnheader">
             <h2>{getDate(date)}</h2>
           </div>
-        ),
-      )}
-    </div>
+        ))}
+      </div>
+    )}
     <div className="body" role="presentation">
       <div className="header-container">
         <div className="header">
