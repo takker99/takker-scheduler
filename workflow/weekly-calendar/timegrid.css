@@ -1,6 +1,8 @@
 .timeline-wrap {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow-y: hidden;
 
     --timeline-bg: var(--dropdown-menu-bg, #fff);
     --timeline-text-color: var(--page-text-color, #4a4a4a);
@@ -16,19 +18,10 @@
 
 
     .column-header {
-        flex: auto;
+        flex: none;
 
         display: flex;
         flex-direction: row;
-
-        position: relative;
-        overflow: hidden;
-
-        .corner {
-            white-space: nowrap;
-            flex: 0 0 var(--row-header-width);
-            margin-left: 1px;
-        }
 
         .cell {
             /* 伸縮可、全て同じ幅にする */
@@ -43,128 +36,95 @@
         }
     }
 
-    .body {
+
+    .week-container {
         position: relative;
-        display: flex;
-        flex-direction: row;
-        overflow: hidden;
-        align-items: stretch;
-        overflow-y: scroll;
+        height: 100%;
+        overflow-y: auto;
         scrollbar-width: none;
 
-        .header-container {
-            flex: 0 0 var(--row-header-width);
-
-            .header {
-                position: relative;
-                box-sizing: border-box;
-                margin-left: auto;
-
-                .time {
-                    position: relative;
-                    height: var(--timeline-hour-height);
-                    padding-right: 8px;
-                    text-align: right;
-
-                    span {
-                        display: block;
-                        position: relative;
-                        top: -6px;
-                        font-size: 10px;
-                    }
-                }
-            }
-        }
-
-        .week-container {
+        .week {
+            flex: auto;
             display: flex;
-            align-items: flex-start;
-            /* 伸縮可、全て同じ幅にする */
-            flex: 1 1 1px;
+            width: 100%;
 
-            .week {
-                min-width: 100%;
-                flex: none;
-                display: inline-flex;
-                overflow: hidden;
-
-                .borders {
-
-                    .border {
-                        height: var(--timeline-hour-height);
-                    }
-
-                    .border::after {
-                        content: "";
-                        border-bottom: var(--timeline-border);
-                        position: absolute;
-                        width: 100%;
-                        margin-top: -1px;
-                        pointer-events: none;
-                    }
+            .borders {
+                .border {
+                    height: var(--timeline-hour-height);
                 }
 
-                .timeline {
-                    flex: auto;
-                    border-left: var(--timeline-border);
-                    position: relative;
-
-                    .indicator {
-                        position: absolute;
-                        /* --startは時単位 */
-                        top: calc(var(--start) * 40px - 0.5px);
-                        width: 100%;
-                        height: 1px;
-                        background-color: red;
-                    }
-
-                    .event {
-                        position: absolute;
-                        /* --startは時単位 */
-                        top: calc(var(--start) * 40px - 1px);
-                        /* --durationは分単位 */
-                        height: calc(40px * var(--duration) / 60);
-                        outline: none;
-                        --event-bg2: var(--timeline-text-color);
-                        --event-bg: var(--timeline-bg);
-                        --event-bg-ratio: 50%;
-                        --event-color-ratio: 0%;
-                        --event-border-color-ratio: 0%;
-                        background-color:
-                            color-mix(in srgb, var(--event-bg) var(--event-bg-ratio), var(--event-bg2));
-                        color:
-                            color-mix(in srgb, var(--event-bg) var(--event-color-ratio), var(--timeline-text-color));
-                        border: var(--timeline-border);
-                        border-color:
-                            color-mix(in srgb, var(--event-bg) var(--event-border-color-ratio), var(--timeline-border-color));
-                        border-radius: 4px;
-                        overflow: hidden;
-                        text-wrap: nowrap;
-                        max-width: 100%;
-                        text-overflow: ellipsis;
-                    }
-
-                    .event[data-status="done"] {
-                        --event-bg-ratio: 90%;
-                        --event-color-ratio: 50%;
-                        --event-border-color-ratio: 50%;
-                    }
-
-                    .event[data-status="expired"] {
-                        font-weight: bold;
-                    }
-
-                    a.event {
-                        --event-bg2: var(--timeline-link-color);
-                        text-decoration: none;
-                    }
+                .border::after {
+                    content: attr(data-time);
+                    font-size: 10px;
+                    text-align: right;
+                    border-top: var(--timeline-border);
+                    position: absolute;
+                    width: 100%;
+                    margin-top: -1px;
+                    pointer-events: none;
                 }
-
-                .timeline:first-child {
-                    border-right: var(--timeline-border);
-                }
-
             }
+
+            .timeline {
+                flex: auto;
+                border-left: var(--timeline-border);
+                position: relative;
+
+                .indicator {
+                    position: absolute;
+                    /* --startは時単位 */
+                    top: calc(var(--start) * 40px - 0.5px);
+                    width: 100%;
+                    height: 1px;
+                    background-color: red;
+                }
+
+                .event {
+                    position: absolute;
+                    /* --startは時単位 */
+                    top: calc(var(--start) * 40px - 1px);
+                    /* --durationは分単位 */
+                    height: calc(40px * var(--duration) / 60);
+                    outline: none;
+                    --event-bg2: var(--timeline-text-color);
+                    --event-bg: var(--timeline-bg);
+                    --event-bg-ratio: 50%;
+                    --event-color-ratio: 0%;
+                    --event-border-color-ratio: 0%;
+                    background-color:
+                        color-mix(in srgb, var(--event-bg) var(--event-bg-ratio), var(--event-bg2));
+                    color:
+                        color-mix(in srgb, var(--event-bg) var(--event-color-ratio), var(--timeline-text-color));
+                    border: var(--timeline-border);
+                    border-color:
+                        color-mix(in srgb, var(--event-bg) var(--event-border-color-ratio), var(--timeline-border-color));
+                    border-radius: 4px;
+                    overflow: hidden;
+                    text-wrap: nowrap;
+                    max-width: 100%;
+                    text-overflow: ellipsis;
+                }
+
+                .event[data-status="done"] {
+                    --event-bg-ratio: 90%;
+                    --event-color-ratio: 50%;
+                    --event-border-color-ratio: 50%;
+                }
+
+                .event[data-status="expired"] {
+                    font-weight: bold;
+                }
+
+                a.event {
+                    --event-bg2: var(--timeline-link-color);
+                    text-decoration: none;
+                }
+            }
+
+            .timeline:first-child {
+                border-right: var(--timeline-border);
+            }
+
         }
     }
 }
@@ -177,8 +137,12 @@
     max-height: calc(90vh - 60px);
     border: solid 1px #888;
     border-radius: 4px;
-    overflow-y: auto;
-    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+
+    >* {
+        flex: auto;
+    }
 
     .controller {
         background-color: var(--dropdown-menu-bg, #fff);
