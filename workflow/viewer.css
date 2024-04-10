@@ -16,6 +16,8 @@ dialog {
   margin-bottom: unset;
   border: unset;
   height: unset;
+
+  overflow-y: hidden;
 }
 
 dialog[open] {
@@ -48,6 +50,7 @@ dialog>* {
 
   display: flex;
   flex-wrap: wrap;
+  flex: none;
   gap: 0.2em;
 }
 
@@ -138,6 +141,7 @@ ul {
 
 .scheduler {
   --takker-scheduler-summary-meter-width: 10em;
+  overflow-y: hidden;
 }
 
 .label {

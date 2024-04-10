@@ -23,7 +23,6 @@ export const TimeGrid: FunctionComponent<
   <div className="timeline-wrap" role="grid">
     {(hasColumn ?? true) && (
       <div className="column-header" role="row">
-        <div className="corner" />{" "}
         {dateList.map((date) => (
           <div className="cell" role="columnheader">
             <h2>{getDate(date)}</h2>
@@ -31,33 +30,23 @@ export const TimeGrid: FunctionComponent<
         ))}
       </div>
     )}
-    <div className="body" role="presentation">
-      <div className="header-container">
-        <div className="header">
-          {[...Array(24).keys()].map(
-            (i) => (
-              <div className="time">
-                <span>{`${zero(i)}:00`}</span>
-              </div>
-            ),
-          )}
+
+    <div className="week-container" role="presentation">
+      <div className="week" role="presentation">
+        <div className="borders">
+          {[...Array(24).keys()].map((i) => (
+            <div className="border" data-time={`${zero(i)}:00`} />
+          ))}
         </div>
-      </div>
-      <div className="week-container">
-        <div className="week">
-          <div className="borders">
-            {[...Array(24).keys()].map(() => <div className="border" />)}
-          </div>
-          {dateList.map(
-            (date) => (
-              <TimeLine
-                project={project}
-                date={date}
-                tasks={tasks}
-              />
-            ),
-          )}
-        </div>
+        {dateList.map(
+          (date) => (
+            <TimeLine
+              project={project}
+              date={date}
+              tasks={tasks}
+            />
+          ),
+        )}
       </div>
     </div>
   </div>
