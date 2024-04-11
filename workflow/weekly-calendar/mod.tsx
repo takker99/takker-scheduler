@@ -63,22 +63,23 @@ export const setup = (projects: string[]): Promise<Controller> => {
  * @param projects タスクの取得先projectのリスト
  * @return viewerのcontroller
  */
-export const setupWedget = (projects: string[]): Promise<Controller> => {
+export const setupWedget = (projects: string[]): (open: boolean) => void => {
   const app = document.createElement("div");
   app.dataset.userscriptName = "takker-scheduler/timeline-wedget";
   const shadowRoot = app.attachShadow({ mode: "open" });
   document.body.append(app);
-  return new Promise(
-    (resolve) =>
-      render(
-        <Wedget
-          getController={resolve}
-          projects={projects}
-          mainProject={projects[0]}
-        />,
-        shadowRoot,
-      ),
+  const setOpen = (open: boolean) => {
+    if (open) app.classList.remove("closed");
+    else app.classList.add("closed");
+  };
+  render(
+    <Wedget
+      projects={projects}
+      mainProject={projects[0]}
+    />,
+    shadowRoot,
   );
+  return setOpen;
 };
 
 interface Props {
@@ -146,14 +147,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   );
 };
 
-const Wedget = ({ getController, projects, mainProject }: Props) => {
-  // UIの開閉
-  const [closed, setClosed] = useState(true);
-  const open = useCallback(() => setClosed(false), []);
-  const close = useCallback(() => setClosed(true), []);
-  const toggle = useCallback(() => setClosed((closed) => !closed), []);
-  useEffect(() => getController({ open, close, toggle }), [getController]);
-
+const Wedget = ({ projects, mainProject }: Omit<Props, "getController">) => {
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useStopPropagation();
 
@@ -171,24 +165,22 @@ const Wedget = ({ getController, projects, mainProject }: Props) => {
   return (
     <>
       <style>{CSS}</style>
-      <div className="wedget" hidden={closed}>
-        <div className="controller" onClick={stopPropagation}>
-          <span>{toKey(pageNo)}</span>
-          <ProgressBar loading={loading} />
-          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-          <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>today</button>
-          <button className="navi reload" onClick={load} disabled={loading}>
-            {"\ue06d"}
-          </button>
-        </div>
-        <TimeGrid
-          dateList={dates}
-          tasks={tasks}
-          project={mainProject}
-          hasColumn={false}
-        />
+      <div className="controller" onClick={stopPropagation}>
+        <span>{toKey(pageNo)}</span>
+        <ProgressBar loading={loading} />
+        <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+        <button className="navi right" onClick={next}>{"\ue02d"}</button>
+        <button className="today" onClick={goToday}>today</button>
+        <button className="navi reload" onClick={load} disabled={loading}>
+          {"\ue06d"}
+        </button>
       </div>
+      <TimeGrid
+        dateList={dates}
+        tasks={tasks}
+        project={mainProject}
+        hasColumn={false}
+      />
     </>
   );
 };

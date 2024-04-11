@@ -129,7 +129,7 @@
     }
 }
 
-.wedget {
+:host([data-userscript-name="takker-scheduler/timeline-wedget"]) {
     position: fixed;
     top: 60px;
     left: 10px;
@@ -140,18 +140,16 @@
     display: flex;
     flex-direction: column;
 
-    >* {
-        flex: auto;
-    }
+    background-color: var(--dropdown-menu-bg, #fff);
+    color: var(--page-text-color, #4a4a4a);
+}
 
-    .controller {
-        background-color: var(--dropdown-menu-bg, #fff);
-        color: var(--page-text-color, #4a4a4a);
-    }
+:host(.closed) {
+    display: none;
 }
 
 @media(min-width: 1092px) {
-    .wedget {
+    :host([data-userscript-name="takker-scheduler/timeline-wedget"]) {
         width: calc((100% - 960px)/2)
     }
 }
