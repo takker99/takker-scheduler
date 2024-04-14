@@ -11,4 +11,4 @@ export {
 export type {
   eventName as EventName,
   Scrapbox,
-} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.5.0/userscript.ts";
+} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.6.1/userscript.ts";
