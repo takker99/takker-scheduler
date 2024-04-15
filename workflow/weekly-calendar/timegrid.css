@@ -129,7 +129,7 @@
     }
 }
 
-:host([data-userscript-name="takker-scheduler/timeline-wedget"]) {
+.wedget {
     position: fixed;
     top: 60px;
     left: 10px;
@@ -144,12 +144,12 @@
     color: var(--page-text-color, #4a4a4a);
 }
 
-:host(.closed) {
+.wedget:not(.open) {
     display: none;
 }
 
 @media(min-width: 1092px) {
-    :host([data-userscript-name="takker-scheduler/timeline-wedget"]) {
+    .wedget {
         width: calc((100% - 960px)/2)
     }
 }

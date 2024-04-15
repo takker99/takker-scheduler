@@ -6,12 +6,13 @@
 
 import {
   Fragment,
+  FunctionComponent,
   h,
   render,
   useCallback,
   useEffect,
   useMemo,
-  useState,
+  useRef,
 } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.ts";
@@ -23,7 +24,7 @@ import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
 import { useNavigation } from "../scheduler/useNavigation.ts";
-import { useMinutes } from "../useMinutes.ts";
+import { useOpen } from "../useOpen.ts";
 
 /** calnedarのcontroller */
 export interface Controller {
@@ -63,23 +64,26 @@ export const setup = (projects: string[]): Promise<Controller> => {
  * @param projects タスクの取得先projectのリスト
  * @return viewerのcontroller
  */
-export const setupWedget = (projects: string[]): (open: boolean) => void => {
+export const setupWedget = (
+  projects: string[],
+  open: boolean,
+): Promise<Controller> => {
   const app = document.createElement("div");
   app.dataset.userscriptName = "takker-scheduler/timeline-wedget";
   const shadowRoot = app.attachShadow({ mode: "open" });
   document.body.append(app);
-  const setOpen = (open: boolean) => {
-    if (open) app.classList.remove("closed");
-    else app.classList.add("closed");
-  };
-  render(
-    <Wedget
-      projects={projects}
-      mainProject={projects[0]}
-    />,
-    shadowRoot,
+  return new Promise(
+    (resolve) =>
+      render(
+        <Wedget
+          getController={resolve}
+          projects={projects}
+          mainProject={projects[0]}
+          open={open}
+        />,
+        shadowRoot,
+      ),
   );
-  return setOpen;
 };
 
 interface Props {
@@ -90,7 +94,9 @@ interface Props {
   mainProject: string;
 }
 
-const App = ({ getController, projects, mainProject }: Props) => {
+const App: FunctionComponent<Props> = (
+  { getController, projects, mainProject },
+) => {
   const { tasks, load, loading } = useTaskCrawler(projects);
   const { pageNo, next, prev, jump } = useNavigation(
     toWeekKey(new Date()),
@@ -108,7 +114,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   }, [pageNo]);
 
   // UIの開閉
-  const { ref, open, close, toggle } = useDialog();
+  const { ref, open, close, toggle, onOpen } = useDialog();
   useEffect(() => getController({ open, close, toggle }), [getController]);
 
   /** dialogクリックではmodalを閉じないようにする */
@@ -118,6 +124,20 @@ const App = ({ getController, projects, mainProject }: Props) => {
   useUserScriptEvent("page:changed", close);
 
   const goToday = useCallback(() => jump(toWeekKey(new Date())), [jump]);
+
+  // 初回renderingのみ、.indicatorを中央にスクロールする
+  const divRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const remover = onOpen(() => {
+      if (!divRef.current) return;
+      const el = divRef.current.getElementsByClassName("indicator")[0];
+      if (!el) return;
+      const scrollY = globalThis.scrollY;
+      el.scrollIntoView({ block: "center" });
+      globalThis.scroll(0, scrollY);
+      remover();
+    });
+  }, []);
 
   return (
     <>
@@ -136,6 +156,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
         </div>
 
         <div
+          ref={divRef}
           className="result scheduler"
           onClick={stopPropagation}
           data-page-no={pageNo}
@@ -147,7 +168,9 @@ const App = ({ getController, projects, mainProject }: Props) => {
   );
 };
 
-const Wedget = ({ projects, mainProject }: Omit<Props, "getController">) => {
+const Wedget: FunctionComponent<Props & { open: boolean }> = (
+  { projects, mainProject, getController, open: open_ },
+) => {
   /** dialogクリックではmodalを閉じないようにする */
   const stopPropagation = useStopPropagation();
 
@@ -162,25 +185,58 @@ const Wedget = ({ projects, mainProject }: Omit<Props, "getController">) => {
 
   const goToday = useCallback(() => jump(new Date()), [jump]);
 
+  // UIの開閉
+  const { isOpen, open, close, toggle, onOpen } = useOpen(open_);
+  useEffect(() => getController({ open, close, toggle }), [getController]);
+  // 初回renderingのみ、.indicatorを中央にスクロールする
+  const divRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const scroll = () => {
+      if (!divRef.current) return false;
+      const el = divRef.current.getElementsByClassName("indicator")[0];
+      if (!el) return false;
+      // renderingより先にscrollIntoViewするとscrollされないので、renderingを待ってからscrollする
+      requestAnimationFrame(() => {
+        const scrollY = globalThis.scrollY;
+        el.scrollIntoView({ block: "center" });
+        globalThis.scroll(0, scrollY);
+      });
+      return true;
+    };
+    // 最初から開いているときは、すぐスクロールさせる。
+    if (open_) {
+      scroll();
+      return;
+    }
+    const remover = onOpen(() => {
+      if (scroll()) remover();
+    });
+  }, [open_]);
+
   return (
     <>
       <style>{CSS}</style>
-      <div className="controller" onClick={stopPropagation}>
-        <span>{toKey(pageNo)}</span>
-        <ProgressBar loading={loading} />
-        <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-        <button className="navi right" onClick={next}>{"\ue02d"}</button>
-        <button className="today" onClick={goToday}>today</button>
-        <button className="navi reload" onClick={load} disabled={loading}>
-          {"\ue06d"}
-        </button>
+      <div className={`wedget${isOpen ? " open" : ""}`} ref={divRef}>
+        <div
+          className="controller"
+          onClick={stopPropagation}
+        >
+          <span>{toKey(pageNo)}</span>
+          <ProgressBar loading={loading} />
+          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+          <button className="navi right" onClick={next}>{"\ue02d"}</button>
+          <button className="today" onClick={goToday}>today</button>
+          <button className="navi reload" onClick={load} disabled={loading}>
+            {"\ue06d"}
+          </button>
+        </div>
+        <TimeGrid
+          dateList={dates}
+          tasks={tasks}
+          project={mainProject}
+          hasColumn={false}
+        />
       </div>
-      <TimeGrid
-        dateList={dates}
-        tasks={tasks}
-        project={mainProject}
-        hasColumn={false}
-      />
     </>
   );
 };
