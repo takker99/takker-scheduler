@@ -9,11 +9,20 @@ import { useMinutes } from "../useMinutes.ts";
 import { getHours } from "../../deps/date-fns.ts";
 import { getMinutes } from "../../deps/date-fns.ts";
 import { EventItem } from "./EventItem.tsx";
+import { isLink } from "../scheduler/event.ts";
+import { Copy } from "../Copy.tsx";
 
 export const TimeLine: FunctionComponent<
   { project: string; date: Date; tasks: Task[] }
 > = ({ project, date, tasks }) => {
   const events = useEvents(project, date, tasks);
+  const linkList = useMemo(
+    () =>
+      events.flatMap((event) => isLink(event) ? [`[${event.title}]`] : []).join(
+        "\n",
+      ),
+    [events],
+  );
   const now = useMinutes();
   const indicator = useMemo(
     () =>
@@ -32,6 +41,7 @@ export const TimeLine: FunctionComponent<
     <div className="timeline" role="gridcell">
       {events.map((event) => <EventItem event={event} />)}
       {indicator}
+      <Copy text={linkList} />
     </div>
   );
 };
