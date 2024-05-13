@@ -79,6 +79,11 @@
                     background-color: red;
                 }
 
+                .copy {
+                    position: absolute;
+                    top: 1.5em
+                }
+
                 .event {
                     position: absolute;
                     /* --startは時単位 */
