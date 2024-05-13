@@ -133,8 +133,10 @@
     position: fixed;
     top: 60px;
     left: 10px;
-    max-width: 100px;
     max-height: calc(90vh - 60px);
+    max-width: 100px;
+    width: calc(100vw / 767 * 100 - 10px);
+    min-width: 60px;
     border: solid 1px #888;
     border-radius: 4px;
     display: flex;
