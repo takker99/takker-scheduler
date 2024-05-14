@@ -19,7 +19,7 @@ import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subDays, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
-import { ProgressBar } from "../ProgressBar.tsx";
+import { LoadButton } from "../LoadButton.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
@@ -145,13 +145,10 @@ const App: FunctionComponent<Props> = (
       <dialog ref={ref} onClick={close}>
         <div className="controller" onClick={stopPropagation}>
           <span>{pageNo}</span>
-          <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>today</button>
-          <button className="navi reload" onClick={load} disabled={loading}>
-            {"\ue06d"}
-          </button>
+          <button className="today" onClick={goToday}>{"\uf783"}</button>
+          <LoadButton loading={loading} onClick={load} />
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
 
@@ -222,13 +219,10 @@ const Wedget: FunctionComponent<Props & { open: boolean }> = (
           onClick={stopPropagation}
         >
           <span>{toKey(pageNo)}</span>
-          <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>today</button>
-          <button className="navi reload" onClick={load} disabled={loading}>
-            {"\ue06d"}
-          </button>
+          <button className="today" onClick={goToday}>{"\uf783"}</button>
+          <LoadButton loading={loading} onClick={load} />
         </div>
         <TimeGrid
           dateList={dates}

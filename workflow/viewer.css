@@ -80,7 +80,8 @@ button {
 }
 
 .copy,
-.close {
+.close,
+.today {
   font-family: "Font Awesome 5 Free";
 }
 
@@ -95,13 +96,9 @@ button {
   text-transform: none;
 }
 
-.close {
-  font-weight: 900
-}
-
+.close,
 .today {
-  border: 1px solid;
-  border-radius: 3px;
+  font-weight: 900
 }
 
 ul {

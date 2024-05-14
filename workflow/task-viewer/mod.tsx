@@ -22,7 +22,7 @@ import { Period } from "../../howm/Period.ts";
 import { compareFn } from "../../howm/sort.ts";
 import { Status } from "../../howm/status.ts";
 import { toLocalDate } from "../key.ts";
-import { ProgressBar } from "../ProgressBar.tsx";
+import { LoadButton } from "../LoadButton.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
@@ -129,12 +129,9 @@ const App = ({ getController, projects }: Props) => {
         <div className="controller" onClick={stopPropagation}>
           <Copy text={text} title="Copy All Tasks" />
           <span>{pageNo}</span>
-          <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="navi reload" onClick={load} disabled={loading}>
-            {"\ue06d"}
-          </button>
+          <LoadButton loading={loading} onClick={load} />
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
         <ul

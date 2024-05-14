@@ -10,7 +10,7 @@ import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
-import { ProgressBar } from "../ProgressBar.tsx";
+import { LoadButton } from "../LoadButton.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
 import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
@@ -89,12 +89,9 @@ const App = ({ getController, projects, mainProject }: Props) => {
       <dialog ref={ref} onClick={close}>
         <div className="controller" onClick={stopPropagation}>
           <span>{pageNo}</span>
-          <ProgressBar loading={loading} />
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="navi reload" onClick={load} disabled={loading}>
-            {"\ue06d"}
-          </button>
+          <LoadButton loading={loading} onClick={load} />
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
         <ul
