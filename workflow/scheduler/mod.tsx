@@ -4,7 +4,7 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
+import { Fragment, h, render, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.tsx";
 import { CSS } from "../viewer.min.css.ts";
@@ -14,14 +14,23 @@ import { LoadButton } from "../LoadButton.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { useNavigation } from "./useNavigation.ts";
+import { useExports } from "../useExports.ts";
 
 /** schedulerのcontroller */
-export interface Controller {
-  /** schedulerを開く */
+export interface ValidController {
+  /** calendarを開く */
   open: () => void;
-  /** schedulerを閉じる */
+  /** calendarを閉じる */
   close: () => void;
 }
+export type InvalidController = Record<keyof ValidController, undefined>;
+/** calenedarのcontroller
+ *
+ * methodsは{@link ValidController}を参照
+ *
+ * calendarがumountされた後は{@link InvalidController}(全てのmethodsが`undefined`)になる
+ */
+export type Controller = ValidController | InvalidController;
 
 /** 時系列順にタスクを閲覧するviewerを起動する
  *
@@ -72,7 +81,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
 
   // UIの開閉
   const { Dialog, open, close } = useDialog();
-  useEffect(() => getController({ open, close }), [getController]);
+  useExports(getController, { open, close });
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);

@@ -11,7 +11,6 @@ import {
   RefCallback,
   render,
   useCallback,
-  useEffect,
   useMemo,
 } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
@@ -24,14 +23,24 @@ import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
 import { useNavigation } from "../scheduler/useNavigation.ts";
 import { useOpen } from "../useOpen.ts";
+import { useExports } from "../useExports.ts";
 
-/** calnedarのcontroller */
-export interface Controller {
+export interface ValidController {
   /** calendarを開く */
   open: () => void;
   /** calendarを閉じる */
   close: () => void;
+
+  isOpen: boolean;
 }
+export type InvalidController = Record<keyof ValidController, undefined>;
+/** calenedarのcontroller
+ *
+ * methodsは{@link ValidController}を参照
+ *
+ * calendarがumountされた後は{@link InvalidController}(全てのmethodsが`undefined`)になる
+ */
+export type Controller = ValidController | InvalidController;
 
 /** 週単位のカレンダーを起動する
  *
@@ -117,8 +126,7 @@ const App: FunctionComponent<Props> = (
   // UIの開閉
   const { open, close, Dialog, isOpen } = useDialog();
   scrolledToIndicatorInApp ||= isOpen;
-
-  useEffect(() => getController({ open, close }), [getController]);
+  useExports(getController, { open, close, isOpen });
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
@@ -172,7 +180,7 @@ const Wedget: FunctionComponent<Props & { open: boolean }> = (
   const { isOpen, open, close } = useOpen(open_);
   scrolledToIndicatorInWedget ||= isOpen;
 
-  useEffect(() => getController({ open, close }), [getController]);
+  useExports(getController, { open, close, isOpen });
 
   return (
     <>
