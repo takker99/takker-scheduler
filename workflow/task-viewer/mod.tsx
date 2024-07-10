@@ -6,7 +6,7 @@
 
 import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.ts";
+import { useDialog } from "../useDialog.tsx";
 import { CSS } from "../viewer.min.css.ts";
 import { Copy } from "../Copy.tsx";
 import { fromDate, isBefore, toDate } from "../../howm/localDate.ts";
@@ -25,13 +25,11 @@ import { toLocalDate } from "../key.ts";
 import { LoadButton } from "../LoadButton.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
-import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 
 export interface Controller {
   open: () => void;
   close: () => void;
-  toggle: () => void;
 }
 
 export const setup = (projects: string[]): Promise<Controller> => {
@@ -107,11 +105,8 @@ const App = ({ getController, projects }: Props) => {
   }, [tasks, errors, pageNo]);
 
   // UIの開閉
-  const { ref, open, close, toggle } = useDialog();
-  useEffect(() => getController({ open, close, toggle }), [getController]);
-
-  /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useStopPropagation();
+  const { Dialog, open, close } = useDialog();
+  useEffect(() => getController({ open, close }), [getController]);
 
   /** コピー用テキスト */
   const text = useMemo(
@@ -125,8 +120,8 @@ const App = ({ getController, projects }: Props) => {
   return (
     <>
       <style>{CSS}</style>
-      <dialog ref={ref} onClick={close}>
-        <div className="controller" onClick={stopPropagation}>
+      <Dialog>
+        <div className="controller">
           <Copy text={text} title="Copy All Tasks" />
           <span>{pageNo}</span>
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
@@ -134,11 +129,7 @@ const App = ({ getController, projects }: Props) => {
           <LoadButton loading={loading} onClick={load} />
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
-        <ul
-          className="result task-list"
-          onClick={stopPropagation}
-          data-page-no={pageNo}
-        >
+        <ul className="result task-list" data-page-no={pageNo}>
           {actions.map((action, i) => (
             <TaskItem
               key={action.raw}
@@ -147,7 +138,7 @@ const App = ({ getController, projects }: Props) => {
             />
           ))}
         </ul>
-      </dialog>
+      </Dialog>
     </>
   );
 };

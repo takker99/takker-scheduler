@@ -8,19 +8,18 @@ import {
   Fragment,
   FunctionComponent,
   h,
+  RefCallback,
   render,
   useCallback,
   useEffect,
   useMemo,
-  useRef,
 } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.ts";
+import { useDialog } from "../useDialog.tsx";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subDays, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
 import { LoadButton } from "../LoadButton.tsx";
-import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { TimeGrid } from "./TimeGrid.tsx";
 import { useNavigation } from "../scheduler/useNavigation.ts";
@@ -32,8 +31,6 @@ export interface Controller {
   open: () => void;
   /** calendarを閉じる */
   close: () => void;
-  /** calendarの開閉を切り替える */
-  toggle: () => void;
 }
 
 /** 週単位のカレンダーを起動する
@@ -41,7 +38,9 @@ export interface Controller {
  * @param projects タスクの取得先projectのリスト
  * @return viewerのcontroller
  */
-export const setup = (projects: string[]): Promise<Controller> => {
+export const setup = (
+  projects: string[],
+): Promise<Controller> => {
   const app = document.createElement("div");
   app.dataset.userscriptName = "takker-scheduler/weekly-scheduler";
   const shadowRoot = app.attachShadow({ mode: "open" });
@@ -94,6 +93,8 @@ interface Props {
   mainProject: string;
 }
 
+/** {@link App}を1回以上開いたかどうかを保持するフラグ */
+let scrolledToIndicatorInApp = false;
 const App: FunctionComponent<Props> = (
   { getController, projects, mainProject },
 ) => {
@@ -114,36 +115,21 @@ const App: FunctionComponent<Props> = (
   }, [pageNo]);
 
   // UIの開閉
-  const { ref, open, close, toggle, onOpen } = useDialog();
-  useEffect(() => getController({ open, close, toggle }), [getController]);
+  const { open, close, Dialog, isOpen } = useDialog();
+  scrolledToIndicatorInApp ||= isOpen;
 
-  /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useStopPropagation();
+  useEffect(() => getController({ open, close }), [getController]);
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
 
   const goToday = useCallback(() => jump(toWeekKey(new Date())), [jump]);
 
-  // 初回renderingのみ、.indicatorを中央にスクロールする
-  const divRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const remover = onOpen(() => {
-      if (!divRef.current) return;
-      const el = divRef.current.getElementsByClassName("indicator")[0];
-      if (!el) return;
-      const scrollY = globalThis.scrollY;
-      el.scrollIntoView({ block: "center" });
-      globalThis.scroll(0, scrollY);
-      remover();
-    });
-  }, []);
-
   return (
     <>
       <style>{CSS}</style>
-      <dialog ref={ref} onClick={close}>
-        <div className="controller" onClick={stopPropagation}>
+      <Dialog>
+        <div className="controller">
           <span>{pageNo}</span>
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
@@ -152,25 +138,25 @@ const App: FunctionComponent<Props> = (
           <button className="close" onClick={close}>{"\uf00d"}</button>
         </div>
 
-        <div
-          ref={divRef}
-          className="result scheduler"
-          onClick={stopPropagation}
-          data-page-no={pageNo}
-        >
-          <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
-        </div>
-      </dialog>
+        {scrolledToIndicatorInApp && (
+          <div
+            ref={scrollToIndicator}
+            className="result scheduler"
+            data-page-no={pageNo}
+          >
+            <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
+          </div>
+        )}
+      </Dialog>
     </>
   );
 };
 
+/** {@link Wedget}を1回以上開いたかどうかを保持するフラグ */
+let scrolledToIndicatorInWedget = false;
 const Wedget: FunctionComponent<Props & { open: boolean }> = (
   { projects, mainProject, getController, open: open_ },
 ) => {
-  /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useStopPropagation();
-
   const { tasks, load, loading } = useTaskCrawler(projects);
 
   const { pageNo, next, prev, jump } = useNavigation(
@@ -183,54 +169,37 @@ const Wedget: FunctionComponent<Props & { open: boolean }> = (
   const goToday = useCallback(() => jump(new Date()), [jump]);
 
   // UIの開閉
-  const { isOpen, open, close, toggle, onOpen } = useOpen(open_);
-  useEffect(() => getController({ open, close, toggle }), [getController]);
-  // 初回renderingのみ、.indicatorを中央にスクロールする
-  const divRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const scroll = () => {
-      if (!divRef.current) return false;
-      const el = divRef.current.getElementsByClassName("indicator")[0];
-      if (!el) return false;
-      // renderingより先にscrollIntoViewするとscrollされないので、renderingを待ってからscrollする
-      requestAnimationFrame(() => {
-        const scrollY = globalThis.scrollY;
-        el.scrollIntoView({ block: "center" });
-        globalThis.scroll(0, scrollY);
-      });
-      return true;
-    };
-    // 最初から開いているときは、すぐスクロールさせる。
-    if (open_) {
-      scroll();
-      return;
-    }
-    const remover = onOpen(() => {
-      if (scroll()) remover();
-    });
-  }, [open_]);
+  const { isOpen, open, close } = useOpen(open_);
+  scrolledToIndicatorInWedget ||= isOpen;
+
+  useEffect(() => getController({ open, close }), [getController]);
 
   return (
     <>
       <style>{CSS}</style>
-      <div className={`wedget${isOpen ? " open" : ""}`} ref={divRef}>
+      {/* 一度renderingされた後は、unmountされるまでDOMを表示し続ける */}
+      {scrolledToIndicatorInWedget && (
         <div
-          className="controller"
-          onClick={stopPropagation}
+          className={`wedget${isOpen ? " open" : ""}`}
+          ref={scrollToIndicator}
         >
-          <span>{toKey(pageNo)}</span>
-          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-          <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>{"\uf783"}</button>
-          <LoadButton loading={loading} onClick={load} />
+          <div className="controller">
+            <span>{toKey(pageNo)}</span>
+            <button className="navi left" onClick={prev}>{"\ue02c"}</button>
+            <button className="navi right" onClick={next}>
+              {"\ue02d"}
+            </button>
+            <button className="today" onClick={goToday}>{"\uf783"}</button>
+            <LoadButton loading={loading} onClick={load} />
+          </div>
+          <TimeGrid
+            dateList={dates}
+            tasks={tasks}
+            project={mainProject}
+            hasColumn={false}
+          />
         </div>
-        <TimeGrid
-          dateList={dates}
-          tasks={tasks}
-          project={mainProject}
-          hasColumn={false}
-        />
-      </div>
+      )}
     </>
   );
 };
@@ -242,3 +211,12 @@ const prevWeekKey = (pageNo: WeekKey) =>
 
 const nextDate = (date: Date) => addDays(date, 1);
 const prevDate = (date: Date) => subDays(date, 1);
+
+/** 初回renderingのみ、`.indicator`を中央にスクロールする */
+const scrollToIndicator: RefCallback<HTMLDivElement> = (ancester) => {
+  const el = ancester?.getElementsByClassName?.("indicator")?.[0];
+  if (!el) return;
+  const scrollY = globalThis.scrollY;
+  el.scrollIntoView({ block: "center" });
+  globalThis.scroll(0, scrollY);
+};

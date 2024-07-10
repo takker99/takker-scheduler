@@ -6,13 +6,12 @@
 
 import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.ts";
+import { useDialog } from "../useDialog.tsx";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
 import { LoadButton } from "../LoadButton.tsx";
 import { DailySchedule } from "./DailySchedule.tsx";
-import { useStopPropagation } from "../useStopPropagation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { useNavigation } from "./useNavigation.ts";
 
@@ -22,8 +21,6 @@ export interface Controller {
   open: () => void;
   /** schedulerを閉じる */
   close: () => void;
-  /** schedulerの開閉を切り替える */
-  toggle: () => void;
 }
 
 /** 時系列順にタスクを閲覧するviewerを起動する
@@ -74,11 +71,8 @@ const App = ({ getController, projects, mainProject }: Props) => {
   }, [pageNo]);
 
   // UIの開閉
-  const { ref, open, close, toggle } = useDialog();
-  useEffect(() => getController({ open, close, toggle }), [getController]);
-
-  /** dialogクリックではmodalを閉じないようにする */
-  const stopPropagation = useStopPropagation();
+  const { Dialog, open, close } = useDialog();
+  useEffect(() => getController({ open, close }), [getController]);
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
   useUserScriptEvent("page:changed", close);
@@ -86,8 +80,8 @@ const App = ({ getController, projects, mainProject }: Props) => {
   return (
     <>
       <style>{CSS}</style>
-      <dialog ref={ref} onClick={close}>
-        <div className="controller" onClick={stopPropagation}>
+      <Dialog>
+        <div className="controller">
           <span>{pageNo}</span>
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
           <button className="navi right" onClick={next}>{"\ue02d"}</button>
@@ -96,7 +90,6 @@ const App = ({ getController, projects, mainProject }: Props) => {
         </div>
         <ul
           className="result scheduler"
-          onClick={stopPropagation}
           data-page-no={pageNo}
         >
           {dateList.map((date) => (
@@ -109,7 +102,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
             </li>
           ))}
         </ul>
-      </dialog>
+      </Dialog>
     </>
   );
 };
