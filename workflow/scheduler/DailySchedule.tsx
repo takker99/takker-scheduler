@@ -57,7 +57,7 @@ export const DailySchedule: FunctionComponent<
         <ScheduleSummary date={date} now={now} remains={remains} />
       </summary>
       <ul>
-        {events.map((event, i) => <EventItem key={event.name} event={event} />)}
+        {events.map((event) => <EventItem key={event.name} event={event} />)}
       </ul>
     </details>
   );
