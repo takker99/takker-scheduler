@@ -4,9 +4,9 @@ declare const scrapbox: Scrapbox;
 
 export const useUserScriptEvent = (
   eventName: EventName,
-  callback: (event: CustomEvent) => void,
+  callback: () => void,
 ): void =>
   useEffect(() => {
     scrapbox.on(eventName, callback);
     return () => scrapbox.off(eventName, callback);
-  }, [close]);
+  }, []);

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "../deps/preact.tsx";
+import { useEffect, useState } from "../deps/preact.tsx";
 import { getPage, toTitleLc } from "../deps/scrapbox-std.ts";
 import { Scrapbox, takeInternalLines } from "../deps/scrapbox-std-dom.ts";
 declare const scrapbox: Scrapbox;
@@ -57,6 +57,10 @@ const get = (project: string, title: string): string[] => {
   const key = toKey(project, title);
   const result = pages.get(key);
   if (!result) {
+    // 一度しか初期化処理が走らないようにする
+    // dummyのから配列を入れるだけなので、 `emitChange`でlistenersは呼び出さなくていい
+    pages.set(key, []);
+
     getPage(project, title)
       .then((result) => {
         if (!result.ok) return [];
@@ -76,9 +80,6 @@ const get = (project: string, title: string): string[] => {
 /** scrapboxのページテキストを格納・参照するhooks */
 export const useLines = (project: string, title: string): string[] => {
   const [lines, setLines] = useState<string[]>(get(project, title));
-
-  // ちらつき(FOUC)対策
-  useLayoutEffect(() => setLines(get(project, title)), [project, title]);
 
   useEffect(() => {
     const key = toKey(project, title);
