@@ -4,12 +4,12 @@
 
 /** @jsx h */
 /** @jsxFrag Fragment */
-export * from "https://esm.sh/preact@10.6.4";
 export {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "https://esm.sh/preact@10.6.4/hooks";
+  type ComponentChildren,
+  Fragment,
+  type FunctionComponent,
+  h,
+  type RefCallback,
+  render,
+} from "https://esm.sh/preact@10.6.4";
+export * from "https://esm.sh/preact@10.6.4/hooks";
