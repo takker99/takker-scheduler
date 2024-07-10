@@ -1,14 +1,12 @@
 @import "./font.css";
 @import "./weekly-calendar/timegrid.css";
 
-dialog::backdrop {
-  background-color: #000c;
-}
 
 dialog {
-  flex-direction: column;
-  align-items: center;
-  row-gap: 10px;
+  &::backdrop {
+    background-color: #000c;
+  }
+
   padding: 10px;
 
   background: unset;
@@ -18,17 +16,26 @@ dialog {
   height: unset;
 
   overflow-y: hidden;
-}
 
-dialog[open] {
-  display: flex;
-}
+  &[open]>.dialog-inner {
+    display: flex;
+  }
 
-dialog>* {
-  color: var(--page-text-color, #4a4a4a);
-  background-color: var(--dropdown-menu-bg, #fff);
-  border: 1px solid rgba(0, 0, 0, .2);
-  border-radius: 6px;
+
+  >.dialog-inner {
+
+    flex-direction: column;
+    align-items: center;
+    row-gap: 10px;
+    height: 100%;
+
+    >* {
+      color: var(--page-text-color, #4a4a4a);
+      background-color: var(--dropdown-menu-bg, #fff);
+      border: 1px solid rgba(0, 0, 0, .2);
+      border-radius: 6px;
+    }
+  }
 }
 
 @media (min-width: 768px) {
@@ -56,20 +63,22 @@ dialog>* {
 
 .progress {
   flex-grow: 1;
+
+  >* {
+    padding: 0 2px;
+  }
 }
 
-.progress>* {
-  padding: 0 2px;
-}
 
 a {
   text-decoration: none;
   color: var(--page-link-color, #5e8af7);
+
+  &:hover {
+    color: var(--page-link-hover-color, #2d67f5);
+  }
 }
 
-a:hover {
-  color: var(--page-link-hover-color, #2d67f5);
-}
 
 button {
   cursor: pointer;
@@ -111,28 +120,32 @@ ul {
   font-weight: bold;
 }
 
-.scheduler details li[data-status="done"] {
-  opacity: 0.4;
+.scheduler details li {
+  &[data-status="done"] {
+    opacity: 0.4;
+  }
+
+  &[data-status="expired"] {
+    font-weight: bold;
+  }
 }
 
-.scheduler details li[data-status="expired"] {
-  font-weight: bold;
-}
+.task-list li {
+  &[data-type="deadline"] .label.type {
+    color: var(--takker-scheduler-label-deadline-color, rgb(255, 75, 0));
+  }
 
-.task-list li[data-type="deadline"] .label.type {
-  color: var(--takker-scheduler-label-deadline-color, rgb(255, 75, 0));
-}
+  &[data-type="todo"] .label.type {
+    color: var(--takker-scheduler-label-todo-color, rgb(246, 170, 0));
+  }
 
-.task-list li[data-type="todo"] .label.type {
-  color: var(--takker-scheduler-label-todo-color, rgb(246, 170, 0));
-}
+  &[data-type="note"] .label.type {
+    color: var(--takker-scheduler-label-note-color, rgb(200, 200, 203));
+  }
 
-.task-list li[data-type="note"] .label.type {
-  color: var(--takker-scheduler-label-note-color, rgb(200, 200, 203));
-}
-
-.task-list li[data-type="up-down"] .label.type {
-  color: var(--takker-scheduler-label-up-down-color, rgb(77, 196, 255));
+  &[data-type="up-down"] .label.type {
+    color: var(--takker-scheduler-label-up-down-color, rgb(77, 196, 255));
+  }
 }
 
 :is([data-page-no="expired"], [data-page-no="errors"]) li {
@@ -162,11 +175,7 @@ ul {
   width: 2.5em;
 }
 
-.start {
-  text-align: right;
-  width: 3em;
-}
-
+.start,
 .duration {
   text-align: right;
   width: 3em;
