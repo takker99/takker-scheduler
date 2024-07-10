@@ -4,7 +4,7 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
-import { Fragment, h, render, useEffect, useMemo } from "../../deps/preact.tsx";
+import { Fragment, h, render, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.tsx";
 import { CSS } from "../viewer.min.css.ts";
@@ -26,11 +26,22 @@ import { LoadButton } from "../LoadButton.tsx";
 import { TaskItem } from "./TaskItem.tsx";
 import { useNavigation } from "./useNavigation.tsx";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
+import { useExports } from "../useExports.ts";
 
-export interface Controller {
+export interface ValidController {
+  /** calendarを開く */
   open: () => void;
+  /** calendarを閉じる */
   close: () => void;
 }
+export type InvalidController = Record<keyof ValidController, undefined>;
+/** calenedarのcontroller
+ *
+ * methodsは{@link ValidController}を参照
+ *
+ * calendarがumountされた後は{@link InvalidController}(全てのmethodsが`undefined`)になる
+ */
+export type Controller = ValidController | InvalidController;
 
 export const setup = (projects: string[]): Promise<Controller> => {
   const app = document.createElement("div");
@@ -106,7 +117,7 @@ const App = ({ getController, projects }: Props) => {
 
   // UIの開閉
   const { Dialog, open, close } = useDialog();
-  useEffect(() => getController({ open, close }), [getController]);
+  useExports(getController, { open, close });
 
   /** コピー用テキスト */
   const text = useMemo(
