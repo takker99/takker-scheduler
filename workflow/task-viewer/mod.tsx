@@ -140,7 +140,11 @@ const App = ({ getController, projects }: Props) => {
           data-page-no={pageNo}
         >
           {actions.map((action, i) => (
-            <TaskItem action={action} pActions={actions.slice(0, i)} />
+            <TaskItem
+              key={action.raw}
+              action={action}
+              pActions={actions.slice(0, i)}
+            />
           ))}
         </ul>
       </dialog>

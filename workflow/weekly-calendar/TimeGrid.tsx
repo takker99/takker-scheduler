@@ -8,6 +8,7 @@ import { Task } from "../useTaskCrawler.ts";
 import { getDate } from "../../deps/date-fns.ts";
 import { TimeLine } from "./TimeLine.tsx";
 import { zero } from "../../zero.ts";
+import { toKey } from "../key.ts";
 
 /** 特定の日付のタスクを一覧するComponent
  *
@@ -24,7 +25,7 @@ export const TimeGrid: FunctionComponent<
     {(hasColumn ?? true) && (
       <div className="column-header" role="row">
         {dateList.map((date) => (
-          <div className="cell" role="columnheader">
+          <div key={toKey(date)} className="cell" role="columnheader">
             <h2>{getDate(date)}</h2>
           </div>
         ))}
@@ -35,12 +36,13 @@ export const TimeGrid: FunctionComponent<
       <div className="week" role="presentation">
         <div className="borders">
           {[...Array(24).keys()].map((i) => (
-            <div className="border" data-time={`${zero(i)}:00`} />
+            <div key={i} className="border" data-time={`${zero(i)}:00`} />
           ))}
         </div>
         {dateList.map(
           (date) => (
             <TimeLine
+              key={toKey(date)}
               project={project}
               date={date}
               tasks={tasks}

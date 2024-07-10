@@ -39,7 +39,7 @@ export const TimeLine: FunctionComponent<
 
   return (
     <div className="timeline" role="gridcell">
-      {events.map((event) => <EventItem event={event} />)}
+      {events.map((event) => <EventItem key={event.name} event={event} />)}
       {indicator}
       <Copy text={linkList} />
     </div>
