@@ -11,5 +11,5 @@ export {
   h,
   type RefCallback,
   render,
-} from "https://esm.sh/preact@10.6.4";
-export * from "https://esm.sh/preact@10.6.4/hooks";
+} from "https://esm.sh/preact@10.22.1";
+export * from "https://esm.sh/preact@10.22.1/hooks";
