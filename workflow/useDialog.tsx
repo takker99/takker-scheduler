@@ -69,13 +69,16 @@ const dialogStateReducer = (
   state: DialogState,
   isOpen: boolean,
 ): DialogState => {
+  const isOpenNow = state.ref.current?.open;
   if (isOpen) {
     state.ref.current?.showModal?.();
     const prevOverflowY = !state.isOpen
       ? document.documentElement.style.overflowY
       : state.prevOverflowY;
     document.documentElement.style.overflowY = "hidden";
-    return { isOpen: true, prevOverflowY, ref: state.ref };
+    return state.isOpen && isOpenNow
+      ? state
+      : { isOpen: true, prevOverflowY, ref: state.ref };
   }
   state.ref.current?.close?.();
   if (state.prevOverflowY === "") {
@@ -83,5 +86,7 @@ const dialogStateReducer = (
   } else {
     document.documentElement.style.overflowY = state.prevOverflowY;
   }
-  return { isOpen: false, prevOverflowY: "", ref: state.ref };
+  return !state.isOpen && !isOpenNow
+    ? state
+    : { isOpen: false, prevOverflowY: "", ref: state.ref };
 };
