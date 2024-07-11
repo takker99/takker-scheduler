@@ -4,11 +4,10 @@ import {
   ComponentChildren,
   FunctionComponent,
   h,
-  Ref,
+  RefCallback,
   useCallback,
-  useEffect,
+  useMemo,
   useReducer,
-  useRef,
 } from "../deps/preact.tsx";
 import { useStopPropagation } from "./useStopPropagation.ts";
 
@@ -20,14 +19,13 @@ export interface UseDialogResult {
 }
 
 export const useDialog = (): UseDialogResult => {
-  const [dialogState, setOpen] = useReducer(dialogStateReducer, {
+  const [dialogState, changeDialogState] = useReducer(dialogStateReducer, {
     isOpen: false,
-    ref: useRef<HTMLDialogElement>(null),
     prevOverflowY: "",
   });
 
-  const open = useCallback(() => setOpen(true), []);
-  const close = useCallback(() => setOpen(false), []);
+  const open = useCallback(() => changeDialogState(true), []);
+  const close = useCallback(() => changeDialogState(false), []);
 
   const Dialog: FunctionComponent<{ children?: ComponentChildren }> =
     useCallback((
@@ -36,17 +34,32 @@ export const useDialog = (): UseDialogResult => {
       /** dialogクリックではmodalを閉じないようにする */
       const stopPropagation = useStopPropagation();
 
-      useEffect(
+      const ref: RefCallback<HTMLDialogElement> = useMemo(
         () => {
-          dialogState.ref.current?.addEventListener?.("cancel", close);
-          return () =>
-            dialogState.ref.current?.removeEventListener?.("cancel", close);
+          let cleanup: VoidFunction | undefined;
+          return (dialog) => {
+            if (!dialog) {
+              cleanup?.();
+              changeDialogState(dialog);
+              return;
+            }
+
+            const controller = new AbortController();
+            dialog.addEventListener("cancel", () => changeDialogState(false), {
+              signal: controller.signal,
+            });
+
+            cleanup = () => {
+              controller.abort();
+            };
+            changeDialogState(dialog);
+          };
         },
         [],
       );
 
       return (
-        <dialog ref={dialogState.ref} onClick={close}>
+        <dialog ref={ref} onClick={close}>
           {children && (
             <div className="dialog-inner" onClick={stopPropagation}>
               {children}
@@ -61,27 +74,39 @@ export const useDialog = (): UseDialogResult => {
 
 interface DialogState {
   isOpen: boolean;
-  ref: Ref<HTMLDialogElement>;
+  dialog?: HTMLDialogElement | null;
   prevOverflowY: string;
 }
 
 const dialogStateReducer = (
   state: DialogState,
-  isOpen: boolean,
+  isOpen: boolean | HTMLDialogElement | null,
 ): DialogState => {
+  const isOpenNow = state.dialog?.open ?? false;
+  if (isOpen instanceof HTMLDialogElement || isOpen === null) {
+    return isOpenNow === state.isOpen && isOpen === state.dialog ? state : {
+      isOpen: isOpenNow,
+      dialog: isOpen,
+      prevOverflowY: state.prevOverflowY,
+    };
+  }
   if (isOpen) {
-    state.ref.current?.showModal?.();
+    state.dialog?.showModal?.();
     const prevOverflowY = !state.isOpen
       ? document.documentElement.style.overflowY
       : state.prevOverflowY;
     document.documentElement.style.overflowY = "hidden";
-    return { isOpen: true, prevOverflowY, ref: state.ref };
+    return state.isOpen && isOpenNow
+      ? state
+      : { isOpen: true, prevOverflowY, dialog: state.dialog };
   }
-  state.ref.current?.close?.();
+  state.dialog?.close?.();
   if (state.prevOverflowY === "") {
     document.documentElement.style.removeProperty("overflow-y");
   } else {
     document.documentElement.style.overflowY = state.prevOverflowY;
   }
-  return { isOpen: false, prevOverflowY: "", ref: state.ref };
+  return !state.isOpen && !isOpenNow
+    ? state
+    : { isOpen: false, prevOverflowY: "", dialog: state.dialog };
 };
