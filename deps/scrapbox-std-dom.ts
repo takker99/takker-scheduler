@@ -7,8 +7,8 @@ export {
   replaceLines,
   takeInternalLines,
   useStatusBar,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.26.2/browser/dom/mod.ts";
+} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.27.0/browser/dom/mod.ts";
 export type {
   eventName as EventName,
   Scrapbox,
-} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.7.1/userscript.ts";
+} from "https://raw.githubusercontent.com/scrapbox-jp/types/0.9.0/userscript.ts";
