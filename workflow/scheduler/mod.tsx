@@ -6,7 +6,7 @@
 
 import { Fragment, h, render, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.tsx";
+import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
@@ -80,7 +80,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   }, [pageNo]);
 
   // UIの開閉
-  const { Dialog, open, close } = useDialog();
+  const { ref, open, close } = useDialog();
   useExports(getController, { open, close });
 
   // 同じタブで別のページに遷移したときはmodalを閉じる
@@ -89,7 +89,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
   return (
     <>
       <style>{CSS}</style>
-      <Dialog>
+      <dialog ref={ref}>
         <div className="controller">
           <span>{pageNo}</span>
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
@@ -111,7 +111,7 @@ const App = ({ getController, projects, mainProject }: Props) => {
             </li>
           ))}
         </ul>
-      </Dialog>
+      </dialog>
     </>
   );
 };

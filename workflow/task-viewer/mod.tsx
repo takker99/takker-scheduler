@@ -6,7 +6,7 @@
 
 import { Fragment, h, render, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.tsx";
+import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { Copy } from "../Copy.tsx";
 import { fromDate, isBefore, toDate } from "../../howm/localDate.ts";
@@ -116,7 +116,7 @@ const App = ({ getController, projects }: Props) => {
   }, [tasks, errors, pageNo]);
 
   // UIの開閉
-  const { Dialog, open, close } = useDialog();
+  const { ref, open, close } = useDialog();
   useExports(getController, { open, close });
 
   /** コピー用テキスト */
@@ -131,7 +131,7 @@ const App = ({ getController, projects }: Props) => {
   return (
     <>
       <style>{CSS}</style>
-      <Dialog>
+      <dialog ref={ref}>
         <div className="controller">
           <Copy text={text} title="Copy All Tasks" />
           <span>{pageNo}</span>
@@ -149,7 +149,7 @@ const App = ({ getController, projects }: Props) => {
             />
           ))}
         </ul>
-      </Dialog>
+      </dialog>
     </>
   );
 };

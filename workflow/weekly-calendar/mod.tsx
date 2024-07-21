@@ -14,7 +14,7 @@ import {
   useMemo,
 } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
-import { useDialog } from "../useDialog.tsx";
+import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
 import { addDays, addWeeks, subDays, subWeeks } from "../../deps/date-fns.ts";
 import { toKey, toStartOfWeek, toWeekKey, WeekKey } from "../key.ts";
@@ -124,7 +124,7 @@ const App: FunctionComponent<Props> = (
   }, [pageNo]);
 
   // UIの開閉
-  const { open, close, Dialog, isOpen } = useDialog();
+  const { ref, open, close, isOpen } = useDialog();
   scrolledToIndicatorInApp ||= isOpen;
   useExports(getController, { open, close, isOpen });
 
@@ -136,7 +136,7 @@ const App: FunctionComponent<Props> = (
   return (
     <>
       <style>{CSS}</style>
-      <Dialog>
+      <dialog ref={ref}>
         <div className="controller">
           <span>{pageNo}</span>
           <button className="navi left" onClick={prev}>{"\ue02c"}</button>
@@ -155,7 +155,7 @@ const App: FunctionComponent<Props> = (
             <TimeGrid dateList={dateList} tasks={tasks} project={mainProject} />
           </div>
         )}
-      </Dialog>
+      </dialog>
     </>
   );
 };

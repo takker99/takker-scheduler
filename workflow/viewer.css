@@ -3,6 +3,10 @@
 
 
 dialog {
+  flex-direction: column;
+  align-items: center;
+  row-gap: 10px;
+
   &::backdrop {
     background-color: #000c;
   }
@@ -17,25 +21,18 @@ dialog {
 
   overflow-y: hidden;
 
-  &[open]>.dialog-inner {
+
+  &[open] {
     display: flex;
   }
 
-
-  >.dialog-inner {
-
-    flex-direction: column;
-    align-items: center;
-    row-gap: 10px;
-    height: 100%;
-
-    >* {
-      color: var(--page-text-color, #4a4a4a);
-      background-color: var(--dropdown-menu-bg, #fff);
-      border: 1px solid rgba(0, 0, 0, .2);
-      border-radius: 6px;
-    }
+  >* {
+    color: var(--page-text-color, #4a4a4a);
+    background-color: var(--dropdown-menu-bg, #fff);
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-radius: 6px;
   }
+
 }
 
 @media (min-width: 768px) {
