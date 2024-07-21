@@ -1,21 +1,15 @@
-/** @jsx h */
-
 import {
-  ComponentChildren,
-  FunctionComponent,
-  h,
   RefCallback,
   useCallback,
   useMemo,
   useReducer,
 } from "../deps/preact.tsx";
-import { useStopPropagation } from "./useStopPropagation.ts";
 
 export interface UseDialogResult {
   isOpen: boolean;
   open: VoidFunction;
   close: VoidFunction;
-  Dialog: FunctionComponent<{ children?: ComponentChildren }>;
+  ref: RefCallback<HTMLDialogElement>;
 }
 
 export const useDialog = (): UseDialogResult => {
@@ -27,49 +21,42 @@ export const useDialog = (): UseDialogResult => {
   const open = useCallback(() => changeDialogState(true), []);
   const close = useCallback(() => changeDialogState(false), []);
 
-  const Dialog: FunctionComponent<{ children?: ComponentChildren }> =
-    useCallback((
-      { children },
-    ) => {
-      /** dialogクリックではmodalを閉じないようにする */
-      const stopPropagation = useStopPropagation();
+  const ref: RefCallback<HTMLDialogElement> = useMemo(
+    () => {
+      let cleanup: VoidFunction | undefined;
+      return (dialog) => {
+        if (!dialog) {
+          cleanup?.();
+          changeDialogState(dialog);
+          return;
+        }
 
-      const ref: RefCallback<HTMLDialogElement> = useMemo(
-        () => {
-          let cleanup: VoidFunction | undefined;
-          return (dialog) => {
-            if (!dialog) {
-              cleanup?.();
-              changeDialogState(dialog);
-              return;
-            }
+        const controller = new AbortController();
+        // close `<dialog>` when pressing the Escape key
+        dialog.addEventListener("cancel", () => changeDialogState(false), {
+          signal: controller.signal,
+        });
+        //close `<dialog>` when clicking the backdrop
+        dialog.addEventListener("click", (e) => {
+          if (e.target !== e.currentTarget) {
+            e.stopPropagation();
+            return;
+          }
+          changeDialogState(false);
+        }, {
+          signal: controller.signal,
+        });
 
-            const controller = new AbortController();
-            dialog.addEventListener("cancel", () => changeDialogState(false), {
-              signal: controller.signal,
-            });
+        cleanup = () => {
+          controller.abort();
+        };
+        changeDialogState(dialog);
+      };
+    },
+    [],
+  );
 
-            cleanup = () => {
-              controller.abort();
-            };
-            changeDialogState(dialog);
-          };
-        },
-        [],
-      );
-
-      return (
-        <dialog ref={ref} onClick={close}>
-          {children && (
-            <div className="dialog-inner" onClick={stopPropagation}>
-              {children}
-            </div>
-          )}
-        </dialog>
-      );
-    }, []);
-
-  return { isOpen: dialogState.isOpen, open, close, Dialog };
+  return { isOpen: dialogState.isOpen, open, close, ref };
 };
 
 interface DialogState {

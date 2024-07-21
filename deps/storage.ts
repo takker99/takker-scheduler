@@ -1,1 +1,1 @@
-export * from "https://raw.githubusercontent.com/takker99/scrapbox-storage/0.1.4/mod.ts";
+export * from "https://raw.githubusercontent.com/takker99/scrapbox-storage/0.1.5/mod.ts";
