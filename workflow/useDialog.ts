@@ -3,6 +3,7 @@ import {
   useCallback,
   useMemo,
   useReducer,
+  useRef,
 } from "../deps/preact.tsx";
 
 export interface UseDialogResult {
@@ -17,9 +18,36 @@ export const useDialog = (): UseDialogResult => {
     isOpen: false,
     prevOverflowY: "",
   });
+  const dialogStore = useRef<HTMLDialogElement>(null);
 
-  const open = useCallback(() => changeDialogState(true), []);
-  const close = useCallback(() => changeDialogState(false), []);
+  const open = useCallback(() => {
+    changeDialogState((prev) => {
+      dialogStore?.current?.showModal?.();
+      const isOpen = dialogStore?.current?.open ?? false;
+      // prevent <html> from scrolling when the dialog is open
+      const prevOverflowY = prev.isOpen
+        ? prev.prevOverflowY
+        : document.documentElement.style.overflowY;
+      document.documentElement.style.overflowY = "hidden";
+      return { isOpen, prevOverflowY };
+    });
+  }, []);
+  const close = useCallback(() => {
+    changeDialogState((prev) => {
+      dialogStore?.current?.close?.();
+      const isOpen = dialogStore?.current?.open ?? false;
+      if (!isOpen) {
+        // restore the previous `overflow-y` value
+        if (prev.prevOverflowY) {
+          document.documentElement.style.overflowY = prev.prevOverflowY;
+        } else {
+          document.documentElement.style.removeProperty("overflow-y");
+        }
+        return { isOpen };
+      }
+      return { isOpen, prevOverflowY: prev.prevOverflowY };
+    });
+  }, []);
 
   const ref: RefCallback<HTMLDialogElement> = useMemo(
     () => {
@@ -27,13 +55,13 @@ export const useDialog = (): UseDialogResult => {
       return (dialog) => {
         if (!dialog) {
           cleanup?.();
-          changeDialogState(dialog);
+          dialogStore.current = null;
           return;
         }
 
         const controller = new AbortController();
         // close `<dialog>` when pressing the Escape key
-        dialog.addEventListener("cancel", () => changeDialogState(false), {
+        dialog.addEventListener("cancel", close, {
           signal: controller.signal,
         });
         //close `<dialog>` when clicking the backdrop
@@ -42,7 +70,7 @@ export const useDialog = (): UseDialogResult => {
             e.stopPropagation();
             return;
           }
-          changeDialogState(false);
+          close();
         }, {
           signal: controller.signal,
         });
@@ -50,10 +78,10 @@ export const useDialog = (): UseDialogResult => {
         cleanup = () => {
           controller.abort();
         };
-        changeDialogState(dialog);
+        dialogStore.current = dialog;
       };
     },
-    [],
+    [close],
   );
 
   return { isOpen: dialogState.isOpen, open, close, ref };
@@ -61,39 +89,19 @@ export const useDialog = (): UseDialogResult => {
 
 interface DialogState {
   isOpen: boolean;
-  dialog?: HTMLDialogElement | null;
-  prevOverflowY: string;
+  prevOverflowY?: string;
 }
+type Action = (prev: DialogState) => DialogState;
 
 const dialogStateReducer = (
   state: DialogState,
-  isOpen: boolean | HTMLDialogElement | null,
+  action: Action,
 ): DialogState => {
-  const isOpenNow = state.dialog?.open ?? false;
-  if (isOpen instanceof HTMLDialogElement || isOpen === null) {
-    return isOpenNow === state.isOpen && isOpen === state.dialog ? state : {
-      isOpen: isOpenNow,
-      dialog: isOpen,
-      prevOverflowY: state.prevOverflowY,
-    };
-  }
-  if (isOpen) {
-    state.dialog?.showModal?.();
-    const prevOverflowY = !state.isOpen
-      ? document.documentElement.style.overflowY
-      : state.prevOverflowY;
-    document.documentElement.style.overflowY = "hidden";
-    return state.isOpen && isOpenNow
-      ? state
-      : { isOpen: true, prevOverflowY, dialog: state.dialog };
-  }
-  state.dialog?.close?.();
-  if (state.prevOverflowY === "") {
-    document.documentElement.style.removeProperty("overflow-y");
-  } else {
-    document.documentElement.style.overflowY = state.prevOverflowY;
-  }
-  return !state.isOpen && !isOpenNow
+  const next = action(state);
+  return state.isOpen === next.isOpen &&
+      state.prevOverflowY === next.prevOverflowY
     ? state
-    : { isOpen: false, prevOverflowY: "", dialog: state.dialog };
+    : !next.isOpen
+    ? { isOpen: false }
+    : next;
 };
