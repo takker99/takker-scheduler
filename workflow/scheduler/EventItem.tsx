@@ -1,10 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-/** @jsxFrag Fragment */
-
-import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { FunctionComponent, useMemo } from "../../deps/preact.tsx";
 import { useMinutes } from "../useMinutes.ts";
 import { Event, getEventStatus, isLink } from "./event.ts";
 import { getEnd } from "../../howm/Period.ts";

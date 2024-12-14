@@ -1,6 +1,5 @@
-/// <reference lib="deno.ns" />
 import { oneByOne } from "./utils.ts";
-import { sleep } from "./deps/scrapbox-std.ts";
+import { delay as sleep } from "./deps/async.ts";
 import { assertEquals } from "./deps/testing.ts";
 
 Deno.test("oneByOne()", async () => {

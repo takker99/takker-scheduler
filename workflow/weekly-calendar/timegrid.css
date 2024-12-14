@@ -1,156 +1,161 @@
 .timeline-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: hidden;
+
+  --timeline-bg: var(--dropdown-menu-bg, #fff);
+  --timeline-text-color: var(--page-text-color, #4a4a4a);
+  --timeline-link-color: var(--page-link-color, #5e8af7);
+  --row-header-width: 40px;
+  --timeline-border-color: #888;
+  --timeline-border: solid 1px var(--timeline-border-color);
+  --timeline-hour-height: 40px;
+
+  background-color: var(--timeline-bg);
+  color: var(--timeline-text-color);
+
+  .column-header {
+    flex: none;
+
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+
+    .cell {
+      /* 伸縮可、全て同じ幅にする */
+      flex: 1 1 1px;
+
+      h2 {
+        font-weight: 400;
+        margin: 0;
+        text-align: center;
+        width: 100%;
+      }
+    }
+  }
+
+  .week-container {
+    position: relative;
     height: 100%;
-    overflow-y: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
 
-    --timeline-bg: var(--dropdown-menu-bg, #fff);
-    --timeline-text-color: var(--page-text-color, #4a4a4a);
-    --timeline-link-color: var(--page-link-color, #5e8af7);
-    --row-header-width: 40px;
-    --timeline-border-color: #888;
-    --timeline-border: solid 1px var(--timeline-border-color);
-    --timeline-hour-height: 40px;
+    .week {
+      flex: auto;
+      display: flex;
+      width: 100%;
 
-    background-color: var(--timeline-bg);
-    color: var(--timeline-text-color);
-
-
-
-    .column-header {
-        flex: none;
-
-        display: flex;
-        flex-direction: row;
-
-        .cell {
-            /* 伸縮可、全て同じ幅にする */
-            flex: 1 1 1px;
-
-            h2 {
-                font-weight: 400;
-                margin: 0;
-                text-align: center;
-                width: 100%;
-            }
+      .borders {
+        .border {
+          height: var(--timeline-hour-height);
         }
-    }
 
+        .border::after {
+          content: attr(data-time);
+          font-size: 10px;
+          text-align: right;
+          border-top: var(--timeline-border);
+          position: absolute;
+          width: 100%;
+          margin-top: -1px;
+          pointer-events: none;
+        }
+      }
 
-    .week-container {
+      .timeline {
+        flex: auto;
+        border-left: var(--timeline-border);
         position: relative;
-        height: 100%;
-        overflow-y: auto;
-        scrollbar-width: none;
 
-        .week {
-            flex: auto;
-            display: flex;
-            width: 100%;
-
-            .borders {
-                .border {
-                    height: var(--timeline-hour-height);
-                }
-
-                .border::after {
-                    content: attr(data-time);
-                    font-size: 10px;
-                    text-align: right;
-                    border-top: var(--timeline-border);
-                    position: absolute;
-                    width: 100%;
-                    margin-top: -1px;
-                    pointer-events: none;
-                }
-            }
-
-            .timeline {
-                flex: auto;
-                border-left: var(--timeline-border);
-                position: relative;
-
-                .indicator {
-                    position: absolute;
-                    /* --startは時単位 */
-                    top: calc(var(--start) * 40px - 0.5px);
-                    width: 100%;
-                    height: 1px;
-                    background-color: red;
-                }
-
-                .copy {
-                    position: absolute;
-                    top: 1.5em
-                }
-
-                .event {
-                    position: absolute;
-                    /* --startは時単位 */
-                    top: calc(var(--start) * 40px - 1px);
-                    /* --durationは分単位 */
-                    height: calc(40px * var(--duration) / 60);
-                    outline: none;
-                    --event-bg2: var(--timeline-text-color);
-                    --event-bg: var(--timeline-bg);
-                    --event-bg-ratio: 50%;
-                    --event-color-ratio: 0%;
-                    --event-border-color-ratio: 0%;
-                    background-color:
-                        color-mix(in srgb, var(--event-bg) var(--event-bg-ratio), var(--event-bg2));
-                    color:
-                        color-mix(in srgb, var(--event-bg) var(--event-color-ratio), var(--timeline-text-color));
-                    border: var(--timeline-border);
-                    border-color:
-                        color-mix(in srgb, var(--event-bg) var(--event-border-color-ratio), var(--timeline-border-color));
-                    border-radius: 4px;
-                    overflow: hidden;
-                    text-wrap: nowrap;
-                    max-width: 100%;
-                    text-overflow: ellipsis;
-                }
-
-                .event[data-status="done"] {
-                    --event-bg-ratio: 90%;
-                    --event-color-ratio: 50%;
-                    --event-border-color-ratio: 50%;
-                }
-
-                .event[data-status="expired"] {
-                    font-weight: bold;
-                }
-
-                a.event {
-                    --event-bg2: var(--timeline-link-color);
-                    text-decoration: none;
-                }
-            }
-
-            .timeline:first-child {
-                border-right: var(--timeline-border);
-            }
-
+        .indicator {
+          position: absolute;
+          /* --startは時単位 */
+          top: calc(var(--start) * 40px - 0.5px);
+          width: 100%;
+          height: 1px;
+          background-color: red;
         }
+
+        .copy {
+          position: absolute;
+          top: 1.5em;
+        }
+
+        .event {
+          position: absolute;
+          /* --startは時単位 */
+          top: calc(var(--start) * 40px - 1px);
+          /* --durationは分単位 */
+          height: calc(40px * var(--duration) / 60);
+          outline: none;
+          --event-bg2: var(--timeline-text-color);
+          --event-bg: var(--timeline-bg);
+          --event-bg-ratio: 50%;
+          --event-color-ratio: 0%;
+          --event-border-color-ratio: 0%;
+          background-color: color-mix(
+            in srgb,
+            var(--event-bg) var(--event-bg-ratio),
+            var(--event-bg2)
+          );
+          color: color-mix(
+            in srgb,
+            var(--event-bg) var(--event-color-ratio),
+            var(--timeline-text-color)
+          );
+          border: var(--timeline-border);
+          border-color: color-mix(
+            in srgb,
+            var(--event-bg) var(--event-border-color-ratio),
+            var(--timeline-border-color)
+          );
+          border-radius: 4px;
+          overflow: hidden;
+          text-wrap: nowrap;
+          max-width: 100%;
+          text-overflow: ellipsis;
+        }
+
+        .event[data-status="done"] {
+          --event-bg-ratio: 90%;
+          --event-color-ratio: 50%;
+          --event-border-color-ratio: 50%;
+        }
+
+        .event[data-status="expired"] {
+          font-weight: bold;
+        }
+
+        a.event {
+          --event-bg2: var(--timeline-link-color);
+          text-decoration: none;
+        }
+      }
+
+      .timeline:first-child {
+        border-right: var(--timeline-border);
+      }
     }
+  }
 }
 
 .wedget {
-    position: fixed;
-    top: 60px;
-    left: 10px;
-    max-height: calc(90vh - 60px);
-    max-width: 100px;
-    width: calc(100vw / 767 * 100 - 10px);
-    min-width: 60px;
-    border: solid 1px #888;
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
+  position: fixed;
+  top: 60px;
+  left: 10px;
+  max-height: calc(90vh - 60px);
+  max-width: 100px;
+  width: calc(100vw / 767 * 100 - 10px);
+  min-width: 60px;
+  border: solid 1px #888;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
 
-    background-color: var(--dropdown-menu-bg, #fff);
-    color: var(--page-text-color, #4a4a4a);
+  background-color: var(--dropdown-menu-bg, #fff);
+  color: var(--page-text-color, #4a4a4a);
 
-    &:not(.open) {
-        display: none;
-    }
+  &:not(.open) {
+    display: none;
+  }
 }

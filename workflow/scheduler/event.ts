@@ -1,4 +1,5 @@
 import { differenceInMinutes } from "../../deps/date-fns.ts";
+import { isErr, isOk, unwrapOk } from "../../deps/option-t.ts";
 import { Period } from "../../howm/Period.ts";
 import { getEnd, Log } from "../../howm/Period.ts";
 import { fromDate, isBefore } from "../../howm/localDate.ts";
@@ -100,7 +101,7 @@ export const fromTaskLine = (
   if (!task.plan.start) return;
 
   const event: PlainEvent = {
-    name: result?.ok ? result.value.name : task.title,
+    name: result && isOk(result) ? unwrapOk(result).name : task.title,
     plan: {
       start: fromDate(task.plan.start),
       duration: (task.plan.duration ?? 0) / 60,
@@ -118,18 +119,19 @@ export const fromTaskLine = (
       );
     }
   }
-  if (!result?.ok) return event;
+  if (!result || isErr(result)) return event;
 
+  const task_ = unwrapOk(result);
   const eventWithLink: EventWithLink = {
     ...event,
-    title: result.value.raw,
+    title: task_.raw,
     project,
   };
-  if (result.value.freshness) {
-    eventWithLink.status = result?.value.freshness.status;
+  if (task_.freshness) {
+    eventWithLink.status = task_.freshness.status;
   }
-  if (!isReminder(result.value)) {
-    eventWithLink.executed = result.value.executed;
+  if (!isReminder(task_)) {
+    eventWithLink.executed = task_.executed;
   }
   return eventWithLink;
 };

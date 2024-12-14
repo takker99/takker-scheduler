@@ -1,15 +1,11 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-
+/** @jsxImportSource npm:preact@10 */
+import { delay } from "../deps/async.ts";
 import {
   FunctionComponent,
   h,
   useCallback,
   useState,
 } from "../deps/preact.tsx";
-import { sleep } from "../deps/scrapbox-std.ts";
 
 /** コピーボタン */
 export const Copy: FunctionComponent<{ text: string; title?: string }> = (
@@ -23,10 +19,15 @@ export const Copy: FunctionComponent<{ text: string; title?: string }> = (
       try {
         await navigator.clipboard.writeText(text);
         setButtonLabel("Copied");
-        await sleep(1000);
+        await delay(1000);
         setButtonLabel("\uf0c5");
       } catch (e) {
-        alert(`Failed to copy the code block\nError:${e.message}`);
+        alert(
+          `Failed to copy the code block\nError:${
+            e instanceof Error ? e.message : e
+          }`,
+        );
+        console.error(e);
       }
     },
     [text],

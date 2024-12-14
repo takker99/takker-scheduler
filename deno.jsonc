@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "fix": "deno fmt && deno lint --fix && deno check --remote **/*.ts **/*.tsx && deno test --doc --parallel --shuffle --allow-read",
+    "check": "deno fmt --check && deno lint && deno check --remote **/*.ts **/*.tsx && deno test --doc --parallel --shuffle --allow-read"
+  },
+  "compilerOptions": {
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "deno.ns"
+    ]
+  },
+  "exclude": [
+    "googleCalendar"
+  ]
+}

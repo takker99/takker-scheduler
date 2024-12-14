@@ -1,8 +1,4 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-
+/** @jsxImportSource npm:preact@10 */
 import { FunctionComponent, h } from "../deps/preact.tsx";
 
 /** 読込中は押せなくなるボタン */

@@ -1,1 +1,1 @@
-export * from "https://raw.githubusercontent.com/takker99/scrapbox-storage/0.1.5/mod.ts";
+export * from "jsr:@takker/cosense-storage@0.3";

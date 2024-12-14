@@ -1,15 +1,14 @@
-/// <reference lib="deno.ns" />
-
 import { toTaskLine } from "./toTaskLine.ts";
 import { assertEquals } from "../deps/testing.ts";
-import { parse, Task } from "../howm/parse.ts";
+import { parse } from "../howm/parse.ts";
 import { toString } from "../task.ts";
+import { unwrapOk } from "../deps/option-t.ts";
 
 Deno.test("toTaskLine()", () => {
   assertEquals(
     toString(
       toTaskLine(
-        parse("ごはんを食べる+3@2023-04-13/23T05:47D45")!.value as Task,
+        unwrapOk(parse("ごはんを食べる+3@2023-04-13/23T05:47D45")!),
         new Date(),
       )!,
     ),
@@ -18,7 +17,7 @@ Deno.test("toTaskLine()", () => {
   assertEquals(
     toString(
       toTaskLine(
-        parse("ごはんを食べる@2023-04-13T05:47D45")!.value as Task,
+        unwrapOk(parse("ごはんを食べる@2023-04-13T05:47D45")!),
         new Date(),
       )!,
     ),
@@ -27,7 +26,7 @@ Deno.test("toTaskLine()", () => {
   assertEquals(
     toString(
       toTaskLine(
-        parse("ごはんを食べる@2023-04-13T05:47D45R1")!.value as Task,
+        unwrapOk(parse("ごはんを食べる@2023-04-13T05:47D45R1")!),
         new Date(2023, 3, 14),
       )!,
     ),
@@ -35,7 +34,7 @@ Deno.test("toTaskLine()", () => {
   );
   assertEquals(
     toTaskLine(
-      parse("爪切り+@2023-10-09T12:00D5RW1")!.value as Task,
+      unwrapOk(parse("爪切り+@2023-10-09T12:00D5RW1")!),
       new Date(2023, 9, 15),
     ),
     undefined,
@@ -43,7 +42,7 @@ Deno.test("toTaskLine()", () => {
   assertEquals(
     toString(
       toTaskLine(
-        parse("爪切り+@2023-10-09T12:00D5RW1")!.value as Task,
+        unwrapOk(parse("爪切り+@2023-10-09T12:00D5RW1")!),
         new Date(2023, 9, 16),
       )!,
     ),

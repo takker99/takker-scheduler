@@ -3,14 +3,15 @@
 import { calcFreshness } from "./freshness.ts";
 import { isReminder, parse } from "./parse.ts";
 import { assertEquals } from "../deps/testing.ts";
+import { isErr, unwrapOk } from "../deps/option-t.ts";
 
 Deno.test("calcFreshness()", async (t) => {
   await t.step("done", () => {
     const now = new Date("2023-04-10T00:20");
     const result = parse("読書会.@2023-04-11T13:00");
-    if (!result?.ok) throw new Error("parse");
-    if (!isReminder(result.value)) throw new Error("isReminder");
-    const freshness = result.value.freshness;
+    if (!result || isErr(result)) throw new Error("parse");
+    if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+    const freshness = unwrapOk(result).freshness!;
 
     assertEquals(calcFreshness(freshness, now), -Infinity);
     now.setDate(11);
@@ -24,9 +25,9 @@ Deno.test("calcFreshness()", async (t) => {
   await t.step("deadline", () => {
     const now = new Date("2002-10-10T00:00");
     const result = parse("ハイウェイ惑星 〆切!@2002-10-20");
-    if (!result?.ok) throw new Error("parse");
-    if (!isReminder(result.value)) throw new Error("isReminder");
-    const freshness = result.value.freshness;
+    if (!result || isErr(result)) throw new Error("parse");
+    if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+    const freshness = unwrapOk(result).freshness!;
 
     assertEquals(calcFreshness(freshness, now), -10);
     now.setDate(12);
@@ -46,9 +47,9 @@ Deno.test("calcFreshness()", async (t) => {
   await t.step("todo", () => {
     const now = new Date("2002-10-10T00:00");
     const result = parse("ハイウェイ惑星+@2002-10-20 買うべし");
-    if (!result?.ok) throw new Error("parse");
-    if (!isReminder(result.value)) throw new Error("isReminder");
-    const freshness = result.value.freshness;
+    if (!result || isErr(result)) throw new Error("parse");
+    if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+    const freshness = unwrapOk(result).freshness!;
 
     assertEquals(calcFreshness(freshness, now), -10);
     now.setDate(12);
@@ -72,9 +73,9 @@ Deno.test("calcFreshness()", async (t) => {
     await t.step("-1", () => {
       const now = new Date("2002-10-10T00:00");
       const result = parse("-@2002-10-20 ハイウェイ惑星 買おう");
-      if (!result?.ok) throw new Error("parse");
-      if (!isReminder(result.value)) throw new Error("isReminder");
-      const freshness = result.value.freshness;
+      if (!result || isErr(result)) throw new Error("parse");
+      if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+      const freshness = unwrapOk(result).freshness!;
 
       assertEquals(calcFreshness(freshness, now), -Infinity);
       now.setDate(12);
@@ -93,9 +94,9 @@ Deno.test("calcFreshness()", async (t) => {
     await t.step("-3", () => {
       const now = new Date("2002-10-10T00:00");
       const result = parse("-3@2002-10-20 ハイウェイ惑星 買おう");
-      if (!result?.ok) throw new Error("parse");
-      if (!isReminder(result.value)) throw new Error("isReminder");
-      const freshness = result.value.freshness;
+      if (!result || isErr(result)) throw new Error("parse");
+      if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+      const freshness = unwrapOk(result).freshness!;
 
       assertEquals(calcFreshness(freshness, now), -Infinity);
       now.setDate(12);
@@ -115,9 +116,9 @@ Deno.test("calcFreshness()", async (t) => {
   await t.step("up-down", () => {
     const now = new Date("2023-09-01T00:00");
     const result = parse("ハイウェイ惑星 買おうかな~@2023-09-16");
-    if (!result?.ok) throw new Error("parse");
-    if (!isReminder(result.value)) throw new Error("isReminder");
-    const freshness = result.value.freshness;
+    if (!result || isErr(result)) throw new Error("parse");
+    if (!isReminder(unwrapOk(result))) throw new Error("isReminder");
+    const freshness = unwrapOk(result).freshness!;
 
     assertEquals(calcFreshness(freshness, now), -60);
     now.setDate(16);
