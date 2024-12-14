@@ -1,13 +1,10 @@
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext"/>
-/// <reference lib="dom"/>
 import { Scrapbox, useStatusBar } from "../deps/scrapbox-std-dom.ts";
-import { getCodeBlock, sleep } from "../deps/scrapbox-std.ts";
+import { getCodeBlock } from "../deps/scrapbox-std.ts";
 import {
+  connect,
   disconnect,
-  makeSocket,
   patch,
-  Socket,
+  ScrapboxSocket,
 } from "../deps/scrapbox-websocket.ts";
 import {
   addDays,
@@ -16,6 +13,8 @@ import {
   isSameDay,
 } from "../deps/date-fns.ts";
 import { template } from "./template.ts";
+import { isErr, unwrapErr, unwrapOk } from "../deps/option-t.ts";
+import { delay } from "../deps/async.ts";
 declare const scrapbox: Scrapbox;
 
 /**
@@ -53,7 +52,7 @@ export const main = async (
     const interval = { start, end: addDays(now, 1) };
 
     const { render, dispose } = useStatusBar();
-    let socket: Socket | undefined;
+    let socket: ScrapboxSocket | undefined;
     try {
       // テンプレートを取得
       const dailyTemplateText = await fetchTemplate(dailyTemplate);
@@ -81,7 +80,9 @@ export const main = async (
         { type: "text", text: `create ${counter} review pages...` },
       );
 
-      socket = await makeSocket();
+      const result = await connect();
+      if (isErr(result)) throw unwrapErr(result);
+      socket = unwrapOk(result);
       for (
         const lines of [
           ...dates.map((date) => template(date, dailyTemplateText)),
@@ -121,7 +122,7 @@ export const main = async (
       console.error(e);
     } finally {
       if (socket) await disconnect(socket);
-      await sleep(1000);
+      await delay(1000);
       dispose();
     }
   };
@@ -146,16 +147,16 @@ export const main = async (
 
 const fetchTemplate = async (path: [string, string, string]) => {
   const result = await getCodeBlock(path[0], path[1], path[2]);
-  if (!result.ok) {
+  if (isErr(result)) {
     const error = new Error();
-    error.name = result.value.name;
-    error.message = `${result.value.message} at fetching /${path[0]}/${
+    error.name = unwrapErr(result).name;
+    error.message = `${unwrapErr(result).message} at fetching /${path[0]}/${
       path[1]
     }/${path[2]}`;
     throw error;
   }
 
-  const template = result.value.split("\n");
+  const template = unwrapOk(result).split("\n");
   if (template.length === 0) {
     throw new Error(`template "/${path[0]}/${path[1]}/${path[2]}" is empty!`);
   }

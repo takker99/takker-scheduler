@@ -1,7 +1,6 @@
 @import "./font.css";
 @import "./weekly-calendar/timegrid.css";
 
-
 dialog {
   flex-direction: column;
   align-items: center;
@@ -21,18 +20,16 @@ dialog {
 
   overflow-y: hidden;
 
-
   &[open] {
     display: flex;
   }
 
-  >* {
+  > * {
     color: var(--page-text-color, #4a4a4a);
     background-color: var(--dropdown-menu-bg, #fff);
-    border: 1px solid rgba(0, 0, 0, .2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
   }
-
 }
 
 @media (min-width: 768px) {
@@ -61,11 +58,10 @@ dialog {
 .progress {
   flex-grow: 1;
 
-  >* {
+  > * {
     padding: 0 2px;
   }
 }
-
 
 a {
   text-decoration: none;
@@ -75,7 +71,6 @@ a {
     color: var(--page-link-hover-color, #2d67f5);
   }
 }
-
 
 button {
   cursor: pointer;
@@ -104,7 +99,7 @@ button {
 
 .close,
 .today {
-  font-weight: 900
+  font-weight: 900;
 }
 
 ul {

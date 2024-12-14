@@ -5,7 +5,8 @@ import {
   differenceInCalendarMonths,
   isValid,
 } from "../deps/date-fns.ts";
-import { isNumber, Result } from "../deps/scrapbox-std.ts";
+import { isNumber } from "../deps/unknownutil.ts";
+import { createErr, createOk, Result } from "../deps/option-t.ts";
 import { Period } from "./Period.ts";
 import { Freshness } from "./freshness.ts";
 import {
@@ -140,15 +141,12 @@ export const parse = (
   /** 旬度計算の起点 */
   const refDate = fixStart(syear, smonth, sdate, shours, sminutes);
   if (!isValid(toDate(refDate))) {
-    return {
-      ok: false,
-      value: {
-        name: "InvalidDateError",
-        message: `The reference point of the task "${
-          format(refDate)
-        }" is an invalid date.`,
-      },
-    };
+    return createErr({
+      name: "InvalidDateError",
+      message: `The reference point of the task "${
+        format(refDate)
+      }" is an invalid date.`,
+    });
   }
 
   /** 見積もり時間 */
@@ -166,36 +164,30 @@ export const parse = (
       (isNumber(estimated) && isNaN(estimated)) ||
       (!isNumber(estimated) && !isValid(toDate(estimated)))
     ) {
-      return {
-        ok: false,
-        value: {
-          name: "InvalidDateError",
-          message: `The estimated end of the task${
-            isNumber(estimated) ? "" : ` "${format(estimated)}"`
-          } is an invalid date.`,
-        },
-      };
+      return createErr({
+        name: "InvalidDateError",
+        message: `The estimated end of the task${
+          isNumber(estimated) ? "" : ` "${format(estimated)}"`
+        } is an invalid date.`,
+      });
     }
     if (
       (isNumber(estimated) && estimated < 0) ||
       (!isNumber(estimated) && isBefore(estimated, refDate))
     ) {
-      return {
-        ok: false,
-        value: {
-          name: "TaskRangeError",
-          message:
-            `The reference point of an task cannot be after its estimated end.\n\nreference point:${
-              format(refDate)
-            }\nestimated end:${
-              format(
-                isNumber(estimated)
-                  ? fromDate(addMinutes(toDate(refDate), estimated))
-                  : estimated,
-              )
-            }`,
-        },
-      };
+      return createErr({
+        name: "TaskRangeError",
+        message:
+          `The reference point of an task cannot be after its estimated end.\n\nreference point:${
+            format(refDate)
+          }\nestimated end:${
+            format(
+              isNumber(estimated)
+                ? fromDate(addMinutes(toDate(refDate), estimated))
+                : estimated,
+            )
+          }`,
+      });
     }
   }
 
@@ -220,15 +212,12 @@ export const parse = (
     ssminutes2 || ssminutes || sminutes,
   );
   if (!isValid(toDate(start))) {
-    return {
-      ok: false,
-      value: {
-        name: "InvalidDateError",
-        message: `The start of the task/event "${
-          format(start)
-        }" is an invalid date.`,
-      },
-    };
+    return createErr({
+      name: "InvalidDateError",
+      message: `The start of the task/event "${
+        format(start)
+      }" is an invalid date.`,
+    });
   }
 
   /** 所要時間 */
@@ -262,17 +251,14 @@ export const parse = (
         count: countStr ? parseInt(countStr) : 1,
       };
     }
-    return { ok: true, value: event };
+    return createOk(event);
   }
 
   if (!freshness) {
-    return {
-      ok: false,
-      value: {
-        name: "InvalidDateError",
-        message: "Task requires freshness to be spec",
-      },
-    };
+    return createErr({
+      name: "InvalidDateError",
+      message: "Task requires freshness to be spec",
+    });
   }
 
   // この条件ではReminder以外ありえない
@@ -283,7 +269,7 @@ export const parse = (
     raw: text,
   };
   if (estimated) task.estimated = estimated;
-  return { ok: true, value: executed ? { ...task, executed } : task };
+  return createOk(executed ? { ...task, executed } : task);
 };
 
 /** Reminderかどうか調べる */

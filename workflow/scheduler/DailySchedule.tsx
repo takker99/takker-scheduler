@@ -1,10 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-/** @jsxFrag Fragment */
-
-import { Fragment, FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { FunctionComponent, useMemo } from "../../deps/preact.tsx";
 import { Task } from "../useTaskCrawler.ts";
 import { Copy } from "../Copy.tsx";
 import { toKey } from "../key.ts";

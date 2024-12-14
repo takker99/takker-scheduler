@@ -1,6 +1,7 @@
 import { useEffect, useState } from "../deps/preact.tsx";
 import { getPage, toTitleLc } from "../deps/scrapbox-std.ts";
 import { Scrapbox, takeInternalLines } from "../deps/scrapbox-std-dom.ts";
+import { isErr, unwrapOk } from "../deps/option-t.ts";
 declare const scrapbox: Scrapbox;
 
 type Key = `/${string}/${string}`;
@@ -63,8 +64,8 @@ const get = (project: string, title: string): string[] => {
 
     getPage(project, title)
       .then((result) => {
-        if (!result.ok) return [];
-        const lines = result.value.lines.map((line) => line.text);
+        if (isErr(result)) return [];
+        const lines = unwrapOk(result).lines.map((line) => line.text);
         emitChange(key, lines);
         if (
           title === scrapbox.Page.title &&

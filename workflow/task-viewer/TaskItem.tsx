@@ -1,9 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-
-import { FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { FunctionComponent, useMemo } from "../../deps/preact.tsx";
 import { Copy } from "../Copy.tsx";
 import { addMinutes, isAfter } from "../../deps/date-fns.ts";
 import { format, toDate } from "../../howm/localDate.ts";

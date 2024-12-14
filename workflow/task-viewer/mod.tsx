@@ -1,10 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-/** @jsxFrag Fragment */
-
-import { Fragment, h, render, useMemo } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { render, useMemo } from "../../deps/preact.tsx";
 import { useTaskCrawler } from "../useTaskCrawler.ts";
 import { useDialog } from "../useDialog.ts";
 import { CSS } from "../viewer.min.css.ts";
@@ -24,7 +19,7 @@ import { Status } from "../../howm/status.ts";
 import { toLocalDate } from "../key.ts";
 import { LoadButton } from "../LoadButton.tsx";
 import { TaskItem } from "./TaskItem.tsx";
-import { useNavigation } from "./useNavigation.tsx";
+import { useNavigation } from "./useNavigation.ts";
 import { useUserScriptEvent } from "../useUserScriptEvent.ts";
 import { useExports } from "../useExports.ts";
 

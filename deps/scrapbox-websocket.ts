@@ -1,8 +1,6 @@
 export {
+  connect,
   disconnect,
-  makeSocket,
   patch,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.27.1/browser/websocket/mod.ts";
-export type {
-  Socket,
-} from "https://raw.githubusercontent.com/takker99/scrapbox-userscript-std/0.27.1/browser/websocket/mod.ts";
+  type ScrapboxSocket,
+} from "jsr:@cosense/std@0.29/browser/websocket";

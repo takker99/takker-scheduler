@@ -1,4 +1,4 @@
-import { build, stop } from "../../deps/esbuild.ts";
+import { build } from "../../deps/esbuild.ts";
 
 // bundle & minify app.css
 const name = "file-loader";
@@ -27,7 +27,6 @@ const { outputFiles: [css] } = await build({
     },
   }],
 });
-await stop();
 
 // create app.min.css.ts
 await Deno.writeTextFile(

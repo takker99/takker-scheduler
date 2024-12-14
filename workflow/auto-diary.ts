@@ -1,21 +1,20 @@
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext"/>
-/// <reference lib="dom"/>
 import {
+  connect,
   disconnect,
-  makeSocket,
   patch,
-  Socket,
+  ScrapboxSocket,
 } from "../deps/scrapbox-websocket.ts";
 import { Scrapbox, useStatusBar } from "../deps/scrapbox-std-dom.ts";
-import { sleep, toTitleLc } from "../deps/scrapbox-std.ts";
+import { toTitleLc } from "../deps/scrapbox-std.ts";
 import { eachDayOfInterval, isSameDay, lightFormat } from "../deps/date-fns.ts";
 import { Task, toString } from "../task.ts";
 import { format, toTitle } from "../diary.ts";
 import { toTaskLine } from "../howm/toTaskLine.ts";
-import { decode, load } from "../deps/storage.ts";
+import { load } from "../deps/storage.ts";
 import { isRecurrence, parse } from "../howm/parse.ts";
 import { Key, toKey } from "./key.ts";
+import { isErr, unwrapErr, unwrapOk } from "../deps/option-t.ts";
+import { delay } from "../deps/async.ts";
 declare const scrapbox: Scrapbox;
 
 const project = "takker-memex";
@@ -55,7 +54,7 @@ export const main = async (): Promise<() => void | Promise<void>> => {
     if (dates.length === 0) return;
 
     const { render, dispose } = useStatusBar();
-    let socket: Socket | undefined;
+    let socket: ScrapboxSocket | undefined;
     try {
       render(
         { type: "spinner" },
@@ -67,14 +66,19 @@ export const main = async (): Promise<() => void | Promise<void>> => {
       const dayKeys = dates.map((date) => toKey(date));
 
       // projectにある全てのタスクリンクをtask lineに変換してtasksに格納する
-      for (const { links, project } of await load(["takker", "takker-memex"])) {
-        for (const link of links) {
-          const { title } = decode(link);
+      for (
+        const { title: pageTitle, links, project } of await load([
+          "takker",
+          "takker-memex",
+        ])
+      ) {
+        for (const title of [pageTitle, ...links]) {
           const result = parse(title);
           if (!result) continue;
-          if (!result.ok) {
+          if (isErr(result)) {
+            const { name, message } = unwrapErr(result);
             console.error(
-              `[/${project}/${title}]: ${result.value.name} ${result.value.message}`,
+              `[/${project}/${title}]: ${name} ${message}`,
             );
             continue;
           }
@@ -84,23 +88,26 @@ export const main = async (): Promise<() => void | Promise<void>> => {
           if (titleLcs.has(titleLc)) continue;
           titleLcs.add(titleLc);
 
+          const task = unwrapOk(result);
           // 一部のステータスのタスクを除外する
-          if (result.value.freshness?.status === "done") continue;
+          if (task.freshness?.status === "done") continue;
 
           for (const date of dates) {
-            const task = toTaskLine(result.value, date);
-            if (!task) continue;
-            const key = toKey(task.base);
+            const task_ = toTaskLine(task, date);
+            if (!task_) continue;
+            const key = toKey(task_.base);
             if (!dayKeys.includes(key)) continue;
-            tasks.set(key, [...(tasks.get(key) ?? []), task]);
+            tasks.set(key, [...(tasks.get(key) ?? []), task_]);
             // 繰り返しタスクでなければ、全ての日付を試す必要がない
-            if (!isRecurrence(result.value)) continue;
+            if (!isRecurrence(task)) continue;
           }
         }
       }
 
       // ページを作る
-      socket = await makeSocket();
+      const result = await connect();
+      if (isErr(result)) throw unwrapErr(result);
+      socket = unwrapOk(result);
       let counter = 0;
       render(
         { type: "spinner" },
@@ -156,7 +163,7 @@ export const main = async (): Promise<() => void | Promise<void>> => {
       console.error(e);
     } finally {
       if (socket) await disconnect(socket);
-      await sleep(1000);
+      await delay(1000);
       dispose();
     }
   };

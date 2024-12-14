@@ -2,11 +2,11 @@ import { TaskBlock, toString } from "./task.ts";
 import { format, toTitle } from "./diary.ts";
 import { oneByOne, OneByOneResult } from "./utils.ts";
 import { isSameDay } from "./deps/date-fns.ts";
-import { patch, Socket } from "./deps/scrapbox-websocket.ts";
+import { patch, ScrapboxSocket } from "./deps/scrapbox-websocket.ts";
 
 export interface PushTasksOptions {
   /** 書き込みに使うSocket */
-  socket: Socket;
+  socket: ScrapboxSocket;
 }
 export interface PushTasksResult {
   /** 書き込み先の日付ページの日付 */ date: Date;
