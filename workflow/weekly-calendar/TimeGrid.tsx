@@ -1,9 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-
-import { FunctionComponent, h } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { FunctionComponent } from "../../deps/preact.tsx";
 import { Task } from "../useTaskCrawler.ts";
 import { getDate } from "../../deps/date-fns.ts";
 import { TimeLine } from "./TimeLine.tsx";

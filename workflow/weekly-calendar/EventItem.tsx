@@ -1,6 +1,5 @@
-/** @jsx h */
-
-import { FunctionComponent, h, useMemo } from "../../deps/preact.tsx";
+/** @jsxImportSource npm:preact@10 */
+import { FunctionComponent, useMemo } from "../../deps/preact.tsx";
 import { Event, getEventStatus, isLink } from "../scheduler/event.ts";
 import { ScrapboxLink } from "../ScrapboxLink.tsx";
 import { useMinutes } from "../useMinutes.ts";
