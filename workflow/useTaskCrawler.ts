@@ -36,37 +36,42 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawlerResult =>
     ...useMemo<
       Parameters<typeof useSyncExternalStore<UseTaskCrawlerResult>>
     >(() => {
-      let tasks: Task[] = [];
-      let errors: TaskError[] = [];
-      let loading = true;
-      let promise: Promise<void> = Promise.resolve();
-      let flush: () => void = () => {};
-      const load = async () => {
-        await promise;
-        loading = true;
-        flush();
-        await check(projects, 60);
-        loading = false;
-        flush();
+      let result: UseTaskCrawlerResult = {
+        tasks: [],
+        errors: [],
+        load: async () => {},
+        loading: false,
       };
-      const update = () => {
-        promise = (async () => {
-          await promise;
-          loading = true;
-          flush();
-          [tasks, errors] = makeTask(await loadLinks(projects));
-          loading = false;
-          flush();
-        })();
-      };
+      let job = Promise.resolve();
 
       return [
-        (flush_) => {
-          flush = flush_;
+        (flush) => {
+          result.load = () => {
+            job = (async () => {
+              await job;
+              result = { ...result, loading: true };
+              flush();
+              await check(projects, 60);
+              result = { ...result, loading: false };
+              flush();
+            })();
+            return job;
+          };
+          const update = () => {
+            job = (async () => {
+              await job;
+              result = { ...result, loading: true };
+              flush();
+              const [tasks, errors] = makeTask(await loadLinks(projects));
+              result = { ...result, tasks, errors, loading: false };
+              flush();
+            })();
+          };
+
           update();
           return subscribe(projects, update);
         },
-        () => ({ tasks, errors, load, loading }),
+        () => result,
       ];
     }, projects),
   );
