@@ -1,13 +1,6 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="dom" />
-/** @jsx h */
-/** @jsxFrag Fragment */
-
+/** @jsxImportSource npm:preact@10 */
 import {
-  Fragment,
   FunctionComponent,
-  h,
   RefCallback,
   render,
   useCallback,
