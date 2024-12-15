@@ -68,7 +68,7 @@ export const useTaskCrawler = (projects: string[]): UseTaskCrawlerResult =>
         },
         () => ({ tasks, errors, load, loading }),
       ];
-    }, [projects]),
+    }, projects),
   );
 
 const makeTask = (Links: Iterable<Link>): [Task[], TaskError[]] => {
