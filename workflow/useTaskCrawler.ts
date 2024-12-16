@@ -83,19 +83,19 @@ const makeTask = (Links: Iterable<Link>): [Task[], TaskError[]] => {
 
   for (const { title, links, project } of Links) {
     for (const link of [title, ...links]) {
-      const result = parse(link);
-      if (!result) continue;
-      if (isErr(result)) {
-        errors.push({ project, title, ...unwrapErr(result) });
-        continue;
-      }
-
       // 重複除去
-      const titleLc = toTitleLc(title);
+      const titleLc = toTitleLc(link);
       if (titleLcs.has(titleLc)) continue;
       titleLcs.add(titleLc);
 
-      tasks.push({ project, title, ...unwrapOk(result) });
+      const result = parse(link);
+      if (!result) continue;
+      if (isErr(result)) {
+        errors.push({ project, title: link, ...unwrapErr(result) });
+        continue;
+      }
+
+      tasks.push({ project, title: link, ...unwrapOk(result) });
     }
   }
 
