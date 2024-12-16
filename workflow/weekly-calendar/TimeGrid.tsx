@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic */
 /** @jsxImportSource npm:preact@10 */
 import { FunctionComponent } from "../../deps/preact.tsx";
 import { Task } from "../useTaskCrawler.ts";

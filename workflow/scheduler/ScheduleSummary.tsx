@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic */
 /** @jsxImportSource npm:preact@10 */
 import { FunctionComponent } from "../../deps/preact.tsx";
 import { differenceInMinutes, isAfter } from "../../deps/date-fns.ts";

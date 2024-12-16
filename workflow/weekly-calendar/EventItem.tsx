@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic */
 /** @jsxImportSource npm:preact@10 */
 import { FunctionComponent, useMemo } from "../../deps/preact.tsx";
 import { Event, getEventStatus, isLink } from "../scheduler/event.ts";
