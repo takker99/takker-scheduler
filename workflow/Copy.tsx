@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic */
 /** @jsxImportSource npm:preact@10 */
 import { delay } from "../deps/async.ts";
 import {

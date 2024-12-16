@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic */
 /** @jsxImportSource npm:preact@10 */
 import { FunctionComponent, h } from "../deps/preact.tsx";
 import type { Scrapbox } from "../deps/scrapbox-std-dom.ts";
