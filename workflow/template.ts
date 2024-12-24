@@ -50,6 +50,17 @@ export const template = (date: Date, template: string[]): string[] =>
           }`;
         },
       )
+      .replace(
+        /@yyyy@/g,
+        `${getYear(date)}`,
+      )
+      .replace(
+        /@yyyy([+-])(\d+)y@/g,
+        (_, pm, years) => {
+          const diff = parseInt(years);
+          return `${getYear(date) + (pm === "+" ? diff : -diff)}`;
+        },
+      )
   );
 
 const dayToNumber = (day: string): 0 | 1 | 2 | 3 | 4 | 5 | 6 => {
