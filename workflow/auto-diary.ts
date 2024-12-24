@@ -20,7 +20,9 @@ declare const scrapbox: Scrapbox;
 const project = "takker-memex";
 
 /** 現在日までの日刊記録sheetを生成する */
-export const main = async (): Promise<() => void | Promise<void>> => {
+export const main = async (
+  start = new Date(2023, 0, 24),
+): Promise<() => void | Promise<void>> => {
   if (scrapbox.Project.name !== project) return () => {};
 
   // scrapbox.Project.pagesが生成されるまで待つ
@@ -37,7 +39,6 @@ export const main = async (): Promise<() => void | Promise<void>> => {
     }, 2000);
   });
 
-  let start = new Date(2023, 0, 24);
   const callback = async () => {
     const now = new Date();
     const interval = { start, end: now };
