@@ -29,6 +29,7 @@ export const main = async (
   project: string,
   dailyTemplate: [string, string, string],
   weeklyTemplate: [string, string, string],
+  start = new Date(2023, 1, 3),
 ): Promise<() => void | Promise<void>> => {
   if (scrapbox.Project.name !== project) return () => {};
 
@@ -46,7 +47,6 @@ export const main = async (
     }, 2000);
   });
 
-  let start = new Date(2023, 1, 3);
   const callback = async () => {
     const now = new Date();
     const interval = { start, end: addDays(now, 1) };
