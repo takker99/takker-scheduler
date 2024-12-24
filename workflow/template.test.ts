@@ -29,6 +29,9 @@ Deno.test("template()", () => {
     "- @yyyy-MM-dd-2w(Thu)@",
     "- @yyyy-MM-dd-2w(Fri)@",
     "- @yyyy-MM-dd-2w(Sat)@",
+    "This year is @yyyy@",
+    "Last year is @yyyy-1y@",
+    "Next year is @yyyy+1y@",
   ];
   const expectedOutput = [
     "Today is 2023-04-13",
@@ -56,6 +59,9 @@ Deno.test("template()", () => {
     "- 2023-03-30",
     "- 2023-03-31",
     "- 2023-04-01",
+    "This year is 2023",
+    "Last year is 2022",
+    "Next year is 2024",
   ];
 
   assertEquals(template(date, inputTemplate), expectedOutput);
