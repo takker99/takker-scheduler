@@ -24,15 +24,13 @@ export const TimeLine: FunctionComponent<
   );
   const now = useMinutes();
   const indicator = useMemo(
-    () =>
-      isSameDay(now, date)
-        ? (
-          <div
-            className="indicator"
-            style={`--start: ${getHours(now) + getMinutes(now) / 60}`}
-          />
-        )
-        : <></>,
+    () => (isSameDay(now, date) &&
+      (
+        <div
+          className="indicator"
+          style={`--start: ${getHours(now) + getMinutes(now) / 60}`}
+        />
+      )),
     [now, date],
   );
 

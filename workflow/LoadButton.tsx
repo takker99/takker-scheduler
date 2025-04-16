@@ -13,4 +13,4 @@ export const LoadButton: FunctionComponent<
       <i className="fa fa-spinner" />
     </div>
   )
-  : <button className="navi reload" onClick={onClick}>{"\ue06d"}</button>);
+  : <button type="button" className="navi reload" onClick={onClick}></button>);

@@ -35,7 +35,12 @@ export const Copy: FunctionComponent<{ text: string; title?: string }> = (
   );
 
   return (
-    <button className="copy" title={title ?? "Copy"} onClick={handleClick}>
+    <button
+      type="button"
+      className="copy"
+      title={title ?? "Copy"}
+      onClick={handleClick}
+    >
       {buttonLabel}
     </button>
   );

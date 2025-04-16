@@ -133,11 +133,11 @@ const App: FunctionComponent<Props> = (
       <dialog ref={ref}>
         <div className="controller">
           <span>{pageNo}</span>
-          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-          <button className="navi right" onClick={next}>{"\ue02d"}</button>
-          <button className="today" onClick={goToday}>{"\uf783"}</button>
+          <button type="button" className="navi left" onClick={prev}></button>
+          <button type="button" className="navi right" onClick={next}></button>
+          <button type="button" className="today" onClick={goToday}></button>
           <LoadButton loading={loading} onClick={load} />
-          <button className="close" onClick={close}>{"\uf00d"}</button>
+          <button type="button" className="close" onClick={close}></button>
         </div>
 
         {scrolledToIndicatorInApp && (
@@ -187,11 +187,13 @@ const Wedget: FunctionComponent<Props & { open: boolean }> = (
         >
           <div className="controller">
             <span>{toKey(pageNo)}</span>
-            <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-            <button className="navi right" onClick={next}>
+            <button type="button" className="navi left" onClick={prev}>
+              
+            </button>
+            <button type="button" className="navi right" onClick={next}>
               {"\ue02d"}
             </button>
-            <button className="today" onClick={goToday}>{"\uf783"}</button>
+            <button type="button" className="today" onClick={goToday}></button>
             <LoadButton loading={loading} onClick={load} />
           </div>
           <TimeGrid

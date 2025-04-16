@@ -88,10 +88,10 @@ const App = ({ getController, projects, mainProject }: Props) => {
       <dialog ref={ref}>
         <div className="controller">
           <span>{pageNo}</span>
-          <button className="navi left" onClick={prev}>{"\ue02c"}</button>
-          <button className="navi right" onClick={next}>{"\ue02d"}</button>
+          <button type="button" className="navi left" onClick={prev}></button>
+          <button type="button" className="navi right" onClick={next}></button>
           <LoadButton loading={loading} onClick={load} />
-          <button className="close" onClick={close}>{"\uf00d"}</button>
+          <button type="button" className="close" onClick={close}></button>
         </div>
         <ul
           className="result scheduler"
