@@ -4,7 +4,8 @@ import { getLineRange } from "./getLineRange.ts";
 import { calcStart } from "../calcStart.ts";
 import { parseSpecifier } from "../parseSpecifier.ts";
 import { differenceInMinutes, isAfter } from "../deps/date-fns.ts";
-import { getLines, replaceLines } from "../deps/scrapbox-std-dom.ts";
+import { getLines, type Scrapbox } from "../deps/scrapbox-std-dom.ts";
+declare const scrapbox: Scrapbox;
 
 /** 選択範囲中の項目を判断する時間を設ける */
 export const makeJudgeTimeFromSelection = async (): Promise<void> => {
@@ -62,10 +63,11 @@ export const makeJudgeTimeFromSelection = async (): Promise<void> => {
   if (tasks.length === 0) return;
 
   // テキストに変換する
-  const text = tasks.flatMap((task) => [toString(task), ...task.lines]).join(
-    "\n",
-  );
+  const newLines = tasks.flatMap((task) => [toString(task), ...task.lines]);
 
   // 書き込む
-  await replaceLines(start, end, text);
+  for (let i = start; i <= end; i++) {
+    scrapbox.Page.updateLine(newLines[i - start], i);
+  }
+  await scrapbox.Page.waitForSave();
 };

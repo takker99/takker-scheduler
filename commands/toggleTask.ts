@@ -1,7 +1,8 @@
-import { caret, getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
+import { caret, getText, type Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { parse, toString } from "../task.ts";
 import { startTask } from "./startTask.ts";
 import { endTask } from "./endTask.ts";
+declare const scrapbox: Scrapbox;
 
 /** カーソル行のタスクを状態をcyclicに変更するmethod
  *
@@ -30,12 +31,12 @@ export const toggleTask = async (): Promise<void> => {
   }
 
   // すでに終了しているタスクは未開始に戻す
-  await replaceLines(
-    linePos,
-    linePos,
+  scrapbox.Page.updateLine(
     toString({
       record: {},
       ...rest,
     }),
+    linePos,
   );
+  await scrapbox.Page.waitForSave();
 };

@@ -1,5 +1,6 @@
-import { getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
 import { parse, Task, toString } from "../task.ts";
+import { getText, type Scrapbox } from "../deps/scrapbox-std-dom.ts";
+declare const scrapbox: Scrapbox;
 
 /** 指定範囲内の全てのタスクを一括操作する
  *
@@ -26,5 +27,10 @@ export const modifyTasks = async (
     }
     lines.push(toString(change(task, i)));
   }
-  await replaceLines(start, end, lines.join("\n"));
+
+  // 書き込む
+  for (let i = start; i <= end; i++) {
+    scrapbox.Page.updateLine(lines[i - start], i);
+  }
+  await scrapbox.Page.waitForSave();
 };
