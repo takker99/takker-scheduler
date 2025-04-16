@@ -1,6 +1,7 @@
 import { parse, toString } from "../task.ts";
 import { addSeconds } from "../deps/date-fns.ts";
-import { caret, getText, insertLine } from "../deps/scrapbox-std-dom.ts";
+import { caret, getText, type Scrapbox } from "../deps/scrapbox-std-dom.ts";
+declare const scrapbox: Scrapbox;
 
 const interval = 5 * 60; // 5 minutes
 /** カーソル行の下にタスクを追加する
@@ -28,8 +29,9 @@ export const addTask = async (): Promise<void> => {
   };
 
   // カーソル行の下に書き込む
-  await insertLine(
-    linePos + 1,
+  scrapbox.Page.insertLine(
     toString({ title: "", base, plan, record: {} }),
+    linePos + 1,
   );
+  await scrapbox.Page.waitForSave();
 };

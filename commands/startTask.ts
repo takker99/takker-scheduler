@@ -1,5 +1,6 @@
-import { caret, getText, replaceLines } from "../deps/scrapbox-std-dom.ts";
+import { caret, getText, type Scrapbox } from "../deps/scrapbox-std-dom.ts";
 import { parse, toString } from "../task.ts";
+declare const scrapbox: Scrapbox;
 
 /** カーソル行のタスクを開始する
  *
@@ -13,12 +14,12 @@ export const startTask = async (): Promise<void> => {
   if (end) return; // すでに終了していたら何もしない
 
   // 開始時刻をtoggleする
-  await replaceLines(
-    linePos,
-    linePos,
+  scrapbox.Page.updateLine(
     toString({
       record: { start: !start ? new Date() : undefined },
       ...rest,
     }),
+    linePos,
   );
+  await scrapbox.Page.waitForSave();
 };

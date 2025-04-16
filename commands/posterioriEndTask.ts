@@ -4,8 +4,9 @@ import {
   caret,
   getLines,
   getText,
-  replaceLines,
+  type Scrapbox,
 } from "../deps/scrapbox-std-dom.ts";
+declare const scrapbox: Scrapbox;
 
 /** カーソル行のタスクを事後報告的に終了する
  *
@@ -38,12 +39,13 @@ export const posterioriEndTask = async (): Promise<void> => {
 
   // 上書きする
   const now = new Date();
-  await replaceLines(
-    linePos,
-    linePos,
+
+  scrapbox.Page.updateLine(
     toString({
       record: { start: prevEnd ?? now, end: now },
       ...rest,
     }),
+    linePos,
   );
+  await scrapbox.Page.waitForSave();
 };
