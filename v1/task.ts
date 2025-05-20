@@ -1,7 +1,17 @@
 import { addSeconds, isAfter, lightFormat, set } from "../deps/date-fns.ts";
 import { isNone, isString } from "../utils.ts";
 import { getIndentLineCount } from "../deps/scrapbox-std.ts";
-import { all, map, match, or, parse, text } from "jsr:@takker/parser@0.1";
+import {
+  all,
+  and,
+  map,
+  match,
+  or,
+  parse,
+  Parser,
+  skip,
+  text,
+} from "jsr:@takker/parser@0.1";
 
 export type Interval = {
   start?: Date;
@@ -29,14 +39,16 @@ const date = map(
   all(nnnn, hyphen, nn, hyphen, nn),
   ([year, , month, , date]) => new Date(year, month - 1, date),
 );
-const hhmm = map(
-  all(nn, colon, nn),
-  ([hour, , minutes]) => [hour, minutes] as const,
+export const hhmm: Parser<[hour: number, minutes: number], string> = and(
+  skip(nn, colon),
+  nn,
 );
-const hhmmss = map(
-  all(hhmm, colon, nn),
-  ([[hour, minutes], , seconds]) => [hour, minutes, seconds] as const,
-);
+const hhmmss: Parser<[hour: number, minutes: number, seconds: number], string> =
+  all(
+    skip(nn, colon),
+    skip(nn, colon),
+    nn,
+  );
 const space = text(" ");
 const space4 = map(text("    "), () => undefined);
 const space5 = map(text("     "), () => undefined);
