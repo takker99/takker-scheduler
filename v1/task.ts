@@ -11,7 +11,7 @@ import {
   Parser,
   skip,
   text,
-} from "jsr:@takker/parser@0.1";
+} from "../deps/parser.ts";
 
 export type Interval = {
   start?: Date;
