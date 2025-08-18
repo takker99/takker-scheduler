@@ -7,7 +7,7 @@ import {
   Task,
   toString,
 } from "./task.ts";
-import { assert, assertEquals } from "./deps/testing.ts";
+import { assert, assertEquals } from "../deps/testing.ts";
 
 const testData: [string, Task][] = [
   [
